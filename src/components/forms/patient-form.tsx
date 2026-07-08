@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import type {
   Patient,
   PatientStatus,
@@ -22,7 +21,9 @@ import type {
   Address,
   Contact,
   Insurance,
+  PatientDocument,
 } from "@/types";
+import { PatientDocumentUpload } from "@/components/media/patient-document-upload";
 
 interface PatientFormData {
   mrn: string;
@@ -124,9 +125,10 @@ function patientToFormData(p: Patient): PatientFormData {
 interface Props {
   initialData?: Patient;
   patientId?: string;
+  initialDocuments?: PatientDocument[];
 }
 
-export function PatientForm({ initialData, patientId }: Props) {
+export function PatientForm({ initialData, patientId, initialDocuments }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<PatientFormData>(
     initialData ? patientToFormData(initialData) : emptyForm(),
@@ -257,7 +259,7 @@ export function PatientForm({ initialData, patientId }: Props) {
               <Label htmlFor="gender">Gender</Label>
               <Select
                 value={form.gender}
-                onValueChange={(v) => update("gender", v as any)}
+                onValueChange={(value) => update("gender", value as Patient["gender"])}
               >
                 <SelectTrigger id="gender">
                   <SelectValue />
@@ -588,6 +590,10 @@ export function PatientForm({ initialData, patientId }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {patientId && (
+        <PatientDocumentUpload patientId={patientId} initialDocuments={initialDocuments} />
+      )}
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={saving}>

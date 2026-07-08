@@ -242,6 +242,10 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
     permissions: ["placements:read"],
     redirect: "/dashboard",
   },
+  "/placements/new": {
+    permissions: ["placements:create"],
+    redirect: "/placements",
+  },
 };
 
 // ── Utility Functions ──

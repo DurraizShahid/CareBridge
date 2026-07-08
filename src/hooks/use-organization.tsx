@@ -3,7 +3,6 @@
 import { createContext, useContext, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { usePermissions } from "@/hooks/use-permissions";
-import { resolveRole } from "@/lib/permissions";
 import { currentUser as mockUser, organizations } from "@/lib/data";
 import type { Organization } from "@/types";
 

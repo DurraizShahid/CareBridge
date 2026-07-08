@@ -45,7 +45,7 @@ export function JoinRequestsTab({ joinRequests, canManage }: { joinRequests: Joi
       if (!res.ok) throw new Error(`Failed to ${action} request`);
       toast.success(`Request ${action}d successfully!`);
       window.location.reload();
-    } catch (err) {
+    } catch {
       toast.error(`Failed to ${action} request`);
     } finally {
       setProcessingId(null);

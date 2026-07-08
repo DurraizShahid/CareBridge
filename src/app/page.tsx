@@ -6,11 +6,10 @@ import {
   ArrowRight,
   Search,
   MapPin,
-  Building2,
   Stethoscope,
 } from "lucide-react";
+import Image from "next/image";
 import { Footer } from "@/components/layout/footer";
-import { AuthControls } from "@/components/auth-controls";
 import { Navbar } from "@/components/layout/navbar";
 
 const features = [
@@ -48,10 +47,12 @@ export default function Page() {
         <section className="relative mx-1 mt-1 min-h-screen overflow-hidden rounded-3xl bg-[#0F1A2E] sm:mx-2 sm:mt-1.5 lg:mx-3 lg:mt-2">
           {/* Background image */}
           <div className="absolute inset-0">
-            <img
+            <Image
               src="/bg.jpg"
               alt=""
-              className="h-full w-full object-cover"
+              fill
+              priority
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-black/50" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,black_100%)] opacity-60" />

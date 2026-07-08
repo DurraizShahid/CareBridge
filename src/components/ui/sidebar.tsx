@@ -604,13 +604,7 @@ function SidebarMenuSkeleton({
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean
 }) {
-  // Use a deterministic default during SSR to avoid hydration mismatch.
-  // The random width is applied after mount via useEffect.
-  const [width, setWidth] = React.useState("50%")
-
-  React.useEffect(() => {
-    setWidth(`${Math.floor(Math.random() * 40) + 50}%`)
-  }, [])
+  const width = "50%"
 
   return (
     <div
@@ -622,6 +616,7 @@ function SidebarMenuSkeleton({
       {showIcon && (
         <Skeleton
           className="size-4 rounded-md"
+          style={{ width }}
           data-sidebar="menu-skeleton-icon"
         />
       )}

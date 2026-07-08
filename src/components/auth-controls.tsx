@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignUpButton, UserButton, Show } from "@clerk/nextjs";
+import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 import Link from "next/link";
 
 export function AuthControls() {

@@ -6,7 +6,6 @@ import {
   getAllRoles,
   getPermissionsByResource,
 } from "@/lib/permissions";
-import type { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 
 // ── Role display config ──

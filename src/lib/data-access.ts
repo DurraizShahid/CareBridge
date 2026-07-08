@@ -1,6 +1,7 @@
 // ─── Org-Scoped Data Access Layer ───
 // Provides data filtered by the current user's organization.
 // Superadmin users bypass organization scoping.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type {
   Patient,
@@ -244,6 +245,182 @@ export async function getUsers(
 }
 
 /**
+ * Return a single placement by ID, scoped to the given organization.
+ * Superadmin sees any placement.
+ */
+export async function getPlacement(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<Placement | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const p = await prisma.placement.findFirst({ where });
+  if (!p) return null;
+  return {
+    id: p.id,
+    patientId: p.patientId,
+    facilityId: p.facilityId ?? undefined,
+    socialWorkerId: p.socialWorkerId,
+    status: p.status as any,
+    careLevel: p.careLevel as any,
+    priority: p.priority as any,
+    assessmentNotes: p.assessmentNotes ?? undefined,
+    preferredLocation: p.preferredLocation as any ?? undefined,
+    matchedFacilities: p.matchedFacilities,
+    selectedFacilityId: p.selectedFacilityId ?? undefined,
+    insurancePreAuthorized: p.insurancePreAuthorized,
+    estimatedCost: p.estimatedCost ?? undefined,
+    approvedBy: p.approvedBy ?? undefined,
+    approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
+    startDate: p.startDate ? toISO(p.startDate) : undefined,
+    completedDate: p.completedDate ? toISO(p.completedDate) : undefined,
+    cancellationReason: p.cancellationReason ?? undefined,
+    notes: p.notes,
+    organizationId: p.organizationId,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Create a new placement.
+ * Permission check is handled by the calling API route.
+ */
+export async function createPlacement(
+  data: Omit<Placement, "id" | "createdAt" | "updatedAt">,
+): Promise<Placement> {
+  const p = await prisma.placement.create({
+    data: {
+      id: crypto.randomUUID(),
+      patientId: data.patientId,
+      facilityId: data.facilityId ?? null,
+      socialWorkerId: data.socialWorkerId,
+      status: kebabToSnake(data.status) as any,
+      careLevel: kebabToSnake(data.careLevel) as any,
+      priority: kebabToSnake(data.priority) as any,
+      assessmentNotes: data.assessmentNotes ?? null,
+      preferredLocation: data.preferredLocation as any ?? null,
+      matchedFacilities: data.matchedFacilities,
+      selectedFacilityId: data.selectedFacilityId ?? null,
+      insurancePreAuthorized: data.insurancePreAuthorized,
+      estimatedCost: data.estimatedCost ?? null,
+      approvedBy: data.approvedBy ?? null,
+      approvalDate: data.approvalDate ? new Date(data.approvalDate) : null,
+      startDate: data.startDate ? new Date(data.startDate) : null,
+      completedDate: data.completedDate ? new Date(data.completedDate) : null,
+      cancellationReason: data.cancellationReason ?? null,
+      notes: data.notes,
+      organizationId: data.organizationId,
+    },
+  });
+  return {
+    id: p.id,
+    patientId: p.patientId,
+    facilityId: p.facilityId ?? undefined,
+    socialWorkerId: p.socialWorkerId,
+    status: p.status as any,
+    careLevel: p.careLevel as any,
+    priority: p.priority as any,
+    assessmentNotes: p.assessmentNotes ?? undefined,
+    preferredLocation: p.preferredLocation as any ?? undefined,
+    matchedFacilities: p.matchedFacilities,
+    selectedFacilityId: p.selectedFacilityId ?? undefined,
+    insurancePreAuthorized: p.insurancePreAuthorized,
+    estimatedCost: p.estimatedCost ?? undefined,
+    approvedBy: p.approvedBy ?? undefined,
+    approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
+    startDate: p.startDate ? toISO(p.startDate) : undefined,
+    completedDate: p.completedDate ? toISO(p.completedDate) : undefined,
+    cancellationReason: p.cancellationReason ?? undefined,
+    notes: p.notes,
+    organizationId: p.organizationId,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Update an existing placement, scoped to organization.
+ * Superadmin can update any placement.
+ */
+export async function updatePlacement(
+  id: string,
+  data: Partial<Omit<Placement, "id" | "createdAt" | "updatedAt">>,
+  organizationId: string,
+  role: string,
+): Promise<Placement | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.placement.findFirst({ where });
+  if (!existing) return null;
+
+  const updateData: Record<string, any> = {};
+  if (data.patientId !== undefined) updateData.patientId = data.patientId;
+  if (data.facilityId !== undefined) updateData.facilityId = data.facilityId ?? null;
+  if (data.socialWorkerId !== undefined) updateData.socialWorkerId = data.socialWorkerId;
+  if (data.status !== undefined) updateData.status = kebabToSnake(data.status) as any;
+  if (data.careLevel !== undefined) updateData.careLevel = kebabToSnake(data.careLevel) as any;
+  if (data.priority !== undefined) updateData.priority = kebabToSnake(data.priority) as any;
+  if (data.assessmentNotes !== undefined) updateData.assessmentNotes = data.assessmentNotes ?? null;
+  if (data.preferredLocation !== undefined) updateData.preferredLocation = data.preferredLocation as any ?? null;
+  if (data.matchedFacilities !== undefined) updateData.matchedFacilities = data.matchedFacilities;
+  if (data.selectedFacilityId !== undefined) updateData.selectedFacilityId = data.selectedFacilityId ?? null;
+  if (data.insurancePreAuthorized !== undefined) updateData.insurancePreAuthorized = data.insurancePreAuthorized;
+  if (data.estimatedCost !== undefined) updateData.estimatedCost = data.estimatedCost ?? null;
+  if (data.approvedBy !== undefined) updateData.approvedBy = data.approvedBy ?? null;
+  if (data.approvalDate !== undefined) updateData.approvalDate = data.approvalDate ? new Date(data.approvalDate) : null;
+  if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+  if (data.completedDate !== undefined) updateData.completedDate = data.completedDate ? new Date(data.completedDate) : null;
+  if (data.cancellationReason !== undefined) updateData.cancellationReason = data.cancellationReason ?? null;
+  if (data.notes !== undefined) updateData.notes = data.notes;
+
+  const p = await prisma.placement.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return {
+    id: p.id,
+    patientId: p.patientId,
+    facilityId: p.facilityId ?? undefined,
+    socialWorkerId: p.socialWorkerId,
+    status: p.status as any,
+    careLevel: p.careLevel as any,
+    priority: p.priority as any,
+    assessmentNotes: p.assessmentNotes ?? undefined,
+    preferredLocation: p.preferredLocation as any ?? undefined,
+    matchedFacilities: p.matchedFacilities,
+    selectedFacilityId: p.selectedFacilityId ?? undefined,
+    insurancePreAuthorized: p.insurancePreAuthorized,
+    estimatedCost: p.estimatedCost ?? undefined,
+    approvedBy: p.approvedBy ?? undefined,
+    approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
+    startDate: p.startDate ? toISO(p.startDate) : undefined,
+    completedDate: p.completedDate ? toISO(p.completedDate) : undefined,
+    cancellationReason: p.cancellationReason ?? undefined,
+    notes: p.notes,
+    organizationId: p.organizationId,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Delete a placement, scoped to organization.
+ */
+export async function deletePlacement(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<{ success: boolean; error?: string }> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.placement.findFirst({ where });
+  if (!existing) return { success: false, error: "Placement not found" };
+
+  await prisma.placement.delete({ where: { id } });
+  return { success: true };
+}
+
+/**
  * Return dashboard stats scoped to the given organization.
  * Computes fresh stats from scoped data so counts stay accurate.
  */
@@ -309,9 +486,11 @@ export async function getFacilityDashboardStats(
  * Return referrals (mock for now since referrals aren't in Prisma schema yet)
  */
 export async function getReferrals(
-  organizationId: string,
-  role: string,
+  _organizationId: string,
+  _role: string,
 ): Promise<Referral[]> {
+  void _organizationId;
+  void _role;
   // Mock referrals for now
   return [];
 }
@@ -638,7 +817,10 @@ export async function getPatient(
   role: string,
 ): Promise<Patient | null> {
   const where = isSuperadmin(role) ? { id } : { id, organizationId };
-  const p = await prisma.patient.findFirst({ where });
+  const p = await prisma.patient.findFirst({
+    where,
+    include: { documents: { orderBy: { createdAt: "desc" } } },
+  });
   if (!p) return null;
   return {
     id: p.id,
@@ -662,6 +844,19 @@ export async function getPatient(
     admissionDate: toISO(p.admissionDate),
     estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
     status: p.status as any,
+    documents: p.documents?.map((d) => ({
+      id: d.id,
+      patientId: d.patientId,
+      name: d.name,
+      key: d.key,
+      url: d.url,
+      fileSize: d.fileSize ?? undefined,
+      mimeType: d.mimeType ?? undefined,
+      category: d.category,
+      uploadedById: d.uploadedById,
+      createdAt: toISO(d.createdAt),
+      updatedAt: toISO(d.updatedAt),
+    })),
     createdAt: toISO(p.createdAt),
     updatedAt: toISO(p.updatedAt),
   };
@@ -1233,7 +1428,7 @@ export async function approveJoinRequest(
   });
 
   // Update join request
-  const updatedJoinRequest = await prisma.joinRequest.update({
+  await prisma.joinRequest.update({
     where: { id: joinRequestId },
     data: {
       status: "approved",

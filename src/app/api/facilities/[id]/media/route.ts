@@ -20,7 +20,7 @@ export async function GET(
     const { id } = await params;
     const media = await getFacilityMedia(id);
     return NextResponse.json(media);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching facility media:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -62,7 +62,7 @@ export async function POST(
     });
 
     return NextResponse.json(media, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating facility media:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -184,6 +184,7 @@ model User {
   patients               Patient[]
   placements             Placement[]
   activities             ActivityEvent[]
+  uploadedDocuments      PatientDocument[] @relation("DocumentUploader")
   createdInviteCodes     InviteCode[]     @relation("InviteCodeCreator")
   reviewedJoinRequests   JoinRequest[]    @relation("JoinRequestReviewedBy")
   joinRequest            JoinRequest?     @relation("JoinRequestUser")
@@ -218,6 +219,7 @@ model Patient {
   socialWorker          User           @relation(fields: [socialWorkerId], references: [id])
   placements            Placement[]
   activityEvents        ActivityEvent[]
+  documents             PatientDocument[]
 }
 
 model Facility {
@@ -285,7 +287,7 @@ model PatientDocument {
   updatedAt      DateTime   @updatedAt
 
   patient        Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  uploadedBy     User       @relation(fields: [uploadedById], references: [id])
+  uploadedBy     User       @relation("DocumentUploader", fields: [uploadedById], references: [id])
 
   @@index([patientId])
 }

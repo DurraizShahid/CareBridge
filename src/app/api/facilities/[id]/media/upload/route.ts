@@ -71,7 +71,7 @@ export async function POST(
     });
 
     return NextResponse.json({ url, fields, key });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating presigned upload URL:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

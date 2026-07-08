@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
     return NextResponse.json(patient);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching patient:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -57,7 +57,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
     return NextResponse.json(patient);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating patient:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -90,7 +90,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting patient:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

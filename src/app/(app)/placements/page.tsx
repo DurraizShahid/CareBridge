@@ -1,7 +1,9 @@
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { roleHasPermission } from "@/lib/permissions";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   assessment: {
@@ -62,6 +64,8 @@ export default async function PlacementsPage() {
     (a, b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority),
   );
 
+  const canCreate = roleHasPermission(role, "placements:create");
+
   function getPatientName(patientId: string): string {
     const patient = patients.find((p) => p.id === patientId);
     return patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
@@ -84,13 +88,15 @@ export default async function PlacementsPage() {
         title="Placements"
         description="Track and manage active patient placements."
       >
-        <button
-          type="button"
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-        >
-          <Plus className="h-4 w-4" />
-          New Placement
-        </button>
+        {canCreate && (
+          <Link
+            href="/placements/new"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
+          >
+            <Plus className="h-4 w-4" />
+            New Placement
+          </Link>
+        )}
       </PageHeader>
 
       {/* Placement cards */}
@@ -101,9 +107,10 @@ export default async function PlacementsPage() {
             color: "bg-muted text-muted-foreground",
           };
           return (
-            <div
+            <Link
               key={plc.id}
-              className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md"
+              href={`/placements/${plc.id}`}
+              className="block rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-2">
@@ -206,7 +213,7 @@ export default async function PlacementsPage() {
                   {plc.notes}
                 </p>
               )}
-            </div>
+            </Link>
           );
         })}
       </div>

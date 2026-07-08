@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         type: inviteCode.organization.type,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error validating invite code:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

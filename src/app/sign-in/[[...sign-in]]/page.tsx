@@ -64,55 +64,59 @@ export default function SignInPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left — Brand Panel */}
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-[#0F1A2E] via-[#1a2d45] to-primary p-12 lg:flex">
-        <div>
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <Image
-              src="/carebridge.svg"
-              alt="CareBridge"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <span className="font-heading text-xl font-bold text-white">
-              CareBridge
-            </span>
-          </Link>
-        </div>
+      <div className="relative hidden w-1/2 flex-col justify-center bg-cover bg-center p-12 lg:flex" style={{ backgroundImage: "url('/login.jpg')" }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0F1A2E]/90 via-[#1a2d45]/80 to-primary/85" />
 
-        <div className="space-y-6">
-          <blockquote className="space-y-3">
-            <p className="text-lg leading-relaxed text-blue-100/90">
-              &ldquo;CareBridge has transformed how we place patients. What used
-              to take days now takes hours.&rdquo;
-            </p>
-            <footer className="text-sm text-blue-200/60">
-              — Sarah Johnson, Senior Social Worker
-              <br />
-              Metropolitan General Hospital
-            </footer>
-          </blockquote>
-
-          <div className="flex items-center gap-6">
-            {[
-              { stat: "85%", label: "Faster placements" },
-              { stat: "1,200+", label: "Facilities onboarded" },
-              { stat: "92%", label: "Satisfaction rate" },
-            ].map((item) => (
-              <div key={item.label}>
-                <div className="font-heading text-2xl font-bold text-health">
-                  {item.stat}
-                </div>
-                <div className="mt-0.5 text-xs text-blue-200/60">
-                  {item.label}
-                </div>
-              </div>
-            ))}
+        <div className="relative z-10 mx-auto max-w-md space-y-12 text-center">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <Image
+                src="/carebridge.svg"
+                alt="CareBridge"
+                width={40}
+                height={40}
+                className="h-10 w-10"
+              />
+              <span className="font-heading text-xl font-bold text-white">
+                CareBridge
+              </span>
+            </Link>
           </div>
-        </div>
 
-        <div className="text-xs text-blue-200/40">
-          &copy; {new Date().getFullYear()} CareBridge Health, Inc.
+          <div className="space-y-6">
+            <blockquote className="space-y-3">
+              <p className="text-lg leading-relaxed text-blue-100/90">
+                &ldquo;CareBridge has transformed how we place patients. What used
+                to take days now takes hours.&rdquo;
+              </p>
+              <footer className="text-sm text-blue-200/60">
+                — Sarah Johnson, Senior Social Worker
+                <br />
+                Metropolitan General Hospital
+              </footer>
+            </blockquote>
+
+            <div className="flex items-center justify-center gap-6">
+              {[
+                { stat: "85%", label: "Faster placements" },
+                { stat: "1,200+", label: "Facilities onboarded" },
+                { stat: "92%", label: "Satisfaction rate" },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className="font-heading text-2xl font-bold text-health">
+                    {item.stat}
+                  </div>
+                  <div className="mt-0.5 text-xs text-blue-200/60">
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-xs text-blue-200/40">
+            &copy; {new Date().getFullYear()} CareBridge Health, Inc.
+          </div>
         </div>
       </div>
 
@@ -219,7 +223,7 @@ export default function SignInPage() {
                   Continue
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Link href="/sign-up" className="text-health hover:text-health/80">
                     Sign up
                   </Link>

@@ -19,7 +19,7 @@ export async function GET(
     const { id } = await params;
     const docs = await getPatientDocuments(id);
     return NextResponse.json(docs);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching patient documents:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -55,7 +55,7 @@ export async function POST(
     });
 
     return NextResponse.json(doc, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating patient document:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -1,8 +1,7 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerOrganization } from '@/lib/server-organization';
-import { UserRole as UserRoleEnum } from '@/generated/prisma/enums';
 
 export async function GET() {
   try {
@@ -23,7 +22,7 @@ export async function GET() {
     });
 
     return NextResponse.json(joinRequests);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching join requests:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(joinRequest);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating join request:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

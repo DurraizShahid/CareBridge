@@ -15,7 +15,6 @@ type OrganizationType = 'hospital' | 'facility';
 export default function OnboardingPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [hasOrg, setHasOrg] = useState(false);
   const [activeTab, setActiveTab] = useState<'type' | 'action'>('type');
   const [selectedType, setSelectedType] = useState<OrganizationType | null>(null);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -33,7 +32,6 @@ export default function OnboardingPage() {
         const res = await fetch('/api/me');
         const data = await res.json();
         if (data && data.organizationId) {
-          setHasOrg(true);
           router.push('/dashboard');
         }
       } catch (err) {
@@ -69,7 +67,7 @@ export default function OnboardingPage() {
       setMessage({ text: 'Organization created successfully!', type: 'success' });
       // Refresh to get updated user data
       setTimeout(() => window.location.href = '/dashboard', 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage({ text: err.message, type: 'error' });
       setIsLoading(false);
     }
@@ -102,7 +100,7 @@ export default function OnboardingPage() {
       if (!joinRes.ok) throw new Error(joinData.error || 'Failed to submit request');
 
       setMessage({ text: 'Join request submitted! Waiting for approval.', type: 'success' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage({ text: err.message, type: 'error' });
       setIsLoading(false);
     }
@@ -120,7 +118,7 @@ export default function OnboardingPage() {
     <Card className="w-full max-w-lg">
       <CardHeader>
         <CardTitle>Welcome to CareBridge</CardTitle>
-        <CardDescription>Let's get you set up</CardDescription>
+        <CardDescription>Let&apos;s get you set up</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {message && (

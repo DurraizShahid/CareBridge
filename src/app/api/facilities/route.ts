@@ -19,7 +19,7 @@ export async function GET() {
 
     const facilities = await getFacilities(org.organizationId, org.role);
     return NextResponse.json(facilities);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching facilities:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(facility, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating facility:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

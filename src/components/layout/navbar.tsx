@@ -1,6 +1,8 @@
 "use client";
 
 import { AuthControls } from "@/components/auth-controls";
+import Image from "next/image";
+import Link from "next/link";
 
 export function Navbar() {
   return (
@@ -8,7 +10,13 @@ export function Navbar() {
       <nav className="relative mx-4 flex h-16 items-center px-4 sm:mx-6 sm:px-6 lg:mx-8 lg:px-8">
         {/* Logo - Left */}
         <div className="flex items-center gap-2">
-          <img src="/carebridge.svg" alt="CareBridge" className="h-8 w-8" />
+          <Image
+            src="/carebridge.svg"
+            alt="CareBridge"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
           <span className="font-heading text-xl font-bold text-white">
             CareBridge
           </span>
@@ -34,12 +42,12 @@ export function Navbar() {
           >
             Contact Us
           </a>
-          <a
+          <Link
             href="/sign-up"
             className="text-sm font-medium text-white transition-colors hover:text-white/80"
           >
             Register
-          </a>
+          </Link>
         </div>
 
         {/* Auth Controls - Right */}

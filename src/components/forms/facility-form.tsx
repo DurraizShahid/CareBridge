@@ -46,6 +46,13 @@ interface FacilityFormData {
   acceptsMedicaid: boolean;
 }
 
+type TagField =
+  | "licensure"
+  | "accreditations"
+  | "insuranceAccepted"
+  | "careLevelsOffered"
+  | "specialties";
+
 const FACILITY_TYPES: { value: FacilityType; label: string }[] = [
   { value: "skilled-nursing-facility", label: "Skilled Nursing Facility" },
   { value: "rehabilitation-center", label: "Rehabilitation Center" },
@@ -139,18 +146,22 @@ export function FacilityForm({ initialData, facilityId }: Props) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function addTag(field: keyof FacilityFormData, value: string) {
+  function updateTagField(field: TagField, value: FacilityFormData[TagField]) {
+    update(field, value);
+  }
+
+  function addTag(field: TagField, value: string) {
     if (!value.trim()) return;
     const arr = form[field] as string[];
     if (!arr.includes(value.trim())) {
-      update(field as any, [...arr, value.trim()] as any);
+      updateTagField(field, [...arr, value.trim()]);
     }
     setTagInput((prev) => ({ ...prev, [field]: "" }));
   }
 
-  function removeTag(field: keyof FacilityFormData, value: string) {
+  function removeTag(field: TagField, value: string) {
     const arr = form[field] as string[];
-    update(field as any, arr.filter((v) => v !== value) as any);
+    updateTagField(field, arr.filter((v) => v !== value));
   }
 
   async function handleSubmit(e: React.FormEvent) {

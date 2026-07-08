@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getPatients, createPatient } from "@/lib/data-access";
+import { getPlacements, createPlacement } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -16,10 +16,10 @@ export async function GET() {
       return NextResponse.json({ error: "No organization found" }, { status: 400 });
     }
 
-    const patients = await getPatients(org.organizationId, org.role);
-    return NextResponse.json(patients);
+    const placements = await getPlacements(org.organizationId, org.role);
+    return NextResponse.json(placements);
   } catch (error: unknown) {
-    console.error("Error fetching patients:", error);
+    console.error("Error fetching placements:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -36,15 +36,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No organization found" }, { status: 400 });
     }
 
-    if (!roleHasPermission(org.role, "patients:create")) {
+    if (!roleHasPermission(org.role, "placements:create")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await req.json();
-    const patient = await createPatient({ ...body, organizationId: org.organizationId });
-    return NextResponse.json(patient, { status: 201 });
+    const placement = await createPlacement({ ...body, organizationId: org.organizationId });
+    return NextResponse.json(placement, { status: 201 });
   } catch (error: unknown) {
-    console.error("Error creating patient:", error);
+    console.error("Error creating placement:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

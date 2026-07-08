@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerOrganization } from '@/lib/server-organization';
@@ -22,7 +22,7 @@ export async function GET() {
     });
 
     return NextResponse.json(inviteCodes);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching invite codes:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -51,14 +51,14 @@ export async function POST(req: Request) {
         code,
         organizationId: org.organizationId,
         createdById: userId,
-        role: role ? (role.replace(/-/g, '_') as any) : null,
+        role: role ? role.replace(/-/g, '_') : null,
         maxUses: maxUses || null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
     });
 
     return NextResponse.json(inviteCode);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating invite code:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

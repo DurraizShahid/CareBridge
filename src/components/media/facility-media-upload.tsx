@@ -100,7 +100,7 @@ export function FacilityMediaUpload({ facilityId, initialMedia }: Props) {
             u.name === fileName ? { ...u, state: "done" as const } : u,
           ),
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
         setUploads((prev) =>
           prev.map((u) =>
             u.name === fileName

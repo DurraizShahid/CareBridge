@@ -53,7 +53,7 @@ export function RequirePermission({
   fallback = null,
   children,
 }: RequirePermissionProps) {
-  const { can, canAll, canAny } = usePermissions();
+  const { canAll, canAny } = usePermissions();
   const perms = Array.isArray(permission) ? permission : [permission];
 
   const hasAccess = mode === "all" ? canAll(perms) : canAny(perms);

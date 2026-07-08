@@ -3,6 +3,7 @@ import Link from "next/link";
 import { roleHasPermission } from "@/lib/permissions";
 import { getPatient, getPlacements } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { FileText } from "lucide-react";
 import type { Placement } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ export default async function PatientDetailPage({ params }: Props) {
 
   const placements = await getPlacements(org.organizationId, org.role);
   const patientPlacements = placements.filter(
-    (p: any) => p.patientId === id || p.selectedPatientId === id,
+    (p: { patientId: string; selectedPatientId?: string }) => p.patientId === id || p.selectedPatientId === id,
   );
 
   const canEdit = roleHasPermission(org.role, "patients:update");
@@ -212,6 +213,48 @@ export default async function PatientDetailPage({ params }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {patient.documents && patient.documents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+              Documents ({patient.documents.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {patient.documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center gap-3 rounded-lg border p-3"
+                >
+                  <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium underline-offset-4 hover:underline"
+                    >
+                      {doc.name}
+                    </a>
+                    {doc.fileSize && (
+                      <p className="text-xs text-muted-foreground">
+                        {doc.fileSize < 1024
+                          ? `${doc.fileSize} B`
+                          : doc.fileSize < 1024 * 1024
+                            ? `${(doc.fileSize / 1024).toFixed(1)} KB`
+                            : `${(doc.fileSize / (1024 * 1024)).toFixed(1)} MB`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {patientPlacements.length > 0 && (
         <Card>

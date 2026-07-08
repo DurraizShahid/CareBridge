@@ -52,7 +52,7 @@ export function InviteCodesTab({ inviteCodes, canManage }: { inviteCodes: Invite
       setIsCreateOpen(false);
       // Refresh the page to show new code
       window.location.reload();
-    } catch (err) {
+    } catch {
       toast.error('Failed to create invite code');
     } finally {
       setIsCreating(false);

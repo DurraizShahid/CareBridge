@@ -37,7 +37,7 @@ export async function DELETE(
     await deleteFacilityMedia(mediaId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting facility media:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

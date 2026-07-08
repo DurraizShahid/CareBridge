@@ -28,7 +28,7 @@ export default async function EditPatientPage({ params }: Props) {
           Update details for {patient.firstName} {patient.lastName}.
         </p>
       </div>
-      <PatientForm initialData={patient} patientId={id} />
+      <PatientForm initialData={patient} patientId={id} initialDocuments={patient.documents} />
     </div>
   );
 }
