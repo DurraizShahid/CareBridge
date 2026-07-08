@@ -58,7 +58,7 @@ export default function Page() {
           <Navbar />
 
           {/* Content - Left aligned with logo */}
-          <div className="absolute inset-0 z-10 flex items-center">
+          <div className="absolute inset-0 z-20 flex items-center">
             <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
               <div className="ml-[70px] max-w-2xl">
                 <h1 className="font-heading text-4xl font-bold tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl xl:text-7xl">
@@ -295,6 +295,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
 
         {/* About Section - Okta style: stats + story */}
         <section id="about" className="relative overflow-hidden py-24 sm:py-32">
