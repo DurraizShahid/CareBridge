@@ -101,10 +101,11 @@ export function FacilityMediaUpload({ facilityId, initialMedia }: Props) {
           ),
         );
       } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Upload failed';
         setUploads((prev) =>
           prev.map((u) =>
             u.name === fileName
-              ? { ...u, state: "error" as const, error: err.message }
+              ? { ...u, state: "error" as const, error: errorMessage }
               : u,
           ),
         );

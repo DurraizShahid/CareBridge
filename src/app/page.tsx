@@ -1,11 +1,11 @@
 import {
   Heart,
   HomeIcon,
+  MapPin,
+  Search,
   Users,
   Shield,
   ArrowRight,
-  Search,
-  MapPin,
   Stethoscope,
 } from "lucide-react";
 import Image from "next/image";
@@ -44,7 +44,7 @@ export default function Page() {
     <div className="flex flex-col flex-1">
       <main className="flex-1">
         {/* Hero Section - Inspired by consulting partner layout */}
-        <section className="relative mx-1 mt-1 min-h-screen overflow-hidden rounded-3xl bg-[#0F1A2E] sm:mx-2 sm:mt-1.5 lg:mx-3 lg:mt-2">
+        <section className="relative mx-1 mt-1 flex min-h-screen flex-col overflow-hidden rounded-3xl bg-[#0F1A2E] sm:mx-2 sm:mt-1.5 lg:mx-3 lg:mt-2">
           {/* Background image */}
           <div className="absolute inset-0">
             <Image
@@ -78,15 +78,14 @@ export default function Page() {
           <Navbar />
 
           {/* Content */}
-          <div className="relative px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pt-14">
+          <div className="relative flex flex-1 items-center px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pt-14">
             <div className="mx-4 max-w-2xl sm:mx-6 lg:mx-8">
               {/* Headline */}
               <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Your Trusted{" "}
+                Connecting Patients to{" "}
                 <span className="bg-gradient-to-r from-health to-teal-300 bg-clip-text text-transparent">
-                  Healthcare
-                </span>{" "}
-                Partner
+                  the Right Care
+                </span>
               </h1>
             </div>
           </div>

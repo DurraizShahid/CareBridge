@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { Bell, Search, Settings, Sun, Moon } from "lucide-react";
+import { Bell, Search, Sun, Moon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -35,7 +35,7 @@ export function DashboardHeader() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background px-6">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-2" />
         <Breadcrumb>
@@ -56,38 +56,21 @@ export function DashboardHeader() {
         </Breadcrumb>
       </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <Button
           variant="ghost"
           size="icon-lg"
           onClick={toggleTheme}
           aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === "dark" ? <Sun data-icon /> : <Moon data-icon />}
         </Button>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="Search"
-        >
-          <Search className="h-4 w-4" />
+        <Button variant="ghost" size="icon-lg" aria-label="Search">
+          <Search data-icon />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="Notifications"
-          className="relative"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2 top-2.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          aria-label="Settings"
-        >
-          <Settings className="h-4 w-4" />
+        <Button variant="ghost" size="icon-lg" aria-label="Notifications" className="relative">
+          <Bell data-icon />
+          <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
         </Button>
       </div>
     </header>

@@ -39,14 +39,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-health" />
+          <p className="text-sm text-muted-foreground">Loading your workspace...</p>
+        </div>
       </div>
     );
   }
 
   if (!hasOrg) {
-    return null; // Router will handle redirect
+    return null;
   }
 
   return (
@@ -56,10 +59,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <TooltipProvider delay={0}>
             <SidebarProvider defaultOpen={true}>
               <AppSidebar />
-              <main className="flex flex-1 flex-col bg-muted/30 dark:bg-background">
+              <main className="flex flex-1 flex-col bg-surface dark:bg-background">
                 <DashboardHeader />
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="mx-auto w-full max-w-7xl pl-4 pr-6 py-8">
+                  <div className="mx-auto w-full max-w-7xl px-6 py-8">
                     {children}
                   </div>
                 </ScrollArea>

@@ -33,8 +33,6 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-// ── Navigation items with required permissions ──
-
 interface NavItem {
   href: string;
   label: string;
@@ -84,8 +82,6 @@ const adminNavItems: NavItem[] = [
   { href: "/admin/permissions", label: "Permissions", icon: ShieldCheck, requiredPermission: "users:manage-roles" },
 ];
 
-// ── Role badge config ──
-
 type UserRole =
   | "superadmin"
   | "administrator"
@@ -97,27 +93,27 @@ type UserRole =
 const roleBadgeConfig: Record<UserRole, { label: string; className: string }> = {
   superadmin: {
     label: "Super Admin",
-    className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    className: "bg-destructive/10 text-destructive",
   },
   administrator: {
     label: "Admin",
-    className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    className: "bg-warmth/10 text-warmth",
   },
   "social-worker": {
     label: "Social Worker",
-    className: "bg-health/10 text-health dark:bg-health/20 dark:text-health",
+    className: "bg-health/10 text-health",
   },
   "discharge-planner": {
     label: "Discharge Planner",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    className: "bg-health/10 text-health",
   },
   "facility-coordinator": {
     label: "Facility Coordinator",
-    className: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+    className: "bg-warmth/10 text-warmth",
   },
   customer: {
     label: "Customer",
-    className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+    className: "bg-muted text-muted-foreground",
   },
 };
 
@@ -126,12 +122,10 @@ function formatRole(role: string): { label: string; className: string } {
   return (
     roleBadgeConfig[key] ?? {
       label: role.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-      className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+      className: "bg-muted text-muted-foreground",
     }
   );
 }
-
-// ── Nav section sub-component ──
 
 function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
   const pathname = usePathname();
@@ -185,8 +179,6 @@ function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
   );
 }
 
-// ── AppSidebar ──
-
 export function AppSidebar() {
   const { user } = useUser();
   const { role: permissionsRole } = usePermissions();
@@ -205,7 +197,9 @@ export function AppSidebar() {
               className="h-8 w-8"
             />
           </div>
-
+          <span className="truncate text-sm font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+            CareBridge
+          </span>
         </div>
       </SidebarHeader>
 

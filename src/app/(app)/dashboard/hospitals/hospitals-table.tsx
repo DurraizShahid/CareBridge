@@ -120,7 +120,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
           Add your first hospital to get started.
         </p>
         <Button className="mt-4" onClick={onAdd}>
-          <Plus className="h-4 w-4" />
+          <Plus data-icon="inline-start" />
           Add Hospital
         </Button>
       </CardContent>
@@ -287,7 +287,7 @@ export function HospitalsTable({
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => openEditDialog(info.row.original)}>
-                  <Pencil className="h-4 w-4" />
+                  <Pencil data-icon="inline-start" />
                   Edit hospital
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -295,7 +295,7 @@ export function HospitalsTable({
                   variant="destructive"
                   onClick={() => openDeleteDialog(info.row.original)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 data-icon="inline-start" />
                   Delete hospital
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -354,7 +354,7 @@ export function HospitalsTable({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Hospitals"
         description="Manage hospital records for your organization."
@@ -375,7 +375,7 @@ export function HospitalsTable({
           />
         </div>
         <Button onClick={openCreateDialog}>
-          <Plus className="h-4 w-4" />
+          <Plus data-icon="inline-start" />
           Add Hospital
         </Button>
       </div>
@@ -399,25 +399,23 @@ export function HospitalsTable({
         <EmptyState onAdd={openCreateDialog} />
       ) : (
         <>
-          <Card className="py-0">
+          <Card className="overflow-hidden py-0 shadow-sm">
             <ScrollArea className="w-full">
               <Table className="min-w-[700px]">
-                <TableHeader className="bg-muted/50">
+                <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
                         <TableHead
                           key={header.id}
-                          className={
-                            "px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                          }
+                          className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                         >
                         {header.isPlaceholder ? null : header.column.getCanSort() ? (
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-auto p-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
+                            className="h-auto gap-1 p-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {flexRender(
@@ -567,7 +565,7 @@ export function HospitalsTable({
           )}
 
           <ScrollArea className="flex-1 min-h-0 -mx-4 px-4">
-            <form id="hospital-form" onSubmit={handleSubmit} className="space-y-4">
+            <form id="hospital-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
               {editingHospital && (
                 <Input type="hidden" name="id" value={formValues.id ?? ""} />
               )}
@@ -671,7 +669,7 @@ export function HospitalsTable({
 
                 <Separator className="my-2" />
 
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   <p className="text-sm font-medium">Branding</p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <ImageUploadButton
@@ -801,7 +799,7 @@ function ImageUploadButton({
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="flex flex-col gap-1.5">
       <p className="text-xs text-muted-foreground">{label}</p>
       {preview ? (
         <div className="relative flex items-center gap-2 rounded-lg border p-2">

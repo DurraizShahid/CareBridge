@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 const STORAGE_KEY = "dashboard-theme";
@@ -24,16 +24,11 @@ function readStoredTheme(): Theme {
     // Browser storage can be unavailable in restricted contexts.
   }
 
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-}
-
-function syncDocumentTheme(theme: Theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
+  return "light";
 }
 
 function subscribeToTheme(callback: () => void) {
   const notify = () => {
-    syncDocumentTheme(readStoredTheme());
     callback();
   };
 
@@ -57,12 +52,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     getServerThemeSnapshot,
   );
 
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
+
   const setTheme = useCallback((nextTheme: Theme) => {
-    syncDocumentTheme(nextTheme);
     try {
       localStorage.setItem(STORAGE_KEY, nextTheme);
     } catch {
-      // The document class still reflects the selected theme for this session.
+      // Storage unavailable; session-only fallback handled by document class.
     }
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }, []);
@@ -78,7 +76,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={value}>
-      {children}
+      <div id="dashboard-root" className={theme === "dark" ? "dark" : ""}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }

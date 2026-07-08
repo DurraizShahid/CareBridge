@@ -98,16 +98,11 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
-  "social-worker":
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "discharge-planner":
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  administrator:
-    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
-  "facility-coordinator":
-    "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-  superadmin:
-    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  "social-worker": "bg-health/10 text-health",
+  "discharge-planner": "bg-health/10 text-health",
+  administrator: "bg-primary/10 text-primary",
+  "facility-coordinator": "bg-warmth/10 text-warmth",
+  superadmin: "bg-destructive/10 text-destructive",
   customer: "bg-muted text-muted-foreground",
 };
 
@@ -173,7 +168,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
           New accounts will appear here after they are created in Clerk.
         </p>
         <Button className="mt-4" onClick={onAdd}>
-          <Plus className="h-4 w-4" />
+          <Plus data-icon="inline-start" />
           Add User
         </Button>
       </CardContent>
@@ -303,9 +298,9 @@ export function UsersTable({
         cell: (info) => {
           const role = info.getValue();
           return (
-            <Badge className={cn(ROLE_COLORS[role])}>
+            <span className={cn("inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold", ROLE_COLORS[role])}>
               {ROLE_LABELS[role]}
-            </Badge>
+            </span>
           );
         },
         filterFn: "equalsString",
@@ -351,12 +346,16 @@ export function UsersTable({
         cell: (info) => {
           const status = info.getValue();
           return (
-            <Badge
-              variant={status === "active" ? "outline" : "destructive"}
-              className="capitalize"
+            <span
+              className={cn(
+                "inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize",
+                status === "active"
+                  ? "bg-health/10 text-health"
+                  : "bg-destructive/10 text-destructive",
+              )}
             >
               {status}
-            </Badge>
+            </span>
           );
         },
         enableColumnFilter: false,
@@ -366,11 +365,12 @@ export function UsersTable({
         cell: (info) => {
           const status = info.getValue();
           return (
-            <Badge
-              variant="outline"
+            <span
               className={cn(
-                "gap-1",
-                status === "missing" && "border-cyan-300 text-cyan-700 dark:border-cyan-700 dark:text-cyan-300",
+                "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold",
+                status === "linked"
+                  ? "bg-health/10 text-health"
+                  : "bg-warmth/10 text-warmth",
               )}
             >
               {status === "linked" ? (
@@ -379,7 +379,7 @@ export function UsersTable({
                 <Database className="h-3 w-3" />
               )}
               {status === "linked" ? "DB linked" : "DB missing"}
-            </Badge>
+            </span>
           );
         },
         enableColumnFilter: false,
@@ -432,7 +432,7 @@ export function UsersTable({
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         </DropdownMenuGroup>
                         <DropdownMenuItem onClick={() => openEditDialog(user)}>
-                          <Pencil className="h-4 w-4" />
+                          <Pencil data-icon="inline-start" />
                           Edit user
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -440,7 +440,7 @@ export function UsersTable({
                             runRowAction(() => syncUserProfileAction(user.id))
                           }
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw data-icon="inline-start" />
                           Sync profile
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -456,9 +456,9 @@ export function UsersTable({
                           }
                         >
                           {isDisabled ? (
-                            <UserCheck className="h-4 w-4" />
+                            <UserCheck data-icon="inline-start" />
                           ) : (
-                            <UserX className="h-4 w-4" />
+                            <UserX data-icon="inline-start" />
                           )}
                           {isDisabled ? "Enable sign-in" : "Disable sign-in"}
                         </DropdownMenuItem>
@@ -476,7 +476,6 @@ export function UsersTable({
     [openEditDialog, canManage],
   );
 
-  // The dashboard is required to use TanStack Table for user grids.
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: users,
@@ -529,14 +528,14 @@ export function UsersTable({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Users"
-        description="Manage Clerk identities with their Railway database profiles."
+        description="Manage Clerk identities with their database profiles."
       >
         <Badge variant="outline" className="gap-2 text-muted-foreground">
-          <Shield className="h-3.5 w-3.5 text-health" />
-          Clerk + Railway
+          <Shield data-icon="inline-start" className="text-health" />
+          Clerk + Database
         </Badge>
       </PageHeader>
 
@@ -576,7 +575,7 @@ export function UsersTable({
           </SelectContent>
         </Select>
         <Button onClick={openCreateDialog}>
-          <Plus className="h-4 w-4" />
+          <Plus data-icon="inline-start" />
           Add User
         </Button>
       </div>
@@ -597,10 +596,10 @@ export function UsersTable({
         <EmptyState onAdd={openCreateDialog} />
       ) : (
         <>
-          <Card className="py-0">
+          <Card className="overflow-hidden py-0 shadow-sm">
             <ScrollArea className="w-full">
               <Table className="min-w-[1180px]">
-                <TableHeader className="bg-muted/50">
+                <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
@@ -616,7 +615,7 @@ export function UsersTable({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-auto p-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
+                            className="h-auto gap-1 p-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {flexRender(
@@ -758,8 +757,8 @@ export function UsersTable({
             <DialogTitle>{editingUser ? "Edit User" : "Add User"}</DialogTitle>
             <DialogDescription>
               {editingUser
-                ? "Update the Clerk identity and its linked Railway profile."
-                : "Create a Clerk user and the matching Railway profile row."}
+                ? "Update the Clerk identity and its linked database profile."
+                : "Create a Clerk user and the matching database profile row."}
             </DialogDescription>
           </DialogHeader>
 
@@ -770,7 +769,7 @@ export function UsersTable({
           )}
 
           <ScrollArea className="flex-1 min-h-0 -mx-4 px-4">
-            <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
+            <form id="user-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
               {editingUser && (
                 <Input type="hidden" name="id" value={formValues.id ?? ""} />
               )}

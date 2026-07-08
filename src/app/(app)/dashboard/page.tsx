@@ -8,8 +8,6 @@ import {
 } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   getDashboardStats,
   getRecentActivity,
@@ -33,40 +31,32 @@ function formatRelativeTime(isoString: string): string {
   return new Date(isoString).toLocaleDateString();
 }
 
-function statusBadgeClass(status: string): string {
-  switch (status) {
-    case "assessment":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
-    case "searching":
-      return "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300";
-    case "pending-approval":
-      return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
-    case "approved":
-    case "completed":
-      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-function statusLabel(status: string): string {
-  switch (status) {
-    case "assessment":
-      return "Assessment";
-    case "searching":
-      return "Searching";
-    case "pending-approval":
-      return "Pending Approval";
-    case "approved":
-      return "Approved";
-    case "in-progress":
-      return "In Progress";
-    case "completed":
-      return "Completed";
-    default:
-      return status;
-  }
-}
+const statusConfig: Record<string, { label: string; className: string }> = {
+  assessment: {
+    label: "Assessment",
+    className: "bg-health/10 text-health",
+  },
+  searching: {
+    label: "Searching",
+    className: "bg-primary/10 text-primary",
+  },
+  "pending-approval": {
+    label: "Pending Approval",
+    className: "bg-warmth/10 text-warmth",
+  },
+  approved: {
+    label: "Approved",
+    className: "bg-health/10 text-health",
+  },
+  "in-progress": {
+    label: "In Progress",
+    className: "bg-primary/10 text-primary",
+  },
+  completed: {
+    label: "Completed",
+    className: "bg-muted text-muted-foreground",
+  },
+};
 
 const activityIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   placement: ClipboardList,
@@ -91,13 +81,12 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       <PageHeader
         title="Dashboard"
         description="Welcome back. Here's your organization's overview."
       />
 
-      {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Active Patients"
@@ -138,90 +127,81 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Two-column layout: Active Placements + Recent Activity */}
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Active Placements */}
-        <section>
-          <h2 className="mb-4 font-heading text-lg font-bold text-foreground">
+        <section className="flex flex-col gap-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
             Active Placements
           </h2>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {scopedPlacements.map((plc) => {
               const patient = scopedPatients.find((p) => p.id === plc.patientId);
               const facility = plc.selectedFacilityId
                 ? scopedFacilities.find((f) => f.id === plc.selectedFacilityId)
                 : null;
+              const status = statusConfig[plc.status] ?? statusConfig.completed;
               return (
-                <Card
+                <div
                   key={plc.id}
-                  className="transition-all hover:shadow-md"
+                  className="group rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <CardContent className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-medium text-card-foreground">
+                        <span className="truncate text-sm font-semibold text-card-foreground">
                           {patient?.firstName} {patient?.lastName}
                         </span>
-                        <Badge className={statusBadgeClass(plc.status)}>
-                          {statusLabel(plc.status)}
-                        </Badge>
+                        <span
+                          className={[
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                            status.className,
+                          ].join(" ")}
+                        >
+                          {status.label}
+                        </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {plc.careLevel.replace("-", " ")} &middot;{" "}
                         {facility ? facility.name : "Matching in progress"}
                       </p>
                     </div>
-                    <Badge
-                      className={
-                        plc.priority === "high" || plc.priority === "emergency"
-                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                          : "bg-muted text-muted-foreground"
-                      }
-                    >
+                    <span className="shrink-0 rounded-md bg-warmth/10 px-2 py-0.5 text-[11px] font-semibold capitalize text-warmth">
                       {plc.priority}
-                    </Badge>
-                  </CardContent>
-                </Card>
+                    </span>
+                  </div>
+                </div>
               );
             })}
           </div>
         </section>
 
-        {/* Recent Activity */}
-        <section>
-          <h2 className="mb-4 font-heading text-lg font-bold text-foreground">
+        <section className="flex flex-col gap-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
             Recent Activity
           </h2>
-          <div className="space-y-1">
+          <div className="relative flex flex-col">
+            <div className="absolute left-[15px] top-2 h-[calc(100%-16px)] w-px bg-border" />
             {scopedActivity.map((event) => {
               const Icon = activityIcons[event.type] ?? ClipboardList;
               return (
-                <Card
-                  key={event.id}
-                  size="sm"
-                  className="border-transparent bg-transparent shadow-none transition-colors hover:bg-muted/50"
-                >
-                  <CardContent className="flex items-start gap-4">
-                    <Badge
-                      variant="secondary"
-                      className="h-8 w-8 rounded-full bg-health/10 p-0 text-health"
-                    >
-                      <Icon className="h-4 w-4" />
-                    </Badge>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        {event.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {event.description}
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground/60">
-                        {event.patientName} &middot;{" "}
-                        {formatRelativeTime(event.timestamp)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div key={event.id} className="group relative flex items-start gap-4 pb-5 last:pb-0">
+                  <span className="relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-health/10 text-health ring-4 ring-background transition-colors group-hover:bg-health/20">
+                    <Icon className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <p className="text-sm font-medium text-foreground">
+                      {event.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {event.description}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground/60">
+                      {event.patientName} &middot;{" "}
+                      {formatRelativeTime(event.timestamp)}
+                    </p>
+                  </div>
+                </div>
               );
             })}
           </div>

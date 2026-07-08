@@ -68,7 +68,7 @@ export default function OnboardingPage() {
       // Refresh to get updated user data
       setTimeout(() => window.location.href = '/dashboard', 1000);
     } catch (err: unknown) {
-      setMessage({ text: err.message, type: 'error' });
+      setMessage({ text: err instanceof Error ? err.message : 'Something went wrong', type: 'error' });
       setIsLoading(false);
     }
   };
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
 
       setMessage({ text: 'Join request submitted! Waiting for approval.', type: 'success' });
     } catch (err: unknown) {
-      setMessage({ text: err.message, type: 'error' });
+      setMessage({ text: err instanceof Error ? err.message : 'Something went wrong', type: 'error' });
       setIsLoading(false);
     }
   };

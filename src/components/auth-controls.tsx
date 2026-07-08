@@ -2,25 +2,29 @@
 
 import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function AuthControls() {
   return (
     <>
       <Show when="signed-out">
-        <SignInButton mode="modal">
-          <button
-            type="button"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        <div className="flex items-center gap-4">
+          <SignInButton mode="modal">
+            <button
+              type="button"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sign In
+            </button>
+          </SignInButton>
+          <Button
+            variant="default"
+            size="lg"
+            render={<Link href="/sign-up" />}
           >
-            Sign In
-          </button>
-        </SignInButton>
-        <Link
-          href="/sign-up"
-          className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-        >
-          Get Started
-        </Link>
+            Get Started
+          </Button>
+        </div>
       </Show>
       <Show when="signed-in">
         <UserButton

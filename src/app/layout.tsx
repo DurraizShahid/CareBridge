@@ -1,18 +1,13 @@
 import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Montserrat, Open_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
-const montserrat = Montserrat({
+const inter = Inter({
   variable: "--font-heading",
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-});
-
-const openSans = Open_Sans({
-  variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -34,9 +29,12 @@ export const metadata: Metadata = {
 const themeScript = `
 (function() {
   try {
-    var theme = localStorage.getItem("dashboard-theme");
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  } catch (error) {}
+    var p = window.location.pathname;
+    if (p.startsWith("/dashboard") || p.startsWith("/patients") || p.startsWith("/facilities") || p.startsWith("/placements") || p.startsWith("/admin")) {
+      var t = localStorage.getItem("dashboard-theme");
+      document.documentElement.classList.toggle("dark", t === "dark");
+    }
+  } catch (e) {}
 })();
 `;
 
@@ -48,12 +46,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${openSans.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
+      <head />
+      <Script
+        id="theme-init"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: themeScript }}
+      />
       <body className="min-h-full flex flex-col font-heading">
         <ClerkProvider
           signInUrl="/sign-in"
