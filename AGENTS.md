@@ -3,3 +3,27 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+<!-- BEGIN:ui-table-rules -->
+# Use TanStack Table for all new data tables
+
+`@tanstack/react-table` (v8, already a dependency) **must** be used for any new page or component that renders a data table. Do not build new tables with plain HTML `<table>` elements — use the TanStack React Table library for sorting, filtering, pagination, column visibility, and row selection instead.
+<!-- END:ui-table-rules -->
+
+<!-- BEGIN:ui-dashboard-rules -->
+# Dashboard must use shadcn components exclusively
+
+All dashboard pages under `src/app/(app)/dashboard/` **must** use shadcn UI components (`@/components/ui/`) for all UI elements. Do not use plain HTML elements, custom-wrapped components, or inline Tailwind class patterns where a shadcn component exists.
+
+Available shadcn components include:
+- `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter` — instead of custom `<div>` cards
+- `Badge` — instead of inline `bg-* text-*` badge spans
+- `Button` — already available in `@/components/ui/button`
+- `Input` — already available in `@/components/ui/input`
+- `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` — instead of raw `<select>` elements
+- `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter` — instead of custom modal implementations
+- `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell` — as the wrapper around TanStack Table
+- `Separator`, `Skeleton`, `Sheet`, `Tooltip`, `Sidebar` — already available
+
+When adding new shadcn components, use the project's shadcn CLI (`npx shadcn add <component>`) to install from the registry, ensuring consistency with the existing `base-nova` style and `@base-ui/react` primitives.
+<!-- END:ui-dashboard-rules -->

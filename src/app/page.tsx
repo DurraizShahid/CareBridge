@@ -45,15 +45,16 @@ export default function Page() {
     <div className="flex flex-col flex-1">
       <main className="flex-1">
         {/* Hero Section - Inspired by consulting partner layout */}
-        <section className="relative mx-4 mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F1A2E] via-[#1a2d45] to-primary sm:mx-6 sm:mt-6 lg:mx-8 lg:mt-8">
-          {/* Background image overlay */}
+        <section className="relative mx-1 mt-1 min-h-screen overflow-hidden rounded-3xl bg-[#0F1A2E] sm:mx-2 sm:mt-1.5 lg:mx-3 lg:mt-2">
+          {/* Background image */}
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80&auto=format"
+              src="/bg.jpg"
               alt=""
-              className="h-full w-full object-cover opacity-20"
+              className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0F1A2E]/95 via-[#0F1A2E]/80 to-transparent" />
+            <div className="absolute inset-0 bg-black/50" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,black_100%)] opacity-60" />
           </div>
 
           {/* Subtle grid pattern */}
@@ -77,7 +78,7 @@ export default function Page() {
 
           {/* Content */}
           <div className="relative px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pt-14">
-            <div className="max-w-2xl">
+            <div className="mx-4 max-w-2xl sm:mx-6 lg:mx-8">
               {/* Headline */}
               <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Your Trusted{" "}
@@ -88,31 +89,29 @@ export default function Page() {
               </h1>
             </div>
           </div>
-        </section>
 
-        {/* Facility Search Bar */}
-        <section className="relative z-10 -mt-8 mx-auto max-w-4xl px-6 pb-12 sm:-mt-10 lg:px-8">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-1 shadow-xl backdrop-blur-md">
-            <div className="rounded-xl border border-white/5 bg-white/[0.05] p-5 sm:p-6">
+          {/* Facility Search Bar */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
+            <div className="mx-4 rounded-2xl border border-white/10 bg-white/[0.08] p-5 shadow-xl backdrop-blur-md sm:mx-6 sm:p-6 lg:mx-8">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
                 {/* Location input */}
-                <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
-                  <MapPin className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <div className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
+                  <MapPin className="h-5 w-5 shrink-0 text-white/60" />
                   <input
                     type="text"
                     placeholder="City, state, or ZIP code"
-                    className="w-full bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
+                    className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none"
                   />
                 </div>
 
                 {/* Care level select */}
-                <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
-                  <Stethoscope className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <div className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
+                  <Stethoscope className="h-5 w-5 shrink-0 text-white/60" />
                   <select
                     defaultValue=""
-                    className="w-full appearance-none bg-transparent text-sm text-foreground outline-none"
+                    className="w-full appearance-none bg-transparent text-sm text-white outline-none"
                   >
-                    <option value="" disabled className="text-muted-foreground">
+                    <option value="" disabled className="text-white/40">
                       Care level needed
                     </option>
                     <option value="skilled-nursing">Skilled Nursing</option>

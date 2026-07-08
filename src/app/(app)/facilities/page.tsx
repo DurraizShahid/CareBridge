@@ -1,18 +1,29 @@
 import { Search, MapPin, Phone, Star, Building2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { facilities } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { getFacilities } from "@/lib/data-access";
+import { getServerOrganization } from "@/lib/server-organization";
 
 const facilityTypeLabels: Record<string, string> = {
   "skilled-nursing-facility": "Skilled Nursing Facility",
+  "skilled_nursing_facility": "Skilled Nursing Facility",
   "rehabilitation-center": "Rehabilitation Center",
+  "rehabilitation_center": "Rehabilitation Center",
   "assisted-living": "Assisted Living",
+  "assisted_living": "Assisted Living",
   "long-term-care": "Long-Term Care",
+  "long_term_care": "Long-Term Care",
   "home-health-agency": "Home Health Agency",
+  "home_health_agency": "Home Health Agency",
   hospice: "Hospice",
 };
 
-export default function FacilitiesPage() {
+export default async function FacilitiesPage() {
+  const org = await getServerOrganization();
+  const organizationId = org?.organizationId ?? "org-001";
+  const role = org?.role ?? "customer";
+  const facilities = await getFacilities(organizationId, role);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -86,7 +97,7 @@ export default function FacilitiesPage() {
                 <span>{facility.phone}</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Star className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                <Star className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <span>
                   {facility.rating} ({facility.reviewsCount} reviews)
                 </span>
@@ -97,7 +108,7 @@ export default function FacilitiesPage() {
                     key={level}
                     className="inline-flex rounded-full bg-health/10 px-2 py-0.5 text-xs text-health"
                   >
-                    {level.replace(/-/g, " ")}
+                    {level.replace("-", " ").replace("_", " ")}
                   </span>
                 ))}
                 {facility.careLevelsOffered.length > 3 && (

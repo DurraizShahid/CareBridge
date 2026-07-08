@@ -31,6 +31,15 @@ export const metadata: Metadata = {
   ],
 };
 
+const themeScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem("dashboard-theme");
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  } catch (error) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,7 +49,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${montserrat.variable} ${openSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col font-heading">
         <ClerkProvider>
           {children}

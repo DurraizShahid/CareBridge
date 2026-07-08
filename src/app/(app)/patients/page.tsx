@@ -1,12 +1,17 @@
 import { Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { patients } from "@/lib/data";
+import { getPatients } from "@/lib/data-access";
+import { getServerOrganization } from "@/lib/server-organization";
 
 const statusStyles: Record<string, string> = {
   admitted: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   "assessment-in-progress":
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+  "assessment_in_progress":
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
   "ready-for-discharge":
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  "ready_for_discharge":
     "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   placed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   discharged: "bg-muted text-muted-foreground",
@@ -15,12 +20,19 @@ const statusStyles: Record<string, string> = {
 const statusLabels: Record<string, string> = {
   admitted: "Admitted",
   "assessment-in-progress": "Assessment",
+  "assessment_in_progress": "Assessment",
   "ready-for-discharge": "Ready for Discharge",
+  "ready_for_discharge": "Ready for Discharge",
   placed: "Placed",
   discharged: "Discharged",
 };
 
-export default function PatientsPage() {
+export default async function PatientsPage() {
+  const org = await getServerOrganization();
+  const organizationId = org?.organizationId ?? "org-001";
+  const role = org?.role ?? "customer";
+  const patients = await getPatients(organizationId, role);
+
   return (
     <div className="space-y-6">
       <PageHeader title="Patients" description="Manage and view all patients under your care.">
@@ -96,7 +108,7 @@ export default function PatientsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-sm capitalize text-muted-foreground">
-                    {patient.careLevelRequired.replace(/-/g, " ")}
+                    {patient.careLevelRequired.replace("-", " ").replace("_", " ")}
                   </span>
                 </td>
                 <td className="px-4 py-3">

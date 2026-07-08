@@ -1,5 +1,6 @@
 import type {
   User,
+  Organization,
   Patient,
   Facility,
   Placement,
@@ -9,6 +10,26 @@ import type {
   Referral,
   ActivityEvent,
 } from "@/types";
+
+// ── Organizations ──
+
+export const organizations: Organization[] = [
+  {
+    id: "org-001",
+    name: "Mercy Hospital Portland",
+    slug: "mercy-hospital-portland",
+  },
+  {
+    id: "org-002",
+    name: "Providence Health System",
+    slug: "providence-health",
+  },
+  {
+    id: "org-003",
+    name: "OHSU Health",
+    slug: "ohsu-health",
+  },
+];
 
 // ── Current User ──
 
@@ -21,6 +42,7 @@ export const currentUser: User = {
   title: "Senior Social Worker",
   department: "Discharge Planning",
   hospitalId: "hosp-001",
+  organizationId: "org-001",
   phone: "(555) 234-5678",
   createdAt: "2024-09-01T08:00:00Z",
   updatedAt: "2026-07-01T12:00:00Z",
@@ -65,6 +87,7 @@ export const patients: Patient[] = [
     notes: "Patient lives alone. Two-story home with stairs. Requires 6-8 weeks of rehab post-hip replacement.",
     socialWorkerId: "usr-001",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     admissionDate: "2026-06-28T14:30:00Z",
     estimatedDischargeDate: "2026-07-10T00:00:00Z",
     status: "ready-for-discharge",
@@ -112,6 +135,7 @@ export const patients: Patient[] = [
     notes: "Right-sided weakness. Needs intensive PT/OT. Unable to return home without 24/7 support.",
     socialWorkerId: "usr-001",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     admissionDate: "2026-07-01T11:00:00Z",
     estimatedDischargeDate: "2026-07-15T00:00:00Z",
     status: "assessment-in-progress",
@@ -154,6 +178,7 @@ export const patients: Patient[] = [
     notes: "Lives with spouse who works during day. Needs home health for oxygen management and daily monitoring. Home is accessible - single level.",
     socialWorkerId: "usr-001",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     admissionDate: "2026-07-03T09:00:00Z",
     estimatedDischargeDate: "2026-07-12T00:00:00Z",
     status: "assessment-in-progress",
@@ -195,6 +220,7 @@ export const patients: Patient[] = [
     notes: "Wandering risk. Requires 24/7 supervised care. Family unable to provide necessary level of support at home.",
     socialWorkerId: "usr-001",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     admissionDate: "2026-07-05T16:00:00Z",
     status: "admitted",
     createdAt: "2026-07-05T16:00:00Z",
@@ -235,6 +261,7 @@ export const patients: Patient[] = [
     notes: "Full-time wheelchair user. Home needs modification. Requires intensive inpatient rehab before discharge planning.",
     socialWorkerId: "usr-001",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     admissionDate: "2026-07-01T08:30:00Z",
     estimatedDischargeDate: "2026-08-01T00:00:00Z",
     status: "admitted",
@@ -281,6 +308,7 @@ export const facilities: Facility[] = [
     waitlistDays: 3,
     acceptsMedicare: true,
     acceptsMedicaid: true,
+    organizationId: "org-001",
     createdAt: "2024-01-15T00:00:00Z",
     updatedAt: "2026-07-01T00:00:00Z",
   },
@@ -318,6 +346,7 @@ export const facilities: Facility[] = [
     waitlistDays: 14,
     acceptsMedicare: true,
     acceptsMedicaid: false,
+    organizationId: "org-001",
     createdAt: "2023-06-01T00:00:00Z",
     updatedAt: "2026-06-28T00:00:00Z",
   },
@@ -360,6 +389,7 @@ export const facilities: Facility[] = [
     hasAvailability: false,
     acceptsMedicare: true,
     acceptsMedicaid: true,
+    organizationId: "org-001",
     createdAt: "2022-09-01T00:00:00Z",
     updatedAt: "2026-07-02T00:00:00Z",
   },
@@ -396,6 +426,7 @@ export const facilities: Facility[] = [
     hasAvailability: true,
     acceptsMedicare: true,
     acceptsMedicaid: true,
+    organizationId: "org-001",
     createdAt: "2023-03-15T00:00:00Z",
     updatedAt: "2026-06-30T00:00:00Z",
   },
@@ -433,6 +464,7 @@ export const facilities: Facility[] = [
     waitlistDays: 21,
     acceptsMedicare: true,
     acceptsMedicaid: true,
+    organizationId: "org-001",
     createdAt: "2023-11-01T00:00:00Z",
     updatedAt: "2026-07-05T00:00:00Z",
   },
@@ -459,6 +491,7 @@ export const placements: Placement[] = [
     selectedFacilityId: "fac-003",
     insurancePreAuthorized: true,
     notes: "Columbia River SNF has bed available starting 7/11. Family has toured and approved.",
+    organizationId: "org-001",
     createdAt: "2026-07-02T10:00:00Z",
     updatedAt: "2026-07-07T14:00:00Z",
   },
@@ -478,6 +511,7 @@ export const placements: Placement[] = [
     matchedFacilities: ["fac-001", "fac-003"],
     insurancePreAuthorized: false,
     notes: "Waiting on insurance pre-authorization. Willamette Valley Rehab has expressed interest.",
+    organizationId: "org-001",
     createdAt: "2026-07-03T09:00:00Z",
     updatedAt: "2026-07-07T11:00:00Z",
   },
@@ -497,6 +531,7 @@ export const placements: Placement[] = [
     matchedFacilities: ["fac-004"],
     insurancePreAuthorized: true,
     notes: "Healing Hearts can start home health services upon discharge. Spouse trained on oxygen equipment.",
+    organizationId: "org-001",
     createdAt: "2026-07-05T14:00:00Z",
     updatedAt: "2026-07-07T09:00:00Z",
   },
@@ -527,6 +562,7 @@ export const facilityUsers: User[] = [
     title: "Admissions Director",
     department: "Admissions",
     hospitalId: "fac-001",
+    organizationId: "org-001",
     phone: "(503) 555-1001",
     createdAt: "2024-01-15T00:00:00Z",
     updatedAt: "2026-07-01T00:00:00Z",
@@ -540,6 +576,7 @@ export const facilityUsers: User[] = [
     title: "Executive Director",
     department: "Administration",
     hospitalId: "fac-002",
+    organizationId: "org-001",
     phone: "(503) 555-2001",
     createdAt: "2023-06-01T00:00:00Z",
     updatedAt: "2026-06-28T00:00:00Z",
@@ -647,6 +684,7 @@ export const allUsers: User[] = [
     title: "Senior Social Worker",
     department: "Discharge Planning",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     phone: "(555) 234-5678",
     createdAt: "2024-09-01T08:00:00Z",
     updatedAt: "2026-07-01T12:00:00Z",
@@ -660,6 +698,7 @@ export const allUsers: User[] = [
     title: "Discharge Planner",
     department: "Discharge Planning",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     phone: "(555) 234-5679",
     createdAt: "2024-10-15T08:00:00Z",
     updatedAt: "2026-06-15T12:00:00Z",
@@ -673,6 +712,7 @@ export const allUsers: User[] = [
     title: "Department Administrator",
     department: "Discharge Planning",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     phone: "(555) 234-5680",
     createdAt: "2023-03-01T08:00:00Z",
     updatedAt: "2026-07-05T12:00:00Z",
@@ -686,6 +726,7 @@ export const allUsers: User[] = [
     title: "Admissions Director",
     department: "Admissions",
     hospitalId: "fac-001",
+    organizationId: "org-001",
     phone: "(503) 555-1001",
     createdAt: "2024-01-15T00:00:00Z",
     updatedAt: "2026-07-01T00:00:00Z",
@@ -699,6 +740,7 @@ export const allUsers: User[] = [
     title: "Executive Director",
     department: "Administration",
     hospitalId: "fac-002",
+    organizationId: "org-001",
     phone: "(503) 555-2001",
     createdAt: "2023-06-01T00:00:00Z",
     updatedAt: "2026-06-28T00:00:00Z",
@@ -712,6 +754,7 @@ export const allUsers: User[] = [
     title: "System Administrator",
     department: "Operations",
     hospitalId: "hosp-001",
+    organizationId: "org-001",
     phone: "(555) 000-0001",
     createdAt: "2023-01-01T08:00:00Z",
     updatedAt: "2026-07-08T12:00:00Z",
@@ -721,10 +764,10 @@ export const allUsers: User[] = [
 // ── All Hospitals (for Super Admin) ──
 
 export const allHospitals = [
-  { id: "hosp-001", name: "Mercy Hospital Portland", city: "Portland", state: "OR", phone: "(503) 555-0100", npi: "1234567890" },
-  { id: "hosp-002", name: "Providence St. Vincent Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0200", npi: "1234567891" },
-  { id: "hosp-003", name: "Oregon Health & Science University", city: "Portland", state: "OR", phone: "(503) 555-0300", npi: "1234567892" },
-  { id: "hosp-004", name: "Legacy Emanuel Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0400", npi: "1234567893" },
+  { id: "hosp-001", name: "Mercy Hospital Portland", city: "Portland", state: "OR", phone: "(503) 555-0100", npi: "1234567890", organizationId: "org-001" },
+  { id: "hosp-002", name: "Providence St. Vincent Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0200", npi: "1234567891", organizationId: "org-002" },
+  { id: "hosp-003", name: "Oregon Health & Science University", city: "Portland", state: "OR", phone: "(503) 555-0300", npi: "1234567892", organizationId: "org-003" },
+  { id: "hosp-004", name: "Legacy Emanuel Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0400", npi: "1234567893", organizationId: "org-001" },
 ];
 
 // ── Super Admin Dashboard Stats ──
@@ -772,6 +815,7 @@ export const allPlacements: Placement[] = [
     selectedFacilityId: "fac-002",
     insurancePreAuthorized: true,
     notes: "Patient placed at St. Francis Memory Care unit.",
+    organizationId: "org-001",
     createdAt: "2026-06-01T10:00:00Z",
     updatedAt: "2026-06-15T14:00:00Z",
     completedDate: "2026-06-15T14:00:00Z",
@@ -787,6 +831,7 @@ export const allPlacements: Placement[] = [
     selectedFacilityId: "fac-001",
     insurancePreAuthorized: true,
     notes: "Ongoing intensive rehab at Willamette Valley Rehab. Progressing well.",
+    organizationId: "org-001",
     createdAt: "2026-06-20T09:00:00Z",
     updatedAt: "2026-07-05T14:00:00Z",
     startDate: "2026-06-22T00:00:00Z",
@@ -805,6 +850,7 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-001",
     timestamp: "2026-07-07T14:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
   {
     id: "act-002",
@@ -815,6 +861,7 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-003",
     timestamp: "2026-07-07T09:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
   {
     id: "act-003",
@@ -825,6 +872,7 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-002",
     timestamp: "2026-07-06T16:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
   {
     id: "act-004",
@@ -835,6 +883,7 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-004",
     timestamp: "2026-07-05T16:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
   {
     id: "act-005",
@@ -845,6 +894,7 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-001",
     timestamp: "2026-07-04T11:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
   {
     id: "act-006",
@@ -855,5 +905,6 @@ export const recentActivity: ActivityEvent[] = [
     patientId: "pat-005",
     timestamp: "2026-07-05T14:00:00Z",
     userId: "usr-001",
+    organizationId: "org-001",
   },
 ];

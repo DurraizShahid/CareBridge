@@ -11,15 +11,22 @@ import {
   AlertCircle,
   Eye,
 } from "lucide-react";
+import Link from "next/link";
 import { StatCard } from "@/components/ui/stat-card";
 import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
-  facilities,
-  referrals,
-  facilityDashboardStats,
-  facilityUsers,
-} from "@/lib/data";
+  getFacilityDashboardStats,
+  getFacilityUsers,
+  getReferrals,
+  getFacilities,
+} from "@/lib/data-access";
+import { getServerOrganization } from "@/lib/server-organization";
 
 function formatRelativeTime(isoString: string): string {
   const now = Date.now();
@@ -43,7 +50,7 @@ const referralStatusConfig: Record<string, { label: string; color: string; icon:
   },
   reviewing: {
     label: "Reviewing",
-    color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
     icon: Eye,
   },
   accepted: {
@@ -67,9 +74,20 @@ const facilityTypeLabels: Record<string, string> = {
   hospice: "Hospice",
 };
 
-export default function FacilityOperatorsDashboard() {
-  const currentOperator = facilityUsers[0];
-  const operatorFacility = facilities.find((f) => f.id === currentOperator?.hospitalId);
+export default async function FacilityOperatorsDashboard() {
+  const org = await getServerOrganization();
+  const organizationId = org?.organizationId ?? "org-001";
+  const role = org?.role ?? "customer";
+
+  const [scopedStats, scopedFacilities, scopedReferrals, scopedUsers] = await Promise.all([
+    getFacilityDashboardStats(organizationId, role),
+    getFacilities(organizationId, role),
+    getReferrals(organizationId, role),
+    getFacilityUsers(organizationId, role),
+  ]);
+
+  const currentOperator = scopedUsers[0];
+  const operatorFacility = scopedFacilities.find((f) => f.id === currentOperator?.hospitalId);
 
   return (
     <div className="space-y-8">
@@ -86,38 +104,38 @@ export default function FacilityOperatorsDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Current Occupancy"
-          value={facilityDashboardStats.currentOccupancy}
+          value={scopedStats.currentOccupancy}
           icon={Users}
           variant="default"
         />
         <StatCard
           title="Available Beds"
-          value={facilityDashboardStats.availableBeds}
+          value={scopedStats.availableBeds}
           icon={Building2}
           variant="health"
-          trend={{ value: `${facilityDashboardStats.occupancyRate}% full`, positive: facilityDashboardStats.availableBeds > 5 }}
+          trend={{ value: `${scopedStats.occupancyRate}% full`, positive: scopedStats.availableBeds > 5 }}
         />
         <StatCard
           title="Pending Referrals"
-          value={facilityDashboardStats.pendingReferrals}
+          value={scopedStats.pendingReferrals}
           icon={ClipboardList}
-          variant="warmth"
+          variant="info"
         />
         <StatCard
           title="Pending Admissions"
-          value={facilityDashboardStats.pendingAdmissions}
+          value={scopedStats.pendingAdmissions}
           icon={UserPlus}
           variant="default"
         />
         <StatCard
           title="Placements This Month"
-          value={facilityDashboardStats.placementsThisMonth}
+          value={scopedStats.placementsThisMonth}
           icon={CalendarCheck}
           variant="health"
         />
         <StatCard
           title="Avg. Stay Duration"
-          value={`${facilityDashboardStats.averageStayDays}d`}
+          value={`${scopedStats.averageStayDays}d`}
           icon={Clock}
           variant="default"
         />
@@ -132,19 +150,19 @@ export default function FacilityOperatorsDashboard() {
               Referral Requests
             </h2>
             <span className="text-xs text-muted-foreground">
-              {referrals.length} total
+              {scopedReferrals.length} total
             </span>
           </div>
           <div className="space-y-3">
-            {referrals.map((ref) => {
+            {scopedReferrals.map((ref) => {
               const config = referralStatusConfig[ref.status];
               const StatusIcon = config.icon;
               return (
-                <div
+                <Card
                   key={ref.id}
-                  className="rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md"
+                  className="transition-all hover:shadow-md"
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <CardContent className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium text-card-foreground">
@@ -167,22 +185,21 @@ export default function FacilityOperatorsDashboard() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 pt-1">
-                        <span
+                        <Badge
                           className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
                             config.color,
                           )}
                         >
                           <StatusIcon className="h-3 w-3" />
                           {config.label}
-                        </span>
+                        </Badge>
                         <span className="text-xs text-muted-foreground">
                           {formatRelativeTime(ref.referredAt)}
                         </span>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -196,7 +213,8 @@ export default function FacilityOperatorsDashboard() {
               <h2 className="mb-4 font-heading text-lg font-bold text-foreground">
                 My Facility
               </h2>
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+              <Card>
+                <CardContent>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-heading text-base font-bold text-card-foreground">
@@ -209,9 +227,9 @@ export default function FacilityOperatorsDashboard() {
                       {operatorFacility.address.city}, {operatorFacility.address.state}
                     </p>
                   </div>
-                  <span
+                  <Badge
                     className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+                      "gap-1.5 py-1",
                       operatorFacility.hasAvailability
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -224,7 +242,7 @@ export default function FacilityOperatorsDashboard() {
                       )}
                     />
                     {operatorFacility.hasAvailability ? "Accepting referrals" : "At capacity"}
-                  </span>
+                  </Badge>
                 </div>
 
                 {/* Occupancy bar */}
@@ -232,40 +250,40 @@ export default function FacilityOperatorsDashboard() {
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Occupancy</span>
                     <span className="font-medium text-foreground">
-                      {facilityDashboardStats.currentOccupancy} / {facilityDashboardStats.totalCapacity} beds
+                      {scopedStats.currentOccupancy} / {scopedStats.totalCapacity} beds
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        facilityDashboardStats.occupancyRate > 90
-                          ? "bg-warmth"
-                          : facilityDashboardStats.occupancyRate > 75
-                            ? "bg-health"
-                            : "bg-primary",
-                      )}
-                      style={{ width: `${facilityDashboardStats.occupancyRate}%` }}
-                    />
-                  </div>
+                  <Progress
+                    value={scopedStats.occupancyRate}
+                    className={cn(
+                      "[&_[data-slot=progress-track]]:h-2",
+                        scopedStats.occupancyRate > 90
+                          ? "[&_[data-slot=progress-indicator]]:bg-chart-5"
+                          : scopedStats.occupancyRate > 75
+                            ? "[&_[data-slot=progress-indicator]]:bg-health"
+                            : "[&_[data-slot=progress-indicator]]:bg-primary",
+                    )}
+                  />
                 </div>
 
                 {/* Quick stats */}
-                <div className="mt-4 grid grid-cols-3 gap-4 border-t border-border pt-4">
+                <Separator className="my-4" />
+                <div className="grid grid-cols-3 gap-4">
                   <div className="text-center">
                     <p className="text-lg font-bold text-foreground">{operatorFacility.rating}</p>
                     <p className="text-xs text-muted-foreground">Rating</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-foreground">{facilityDashboardStats.upcomingDischarges}</p>
+                    <p className="text-lg font-bold text-foreground">{scopedStats.upcomingDischarges}</p>
                     <p className="text-xs text-muted-foreground">Discharges</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-foreground">{facilityDashboardStats.pendingAdmissions}</p>
+                    <p className="text-lg font-bold text-foreground">{scopedStats.pendingAdmissions}</p>
                     <p className="text-xs text-muted-foreground">Admissions</p>
                   </div>
                 </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -275,40 +293,46 @@ export default function FacilityOperatorsDashboard() {
               Facility Network
             </h2>
             <div className="space-y-2">
-              {facilities.slice(0, 4).map((fac) => (
-                <div
+              {scopedFacilities.slice(0, 4).map((fac) => (
+                <Card
                   key={fac.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 shadow-sm"
+                  size="sm"
+                  className="shadow-sm"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-card-foreground">
-                      {fac.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {fac.currentOccupancy}/{fac.capacity} beds &middot;{" "}
-                      {facilityTypeLabels[fac.type] ?? fac.type}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "ml-3 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                      fac.hasAvailability
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-                    )}
-                  >
-                    {fac.hasAvailability ? "Available" : "Full"}
-                  </span>
-                </div>
+                  <CardContent className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-card-foreground">
+                        {fac.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {fac.currentOccupancy}/{fac.capacity} beds &middot;{" "}
+                        {facilityTypeLabels[fac.type] ?? fac.type}
+                      </p>
+                    </div>
+                    <Badge
+                      className={cn(
+                        "shrink-0",
+                        fac.hasAvailability
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                      )}
+                    >
+                      {fac.hasAvailability ? "Available" : "Full"}
+                    </Badge>
+                  </CardContent>
+                </Card>
               ))}
             </div>
             <div className="mt-3 text-right">
-              <a
-                href="/facilities"
-                className="inline-flex items-center gap-1 text-sm font-medium text-health hover:text-health/80"
+              <Button
+                variant="link"
+                size="sm"
+                nativeButton={false}
+                render={<Link href="/facilities" />}
+                className="h-auto p-0 text-health hover:text-health/80"
               >
                 View all facilities <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              </Button>
             </div>
           </div>
         </section>

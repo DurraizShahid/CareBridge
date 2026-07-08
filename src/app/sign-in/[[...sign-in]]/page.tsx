@@ -1,5 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
-import { Heart } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function SignInPage() {
@@ -9,9 +9,13 @@ export default function SignInPage() {
       <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-[#0F1A2E] via-[#1a2d45] to-primary p-12 lg:flex">
         <div>
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-health to-teal-400 shadow-lg shadow-health/20">
-              <Heart className="h-5 w-5 text-white" />
-            </div>
+            <Image
+              src="/carebridge.svg"
+              alt="CareBridge"
+              width={40}
+              height={40}
+              className="h-10 w-10"
+            />
             <span className="font-heading text-xl font-bold text-white">
               CareBridge
             </span>
@@ -58,9 +62,13 @@ export default function SignInPage() {
       <div className="flex w-full flex-col items-center justify-center px-6 lg:w-1/2">
         {/* Mobile brand mark */}
         <div className="mb-8 flex items-center gap-2 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Heart className="h-4 w-4 text-white" />
-          </div>
+          <Image
+            src="/carebridge.svg"
+            alt="CareBridge"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
           <span className="font-heading text-lg font-bold text-primary">
             CareBridge
           </span>

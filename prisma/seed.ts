@@ -14,7 +14,43 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Seeding CareBridge database...\n");
 
-  // ── 1. Seed Users ──
+  // ── 1. Seed Organizations ──
+  console.log("  Seeding organizations...");
+
+  await prisma.organization.upsert({
+    where: { id: "org-001" },
+    update: {},
+    create: {
+      id: "org-001",
+      name: "Mercy Hospital Portland",
+      slug: "mercy-hospital-portland",
+    },
+  });
+  console.log("    ✔ org-001 — Mercy Hospital Portland");
+
+  await prisma.organization.upsert({
+    where: { id: "org-002" },
+    update: {},
+    create: {
+      id: "org-002",
+      name: "Providence Health System",
+      slug: "providence-health",
+    },
+  });
+  console.log("    ✔ org-002 — Providence Health System");
+
+  await prisma.organization.upsert({
+    where: { id: "org-003" },
+    update: {},
+    create: {
+      id: "org-003",
+      name: "OHSU Health",
+      slug: "ohsu-health",
+    },
+  });
+  console.log("    ✔ org-003 — OHSU Health");
+
+  // ── 2. Seed Users ──
   console.log("  Seeding users...");
 
   // Hospital Staff
@@ -31,6 +67,7 @@ async function main() {
       department: "Discharge Planning",
       hospitalId: "hosp-001",
       phone: "(555) 234-5678",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2024-09-01T08:00:00Z"),
       updatedAt: new Date("2026-07-01T12:00:00Z"),
     },
@@ -50,6 +87,7 @@ async function main() {
       department: "Discharge Planning",
       hospitalId: "hosp-001",
       phone: "(555) 234-5679",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2024-10-15T08:00:00Z"),
       updatedAt: new Date("2026-06-15T12:00:00Z"),
     },
@@ -69,6 +107,7 @@ async function main() {
       department: "Discharge Planning",
       hospitalId: "hosp-001",
       phone: "(555) 234-5680",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2023-03-01T08:00:00Z"),
       updatedAt: new Date("2026-07-05T12:00:00Z"),
     },
@@ -89,6 +128,7 @@ async function main() {
       department: "Admissions",
       hospitalId: "fac-001",
       phone: "(503) 555-1001",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2024-01-15T00:00:00Z"),
       updatedAt: new Date("2026-07-01T00:00:00Z"),
     },
@@ -108,6 +148,7 @@ async function main() {
       department: "Administration",
       hospitalId: "fac-002",
       phone: "(503) 555-2001",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2023-06-01T00:00:00Z"),
       updatedAt: new Date("2026-06-28T00:00:00Z"),
     },
@@ -128,13 +169,14 @@ async function main() {
       department: "Operations",
       hospitalId: "hosp-001",
       phone: "(555) 000-0001",
+      organization: { connect: { id: "org-001" } },
       createdAt: new Date("2023-01-01T08:00:00Z"),
       updatedAt: new Date("2026-07-08T12:00:00Z"),
     },
   });
   console.log("    ✔ usr-admin-001 — Admin User (superadmin)");
 
-  // ── 2. Seed Hospitals ──
+  // ── 3. Seed Hospitals ──
   console.log("  Seeding hospitals...");
 
   await prisma.hospital.upsert({
@@ -151,6 +193,7 @@ async function main() {
       }),
       phone: "(503) 555-0000",
       npi: "1234567890",
+      organization: { connect: { id: "org-001" } },
     },
   });
   console.log("    ✔ hosp-001 — Mercy Hospital Portland");
@@ -169,6 +212,7 @@ async function main() {
       }),
       phone: "(503) 555-0200",
       npi: "1234567891",
+      organization: { connect: { id: "org-002" } },
     },
   });
   console.log("    ✔ hosp-002 — Providence St. Vincent Medical Center");
@@ -187,6 +231,7 @@ async function main() {
       }),
       phone: "(503) 555-0300",
       npi: "1234567892",
+      organization: { connect: { id: "org-003" } },
     },
   });
   console.log("    ✔ hosp-003 — Oregon Health & Science University");
@@ -205,11 +250,12 @@ async function main() {
       }),
       phone: "(503) 555-0400",
       npi: "1234567893",
+      organization: { connect: { id: "org-001" } },
     },
   });
   console.log("    ✔ hosp-004 — Legacy Emanuel Medical Center");
 
-  // ── 3. Seed Patients ──
+  // ── 4. Seed Patients ──
   console.log("  Seeding patients...");
 
   // Patient 1: Eleanor Roosevelt
@@ -253,6 +299,7 @@ async function main() {
         "Patient lives alone. Two-story home with stairs. Requires 6-8 weeks of rehab post-hip replacement.",
       socialWorkerId: "usr-001",
       hospitalId: "hosp-001",
+      organizationId: "org-001",
       admissionDate: new Date("2026-06-28T14:30:00Z"),
       estimatedDischargeDate: new Date("2026-07-10T00:00:00Z"),
       status: "ready_for_discharge",
@@ -308,6 +355,7 @@ async function main() {
         "Right-sided weakness. Needs intensive PT/OT. Unable to return home without 24/7 support.",
       socialWorkerId: "usr-001",
       hospitalId: "hosp-001",
+      organizationId: "org-001",
       admissionDate: new Date("2026-07-01T11:00:00Z"),
       estimatedDischargeDate: new Date("2026-07-15T00:00:00Z"),
       status: "assessment_in_progress",
@@ -358,6 +406,7 @@ async function main() {
         "Lives with spouse who works during day. Needs home health for oxygen management and daily monitoring. Home is accessible - single level.",
       socialWorkerId: "usr-001",
       hospitalId: "hosp-001",
+      organizationId: "org-001",
       admissionDate: new Date("2026-07-03T09:00:00Z"),
       estimatedDischargeDate: new Date("2026-07-12T00:00:00Z"),
       status: "assessment_in_progress",
@@ -407,6 +456,7 @@ async function main() {
         "Wandering risk. Requires 24/7 supervised care. Family unable to provide necessary level of support at home.",
       socialWorkerId: "usr-001",
       hospitalId: "hosp-001",
+      organizationId: "org-001",
       admissionDate: new Date("2026-07-05T16:00:00Z"),
       status: "admitted",
       createdAt: new Date("2026-07-05T16:00:00Z"),
@@ -455,6 +505,7 @@ async function main() {
         "Full-time wheelchair user. Home needs modification. Requires intensive inpatient rehab before discharge planning.",
       socialWorkerId: "usr-001",
       hospitalId: "hosp-001",
+      organizationId: "org-001",
       admissionDate: new Date("2026-07-01T08:30:00Z"),
       estimatedDischargeDate: new Date("2026-08-01T00:00:00Z"),
       status: "admitted",
@@ -464,7 +515,7 @@ async function main() {
   });
   console.log("    ✔ pat-005 — Yuki Tanaka");
 
-  // ── 4. Seed Facilities ──
+  // ── 5. Seed Facilities ──
   console.log("  Seeding facilities...");
 
   // Facility 1: Willamette Valley Rehabilitation Center
@@ -506,6 +557,7 @@ async function main() {
       waitlistDays: 3,
       acceptsMedicare: true,
       acceptsMedicaid: true,
+      organizationId: "org-001",
       createdAt: new Date("2024-01-15T00:00:00Z"),
       updatedAt: new Date("2026-07-01T00:00:00Z"),
     },
@@ -550,6 +602,7 @@ async function main() {
       waitlistDays: 14,
       acceptsMedicare: true,
       acceptsMedicaid: false,
+      organizationId: "org-001",
       createdAt: new Date("2023-06-01T00:00:00Z"),
       updatedAt: new Date("2026-06-28T00:00:00Z"),
     },
@@ -599,6 +652,7 @@ async function main() {
       hasAvailability: false,
       acceptsMedicare: true,
       acceptsMedicaid: true,
+      organizationId: "org-001",
       createdAt: new Date("2022-09-01T00:00:00Z"),
       updatedAt: new Date("2026-07-02T00:00:00Z"),
     },
@@ -648,6 +702,7 @@ async function main() {
       hasAvailability: true,
       acceptsMedicare: true,
       acceptsMedicaid: true,
+      organizationId: "org-001",
       createdAt: new Date("2023-03-15T00:00:00Z"),
       updatedAt: new Date("2026-06-30T00:00:00Z"),
     },
@@ -692,13 +747,14 @@ async function main() {
       waitlistDays: 21,
       acceptsMedicare: true,
       acceptsMedicaid: true,
+      organizationId: "org-001",
       createdAt: new Date("2023-11-01T00:00:00Z"),
       updatedAt: new Date("2026-07-05T00:00:00Z"),
     },
   });
   console.log("    ✔ fac-005 — Sunrise Memory Care Center");
 
-  // ── 5. Seed Placements ──
+  // ── 6. Seed Placements ──
   console.log("  Seeding placements...");
 
   // Placement 1
@@ -724,6 +780,7 @@ async function main() {
       selectedFacilityId: "fac-003",
       insurancePreAuthorized: true,
       notes: "Columbia River SNF has bed available starting 7/11. Family has toured and approved.",
+      organizationId: "org-001",
       createdAt: new Date("2026-07-02T10:00:00Z"),
       updatedAt: new Date("2026-07-07T14:00:00Z"),
     },
@@ -752,6 +809,7 @@ async function main() {
       insurancePreAuthorized: false,
       notes:
         "Waiting on insurance pre-authorization. Willamette Valley Rehab has expressed interest.",
+      organizationId: "org-001",
       createdAt: new Date("2026-07-03T09:00:00Z"),
       updatedAt: new Date("2026-07-07T11:00:00Z"),
     },
@@ -780,13 +838,14 @@ async function main() {
       insurancePreAuthorized: true,
       notes:
         "Healing Hearts can start home health services upon discharge. Spouse trained on oxygen equipment.",
+      organizationId: "org-001",
       createdAt: new Date("2026-07-05T14:00:00Z"),
       updatedAt: new Date("2026-07-07T09:00:00Z"),
     },
   });
   console.log("    ✔ plc-003 — Maria Garcia → Assessment");
 
-  // ── 6. Seed Activity Events ──
+  // ── 7. Seed Activity Events ──
   console.log("  Seeding activity events...");
 
   await prisma.activityEvent.upsert({
@@ -802,6 +861,7 @@ async function main() {
       patientId: "pat-001",
       timestamp: new Date("2026-07-07T14:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
 
@@ -817,6 +877,7 @@ async function main() {
       patientId: "pat-003",
       timestamp: new Date("2026-07-07T09:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
 
@@ -833,6 +894,7 @@ async function main() {
       patientId: "pat-002",
       timestamp: new Date("2026-07-06T16:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
 
@@ -848,6 +910,7 @@ async function main() {
       patientId: "pat-004",
       timestamp: new Date("2026-07-05T16:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
 
@@ -864,6 +927,7 @@ async function main() {
       patientId: "pat-001",
       timestamp: new Date("2026-07-04T11:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
 
@@ -880,6 +944,7 @@ async function main() {
       patientId: "pat-005",
       timestamp: new Date("2026-07-05T14:00:00Z"),
       userId: "usr-001",
+      organizationId: "org-001",
     },
   });
   console.log("    ✔ 6 activity events seeded");

@@ -52,6 +52,12 @@ export type UserRole = "social-worker" | "discharge-planner" | "administrator" |
 
 // ── Entities ──
 
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -61,6 +67,7 @@ export interface User {
   title: string;
   department: string;
   hospitalId: string;
+  organizationId: string;
   avatarUrl?: string;
   phone: string;
   createdAt: string;
@@ -73,6 +80,7 @@ export interface Hospital {
   address: Address;
   phone: string;
   npi: string;
+  organizationId: string;
 }
 
 export interface Patient {
@@ -93,6 +101,7 @@ export interface Patient {
   notes: string;
   socialWorkerId: string;
   hospitalId: string;
+  organizationId: string;
   admissionDate: string;
   estimatedDischargeDate?: string;
   status: PatientStatus;
@@ -124,6 +133,7 @@ export interface Facility {
   waitlistDays?: number;
   acceptsMedicare: boolean;
   acceptsMedicaid: boolean;
+  organizationId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -160,6 +170,7 @@ export interface Placement {
   completedDate?: string;
   cancellationReason?: string;
   notes: string;
+  organizationId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -225,4 +236,5 @@ export interface ActivityEvent {
   patientId: string;
   timestamp: string;
   userId: string;
+  organizationId: string;
 }

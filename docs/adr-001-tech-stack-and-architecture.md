@@ -12,6 +12,7 @@ CareBridge Health needs a modern, maintainable web platform for hospital social 
 - **Secure & compliant** — handle PHI with HIPAA-appropriate safeguards
 - **Fast & reliable** — placement decisions are time-sensitive
 - **Extensible** — facility network, insurance integrations, analytics all planned
+- **Multi-tenant** — support for multiple hospitals and care facilities with data isolation
 
 ## Decision
 
@@ -23,6 +24,30 @@ Next.js provides server-side rendering for fast initial loads, file-based routin
 - **React Server Components** — data fetching on the server, minimal client JS
 - **API Routes** — lightweight backend endpoints co-located with pages
 
+### Database & ORM: PostgreSQL + Prisma
+
+PostgreSQL is our primary database with Prisma ORM for type-safe database access.
+
+- **PostgreSQL** — robust, ACID-compliant relational database
+- **Prisma ORM** — type-safe database client, declarative schema, automatic migrations
+- **Prisma Client** — generated in `src/generated/prisma`
+
+### Authentication: Clerk
+
+Clerk is our authentication and user management platform.
+
+- **Secure authentication** — built-in support for sign-in, sign-up, and user profiles
+- **Organization support** — multi-tenant isolation via Clerk Organizations
+- **Webhooks** — sync user data to our database
+
+### Authorization: Custom RBAC System
+
+We have a custom role-based access control (RBAC) system defined in `src/lib/permissions.ts`.
+
+- **Roles** — superadmin, administrator, social-worker, discharge-planner, facility-coordinator, customer
+- **Permissions** — fine-grained resource/action permissions (e.g., `patients:read`, `placements:approve`)
+- **Route guards** — protect routes based on permissions
+
 ### Styling: Tailwind CSS v4 + shadcn/ui (base-nova)
 
 Tailwind CSS v4 provides a utility-first workflow with the `@theme` directive for design tokens. shadcn/ui provides accessible, unstyled primitives via Base UI React that we customize to our brand.
@@ -31,11 +56,15 @@ Tailwind CSS v4 provides a utility-first workflow with the `@theme` directive fo
 - **Semantic colors** — `health` (teal) and `warmth` (coral) added as domain-specific tokens beyond shadcn defaults
 - **Dark mode** — supported via `.dark` class variant with adjusted deep navy background
 
-### Typography: Lato + Open Sans via next/font/google
+### Typography: Montserrat + Open Sans via next/font/google
 
-- **Lato** — headings (clean, modern, confident)
+- **Montserrat** — headings (clean, modern, confident)
 - **Open Sans** — body (highly readable at all sizes)
 - Both self-hosted at build time — zero external network requests, no layout shift
+
+### Data Tables: TanStack Table v8
+
+All data tables use TanStack Table for sorting, filtering, pagination, etc.
 
 ### Component Architecture
 
@@ -55,39 +84,41 @@ Page Component
 ### Routing Structure
 
 ```
-/                  → Public landing page
-/(app)             → Authenticated app shell (sidebar layout)
-  /dashboard       → Overview with stats, recent activity, alerts
-  /patients        → Patient list, search, intake
-  /patients/[id]   → Patient detail, assessment, placement history
-  /facilities      → Care setting directory with filters
-  /facilities/[id] → Facility detail, availability, contacts
-  /placements      → Active placement workflow tracker
-  /placements/[id] → Placement detail, status, documents
+/                          → Public landing page
+/(app)                     → Authenticated app shell (sidebar layout)
+  /dashboard                 → Overview dashboard
+    /admin                    → Admin dashboard
+    /staff                    → Staff dashboard
+    /facility                 → Facility dashboard
+    /users                    → User management
+  /patients                  → Patient list, search, intake
+  /facilities                → Care setting directory with filters
+  /placements                → Active placement workflow tracker
+  /admin                     → Admin-only pages
+/api/                       → API routes
+  /me                        → Current user info
+  /webhooks                  → Clerk webhooks
+/sign-in/, /sign-up/         → Clerk authentication pages
 ```
 
 ### Data Strategy
 
-For the initial build, data will be mocked with realistic TypeScript types and sample data. This enables:
-
-- Fully interactive UI development without backend dependency
-- Iterative refinement of domain models before API design
-- Parallel frontend/backend development
-
-Domain entities follow a DDD-light approach with clear type definitions and separation between entities and value objects.
+We now use PostgreSQL + Prisma for production-ready data access. Domain entities are defined in the Prisma schema and TypeScript types are generated.
 
 ## Consequences
 
 ### Positive
 
 - **Fast development velocity** — Next.js convention-over-configuration, pre-built UI primitives
-- **Strong type safety** — TypeScript throughout, Zod-ready for runtime validation
+- **Strong type safety** — TypeScript throughout, Prisma type-safe database access
+- **Secure authentication** — Clerk handles auth security
+- **Multi-tenant support** — Organizations for hospitals and facilities
 - **SEO & performance** — server rendering, automatic code splitting, font optimization
 - **Accessible baseline** — Base UI React provides ARIA-compliant primitives
 
 ### Trade-offs
 
-- **Mock data dependency** — UI works in isolation but needs API contract alignment before production
+- **Clerk dependency** — third-party auth provider dependency
 - **Tailwind CSS v4 ecosystem** — newer version means fewer community resources than v3
 - **Next.js 16** — latest major version; some patterns differ from Next.js 12-14 docs
 
@@ -96,3 +127,6 @@ Domain entities follow a DDD-light approach with clear type definitions and sepa
 - **Remix** — similar SSR model but smaller ecosystem for UI primitives
 - **Vite + React Router** — more flexible but requires manual SSR setup and lacks file-based routing
 - **Material UI** — comprehensive but heavier and harder to customize to a specific brand
+- **Auth.js (NextAuth)** — self-hosted auth alternative to Clerk
+- **MongoDB** — NoSQL alternative to PostgreSQL
+- **Supabase Auth** — alternative to Clerk for auth + DB

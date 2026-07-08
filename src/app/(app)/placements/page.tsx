@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { placements, patients, facilities } from "@/lib/data";
+import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
+import { getServerOrganization } from "@/lib/server-organization";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   assessment: {
@@ -9,7 +10,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   },
   searching: {
     label: "Searching",
-    color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
   },
   matching: {
     label: "Matching",
@@ -19,11 +20,19 @@ const statusConfig: Record<string, { label: string; color: string }> = {
     label: "Pending Approval",
     color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   },
+  "pending_approval": {
+    label: "Pending Approval",
+    color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  },
   approved: {
     label: "Approved",
     color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   },
   "in-progress": {
+    label: "In Progress",
+    color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+  },
+  "in_progress": {
     label: "In Progress",
     color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
   },
@@ -39,26 +48,35 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 
 const priorityOrder = ["emergency", "high", "medium", "low"];
 
-function getPatientName(patientId: string): string {
-  const patient = patients.find((p) => p.id === patientId);
-  return patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
-}
+export default async function PlacementsPage() {
+  const org = await getServerOrganization();
+  const organizationId = org?.organizationId ?? "org-001";
+  const role = org?.role ?? "customer";
+  const [placements, patients, facilities] = await Promise.all([
+    getPlacements(organizationId, role),
+    getPatients(organizationId, role),
+    getFacilities(organizationId, role),
+  ]);
 
-function getFacilityName(facilityId?: string): string {
-  if (!facilityId) return "TBD";
-  const facility = facilities.find((f) => f.id === facilityId);
-  return facility?.name ?? "Unknown Facility";
-}
-
-function getPatientDiagnosis(patientId: string): string {
-  const patient = patients.find((p) => p.id === patientId);
-  return patient?.primaryDiagnosis ?? "";
-}
-
-export default function PlacementsPage() {
   const sorted = [...placements].sort(
     (a, b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority),
   );
+
+  function getPatientName(patientId: string): string {
+    const patient = patients.find((p) => p.id === patientId);
+    return patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
+  }
+
+  function getFacilityName(facilityId?: string): string {
+    if (!facilityId) return "TBD";
+    const facility = facilities.find((f) => f.id === facilityId);
+    return facility?.name ?? "Unknown Facility";
+  }
+
+  function getPatientDiagnosis(patientId: string): string {
+    const patient = patients.find((p) => p.id === patientId);
+    return patient?.primaryDiagnosis ?? "";
+  }
 
   return (
     <div className="space-y-6">
@@ -103,8 +121,8 @@ export default function PlacementsPage() {
                         plc.priority === "high" || plc.priority === "emergency"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                           : plc.priority === "medium"
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                            : "bg-muted text-muted-foreground"
+                          ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {plc.priority} priority
@@ -117,7 +135,7 @@ export default function PlacementsPage() {
                     <span>
                       Care level:{" "}
                       <span className="font-medium text-foreground capitalize">
-                        {plc.careLevel.replace(/-/g, " ")}
+                        {plc.careLevel.replace("-", " ").replace("_", " ")}
                       </span>
                     </span>
                     <span>
@@ -136,9 +154,9 @@ export default function PlacementsPage() {
               {/* Progress dots for workflow */}
               {plc.status !== "completed" && plc.status !== "cancelled" && (
                 <div className="mt-4 flex items-center gap-1.5">
-                  {["assessment", "searching", "pending-approval", "in-progress", "completed"].map(
+                  {["assessment", "searching", "pending_approval", "in_progress", "completed"].map(
                     (step, idx) => {
-                      const statusOrder = ["assessment", "searching", "pending-approval", "in-progress", "completed"];
+                      const statusOrder = ["assessment", "searching", "pending_approval", "in_progress", "completed"];
                       const currentIdx = statusOrder.indexOf(plc.status);
                       const stepIdx = statusOrder.indexOf(step);
                       const isComplete = stepIdx <= currentIdx && plc.status !== "assessment";
@@ -151,8 +169,8 @@ export default function PlacementsPage() {
                               isComplete
                                 ? "bg-health text-white"
                                 : isCurrent
-                                  ? "border-2 border-health text-health"
-                                  : "border border-border text-muted-foreground"
+                                ? "border-2 border-health text-health"
+                                : "border border-border text-muted-foreground"
                             }`}
                           >
                             {idx + 1}
