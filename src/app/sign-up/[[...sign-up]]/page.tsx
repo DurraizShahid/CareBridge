@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSignUp, useAuth } from '@clerk/nextjs';
+import { useSignUp, useAuth, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
+  const { setActive } = useClerk();
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<'info' | 'verify'>('info');
@@ -42,17 +43,9 @@ export default function SignUpPage() {
   const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signUp.verifications.verifyEmailCode({ code: verifyCode });
-    if (signUp.status === 'complete') {
-      await signUp.finalize({
-        navigate: async ({ session, decorateUrl }) => {
-          const url = decorateUrl('/onboarding');
-          if (url.startsWith('http')) {
-            window.location.href = url;
-          } else {
-            router.push(url);
-          }
-        },
-      });
+    if (signUp.status === 'complete' && signUp.createdSessionId) {
+      await setActive({ session: signUp.createdSessionId });
+      router.push('/onboarding');
     }
   };
 

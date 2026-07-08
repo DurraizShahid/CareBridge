@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { canRoleAccessRoute, resolveRole } from "@/lib/permissions";
 
-const isPublicRoute = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)", "/api/webhooks(.*)"]);
+const isPublicRoute = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)", "/onboarding(.*)", "/api/webhooks(.*)"]);
 
 export default clerkMiddleware(async (auth, request) => {
   // 1. Allow public routes through

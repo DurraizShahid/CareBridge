@@ -27,3 +27,14 @@ Available shadcn components include:
 
 When adding new shadcn components, use the project's shadcn CLI (`npx shadcn add <component>`) to install from the registry, ensuring consistency with the existing `base-nova` style and `@base-ui/react` primitives.
 <!-- END:ui-dashboard-rules -->
+
+<!-- BEGIN:ui-dashboard-skeleton-rule -->
+# Every dashboard page must have a matching skeleton
+
+Any new page created under `src/app/(app)/dashboard/` **must** have a corresponding skeleton component added to `src/components/dashboard-skeletons.tsx` at the same time. This includes both:
+
+1. **Section-level skeletons** — individual skeleton components matching each distinct section/block on the page (e.g. a stats grid, a card list, a chart area). Each section skeleton should mirror the layout structure, dimensions, and heading hierarchy of its real counterpart using `Skeleton` placeholders.
+2. **A composition skeleton** — a top-level skeleton component that composes the section skeletons together to form a full-page loading state, matching the exact page layout (grid columns, section ordering, parent containers).
+
+Without both, the page will flash empty content while data loads. Always check the existing patterns in `src/components/dashboard-skeletons.tsx` for reference.
+<!-- END:ui-dashboard-skeleton-rule -->

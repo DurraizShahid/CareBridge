@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSignIn, useAuth } from '@clerk/nextjs';
+import { useSignIn, useAuth, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
+  const { setActive } = useClerk();
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<'email' | 'password' | 'mfa'>('email');
@@ -36,34 +37,18 @@ export default function SignInPage() {
     await signIn.password({ identifier: emailAddress, password });
     if (signIn.status === 'needs_second_factor') {
       setStep('mfa');
-    } else if (signIn.status === 'complete') {
-      await signIn.finalize({
-        navigate: async ({ session, decorateUrl }) => {
-          const url = decorateUrl('/onboarding');
-          if (url.startsWith('http')) {
-            window.location.href = url;
-          } else {
-            router.push(url);
-          }
-        },
-      });
+    } else if (signIn.status === 'complete' && signIn.createdSessionId) {
+      await setActive({ session: signIn.createdSessionId });
+      router.push('/onboarding');
     }
   };
 
   const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signIn.mfa.verifyTOTP({ code: mfaCode });
-    if (signIn.status === 'complete') {
-      await signIn.finalize({
-        navigate: async ({ session, decorateUrl }) => {
-          const url = decorateUrl('/onboarding');
-          if (url.startsWith('http')) {
-            window.location.href = url;
-          } else {
-            router.push(url);
-          }
-        },
-      });
+    if (signIn.status === 'complete' && signIn.createdSessionId) {
+      await setActive({ session: signIn.createdSessionId });
+      router.push('/onboarding');
     }
   };
 
