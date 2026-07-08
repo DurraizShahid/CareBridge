@@ -388,6 +388,207 @@ export async function getSuperAdminDashboardStats() {
   };
 }
 
+/**
+ * Return a single facility by ID, scoped to the given organization.
+ * Superadmin sees any facility.
+ */
+export async function getFacility(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<Facility | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const f = await prisma.facility.findFirst({ where });
+  if (!f) return null;
+  return {
+    id: f.id,
+    name: f.name,
+    type: f.type as any,
+    address: f.address as any,
+    phone: f.phone,
+    email: f.email,
+    website: f.website ?? undefined,
+    contacts: f.contacts as any,
+    licensure: f.licensure,
+    accreditations: f.accreditations,
+    capacity: f.capacity,
+    currentOccupancy: f.currentOccupancy,
+    insuranceAccepted: f.insuranceAccepted,
+    careLevelsOffered: f.careLevelsOffered as any,
+    specialties: f.specialties,
+    rating: f.rating,
+    reviewsCount: f.reviewsCount,
+    hasAvailability: f.hasAvailability,
+    waitlistDays: f.waitlistDays ?? undefined,
+    acceptsMedicare: f.acceptsMedicare,
+    acceptsMedicaid: f.acceptsMedicaid,
+    organizationId: f.organizationId,
+    createdAt: toISO(f.createdAt),
+    updatedAt: toISO(f.updatedAt),
+  };
+}
+
+/**
+ * Create a new facility.
+ * Permission check is handled by the calling API route.
+ */
+export async function createFacility(
+  data: Omit<Facility, "id" | "createdAt" | "updatedAt">,
+): Promise<Facility> {
+  const f = await prisma.facility.create({
+    data: {
+      id: crypto.randomUUID(),
+      name: data.name,
+      type: kebabToSnake(data.type) as any,
+      address: data.address as any,
+      phone: data.phone,
+      email: data.email,
+      website: data.website ?? null,
+      contacts: data.contacts as any,
+      licensure: data.licensure,
+      accreditations: data.accreditations,
+      capacity: data.capacity,
+      currentOccupancy: data.currentOccupancy,
+      insuranceAccepted: data.insuranceAccepted,
+      careLevelsOffered: data.careLevelsOffered as any,
+      specialties: data.specialties,
+      rating: data.rating,
+      reviewsCount: data.reviewsCount,
+      hasAvailability: data.hasAvailability,
+      waitlistDays: data.waitlistDays ?? null,
+      acceptsMedicare: data.acceptsMedicare,
+      acceptsMedicaid: data.acceptsMedicaid,
+      organizationId: data.organizationId,
+    },
+  });
+  return {
+    id: f.id,
+    name: f.name,
+    type: f.type as any,
+    address: f.address as any,
+    phone: f.phone,
+    email: f.email,
+    website: f.website ?? undefined,
+    contacts: f.contacts as any,
+    licensure: f.licensure,
+    accreditations: f.accreditations,
+    capacity: f.capacity,
+    currentOccupancy: f.currentOccupancy,
+    insuranceAccepted: f.insuranceAccepted,
+    careLevelsOffered: f.careLevelsOffered as any,
+    specialties: f.specialties,
+    rating: f.rating,
+    reviewsCount: f.reviewsCount,
+    hasAvailability: f.hasAvailability,
+    waitlistDays: f.waitlistDays ?? undefined,
+    acceptsMedicare: f.acceptsMedicare,
+    acceptsMedicaid: f.acceptsMedicaid,
+    organizationId: f.organizationId,
+    createdAt: toISO(f.createdAt),
+    updatedAt: toISO(f.updatedAt),
+  };
+}
+
+/**
+ * Update an existing facility, scoped to organization.
+ * Superadmin can update any facility.
+ */
+export async function updateFacility(
+  id: string,
+  data: Partial<Omit<Facility, "id" | "createdAt" | "updatedAt">>,
+  organizationId: string,
+  role: string,
+): Promise<Facility | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.facility.findFirst({ where });
+  if (!existing) return null;
+
+  const updateData: Record<string, any> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.type !== undefined) updateData.type = kebabToSnake(data.type) as any;
+  if (data.address !== undefined) updateData.address = data.address as any;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.email !== undefined) updateData.email = data.email;
+  if (data.website !== undefined) updateData.website = data.website ?? null;
+  if (data.contacts !== undefined) updateData.contacts = data.contacts as any;
+  if (data.licensure !== undefined) updateData.licensure = data.licensure;
+  if (data.accreditations !== undefined) updateData.accreditations = data.accreditations;
+  if (data.capacity !== undefined) updateData.capacity = data.capacity;
+  if (data.currentOccupancy !== undefined) updateData.currentOccupancy = data.currentOccupancy;
+  if (data.insuranceAccepted !== undefined) updateData.insuranceAccepted = data.insuranceAccepted;
+  if (data.careLevelsOffered !== undefined) updateData.careLevelsOffered = data.careLevelsOffered as any;
+  if (data.specialties !== undefined) updateData.specialties = data.specialties;
+  if (data.rating !== undefined) updateData.rating = data.rating;
+  if (data.reviewsCount !== undefined) updateData.reviewsCount = data.reviewsCount;
+  if (data.hasAvailability !== undefined) updateData.hasAvailability = data.hasAvailability;
+  if (data.waitlistDays !== undefined) updateData.waitlistDays = data.waitlistDays ?? null;
+  if (data.acceptsMedicare !== undefined) updateData.acceptsMedicare = data.acceptsMedicare;
+  if (data.acceptsMedicaid !== undefined) updateData.acceptsMedicaid = data.acceptsMedicaid;
+
+  const f = await prisma.facility.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return {
+    id: f.id,
+    name: f.name,
+    type: f.type as any,
+    address: f.address as any,
+    phone: f.phone,
+    email: f.email,
+    website: f.website ?? undefined,
+    contacts: f.contacts as any,
+    licensure: f.licensure,
+    accreditations: f.accreditations,
+    capacity: f.capacity,
+    currentOccupancy: f.currentOccupancy,
+    insuranceAccepted: f.insuranceAccepted,
+    careLevelsOffered: f.careLevelsOffered as any,
+    specialties: f.specialties,
+    rating: f.rating,
+    reviewsCount: f.reviewsCount,
+    hasAvailability: f.hasAvailability,
+    waitlistDays: f.waitlistDays ?? undefined,
+    acceptsMedicare: f.acceptsMedicare,
+    acceptsMedicaid: f.acceptsMedicaid,
+    organizationId: f.organizationId,
+    createdAt: toISO(f.createdAt),
+    updatedAt: toISO(f.updatedAt),
+  };
+}
+
+/**
+ * Delete a facility, scoped to organization.
+ * Returns false if facility not found or has active placements.
+ */
+export async function deleteFacility(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<{ success: boolean; error?: string }> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.facility.findFirst({ where });
+  if (!existing) return { success: false, error: "Facility not found" };
+
+  // Check for active placements
+  const activePlacements = await prisma.placement.count({
+    where: {
+      facilityId: id,
+      NOT: { status: { in: ["completed", "cancelled"] } },
+    },
+  });
+  if (activePlacements > 0) {
+    return {
+      success: false,
+      error: `Cannot delete facility with ${activePlacements} active placement(s)`,
+    };
+  }
+
+  await prisma.facility.delete({ where: { id } });
+  return { success: true };
+}
+
 // ── Organization Functions ──
 
 export async function getOrganizationById(organizationId: string): Promise<Organization | null> {

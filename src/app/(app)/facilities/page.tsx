@@ -1,8 +1,11 @@
-import { Search, MapPin, Phone, Star, Building2 } from "lucide-react";
+import Link from "next/link";
+import { Search, MapPin, Phone, Star, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { roleHasPermission } from "@/lib/permissions";
 
 const facilityTypeLabels: Record<string, string> = {
   "skilled-nursing-facility": "Skilled Nursing Facility",
@@ -23,6 +26,7 @@ export default async function FacilitiesPage() {
   const organizationId = org?.organizationId ?? "org-001";
   const role = org?.role ?? "customer";
   const facilities = await getFacilities(organizationId, role);
+  const canCreate = roleHasPermission(role, "facilities:create");
 
   return (
     <div className="space-y-6">
@@ -30,13 +34,12 @@ export default async function FacilitiesPage() {
         title="Facilities"
         description="Browse and discover care settings for your patients."
       >
-        <button
-          type="button"
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-muted active:translate-y-px"
-        >
-          <Building2 className="h-4 w-4" />
-          Filter
-        </button>
+        {canCreate && (
+          <Button variant="default" render={<Link href="/facilities/new" />}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            New Facility
+          </Button>
+        )}
       </PageHeader>
 
       {/* Search */}
@@ -52,8 +55,9 @@ export default async function FacilitiesPage() {
       {/* Facility Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {facilities.map((facility) => (
-          <div
+          <Link
             key={facility.id}
+            href={`/facilities/${facility.id}`}
             className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md"
           >
             {/* Card header */}
@@ -130,7 +134,7 @@ export default async function FacilitiesPage() {
                 </span>
               )}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

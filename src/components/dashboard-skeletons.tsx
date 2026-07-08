@@ -369,6 +369,67 @@ export function FacilityDashboardSkeleton() {
   );
 }
 
+export function FacilityDetailSkeleton() {
+  return (
+    <div className="space-y-8">
+      <PageHeaderSkeleton />
+      <div className="grid gap-8 xl:grid-cols-3">
+        <div className="space-y-6 xl:col-span-2">
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-4 w-44" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                </div>
+              </div>
+              <Skeleton className="h-px w-full" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-32 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-px w-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-12 w-full rounded-lg" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-3 p-6">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-2.5 w-full rounded-full" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-3 p-6">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AdminDashboardSkeleton() {
   return (
     <div className="space-y-8">
