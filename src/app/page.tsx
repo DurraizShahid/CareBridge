@@ -89,7 +89,7 @@ export default function Page() {
           </div>
 
           {/* Search Bar - Bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
+          <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
             <div className="mx-auto max-w-7xl">
               <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 shadow-xl backdrop-blur-md sm:p-6">
                 <div className="flex flex-col items-center gap-4 sm:flex-row">
