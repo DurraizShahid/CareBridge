@@ -20,13 +20,13 @@ export function Navbar() {
     <div
       className={`absolute inset-x-0 z-20 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
         scrolled
-          ? "fixed top-0 bg-[#134675]/95 shadow-lg backdrop-blur-md"
+          ? "fixed top-0 bg-[#134675] shadow-lg"
           : "top-0 pt-[50px]"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         {/* Left bar - Logo + Nav links */}
-        <nav className="flex h-12 items-center gap-1 rounded-full bg-[#134675]/90 px-3 backdrop-blur-md sm:h-14 sm:px-4 lg:px-5">
+        <nav className="flex h-12 items-center gap-1 rounded-full bg-[#134675] px-3 sm:h-14 sm:px-4 lg:px-5">
           {/* Logo */}
           <Link href="/" className="mr-[20px] flex items-center">
             <Image
@@ -53,7 +53,7 @@ export function Navbar() {
         </nav>
 
         {/* Right bar - Auth controls */}
-        <div className="flex h-12 items-center rounded-full bg-[#134675]/90 px-2 backdrop-blur-md sm:h-14 sm:px-3">
+        <div className="flex h-12 items-center rounded-full bg-[#134675] px-2 sm:h-14 sm:px-3">
           <AuthControls />
         </div>
       </div>
