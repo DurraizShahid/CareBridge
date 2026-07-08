@@ -203,108 +203,13 @@ export default function Page() {
                 </a>
               </div>
               <div className="flex justify-center lg:justify-end">
-                {/* iPad Mockup */}
-                <div className="relative w-full max-w-md">
-                  {/* iPad Frame */}
-                  <div className="rounded-3xl bg-gray-800 p-3 shadow-2xl">
-                    {/* iPad Screen */}
-                    <div className="overflow-hidden rounded-2xl bg-white">
-                      {/* Status Bar */}
-                      <div className="flex items-center justify-between bg-[#134675] px-4 py-2">
-                        <span className="text-xs font-medium text-white">9:41 AM</span>
-                        <div className="flex items-center gap-1">
-                          <div className="h-2 w-2 rounded-full bg-white/60" />
-                          <div className="h-2 w-2 rounded-full bg-white/60" />
-                          <div className="h-2 w-2 rounded-full bg-white" />
-                        </div>
-                      </div>
-                      {/* CRM Header */}
-                      <div className="border-b border-gray-100 bg-[#134675] px-4 py-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Heart className="h-5 w-5 text-[#44BEAF]" />
-                            <span className="text-sm font-bold text-white">CareBridge CRM</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-white/20" />
-                            <div className="h-6 w-6 rounded-full bg-[#44BEAF]" />
-                          </div>
-                        </div>
-                      </div>
-                      {/* CRM Content */}
-                      <div className="bg-gray-50 p-4">
-                        {/* Patient Cards */}
-                        <div className="space-y-3">
-                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#44BEAF]/10">
-                                  <span className="text-sm font-bold text-[#44BEAF]">SJ</span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">Sarah Johnson</p>
-                                  <p className="text-xs text-gray-500">Skilled Nursing • Pending</p>
-                                </div>
-                              </div>
-                              <div className="rounded-full bg-yellow-100 px-2 py-1">
-                                <span className="text-xs font-medium text-yellow-700">Review</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#134675]/10">
-                                  <span className="text-sm font-bold text-[#134675]">MR</span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">Michael Rodriguez</p>
-                                  <p className="text-xs text-gray-500">Rehabilitation • Matched</p>
-                                </div>
-                              </div>
-                              <div className="rounded-full bg-green-100 px-2 py-1">
-                                <span className="text-xs font-medium text-green-700">Active</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#44BEAF]/10">
-                                  <span className="text-sm font-bold text-[#44BEAF]">EW</span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">Emily Watson</p>
-                                  <p className="text-xs text-gray-500">Home Health • Placed</p>
-                                </div>
-                              </div>
-                              <div className="rounded-full bg-blue-100 px-2 py-1">
-                                <span className="text-xs font-medium text-blue-700">Done</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Stats Bar */}
-                        <div className="mt-4 grid grid-cols-3 gap-2">
-                          <div className="rounded-lg bg-[#134675] p-2 text-center">
-                            <p className="text-lg font-bold text-white">24</p>
-                            <p className="text-[10px] text-white/70">Active</p>
-                          </div>
-                          <div className="rounded-lg bg-[#44BEAF] p-2 text-center">
-                            <p className="text-lg font-bold text-white">12</p>
-                            <p className="text-[10px] text-white/70">Pending</p>
-                          </div>
-                          <div className="rounded-lg bg-gray-200 p-2 text-center">
-                            <p className="text-lg font-bold text-[#134675]">8</p>
-                            <p className="text-[10px] text-gray-600">Placed</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* iPad Stand */}
-                  <div className="mx-auto mt-2 h-4 w-32 rounded-b-xl bg-gray-700" />
-                </div>
+                <Image
+                  src="/Images/upscalemedia-transformed111.png"
+                  alt="CareBridge Dashboard on Tablet"
+                  width={600}
+                  height={450}
+                  className="w-full max-w-md rounded-2xl shadow-2xl"
+                />
               </div>
             </div>
 
