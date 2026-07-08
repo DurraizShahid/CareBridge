@@ -202,32 +202,108 @@ export default function Page() {
                   Learn more <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
-              <div className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-xl bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-[#134675]">85%</div>
-                    <div className="mt-1 text-xs text-foreground/50">
-                      Faster decisions
+              <div className="flex justify-center lg:justify-end">
+                {/* iPad Mockup */}
+                <div className="relative w-full max-w-md">
+                  {/* iPad Frame */}
+                  <div className="rounded-3xl bg-gray-800 p-3 shadow-2xl">
+                    {/* iPad Screen */}
+                    <div className="overflow-hidden rounded-2xl bg-white">
+                      {/* Status Bar */}
+                      <div className="flex items-center justify-between bg-[#134675] px-4 py-2">
+                        <span className="text-xs font-medium text-white">9:41 AM</span>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-full bg-white/60" />
+                          <div className="h-2 w-2 rounded-full bg-white/60" />
+                          <div className="h-2 w-2 rounded-full bg-white" />
+                        </div>
+                      </div>
+                      {/* CRM Header */}
+                      <div className="border-b border-gray-100 bg-[#134675] px-4 py-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Heart className="h-5 w-5 text-[#44BEAF]" />
+                            <span className="text-sm font-bold text-white">CareBridge CRM</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-white/20" />
+                            <div className="h-6 w-6 rounded-full bg-[#44BEAF]" />
+                          </div>
+                        </div>
+                      </div>
+                      {/* CRM Content */}
+                      <div className="bg-gray-50 p-4">
+                        {/* Patient Cards */}
+                        <div className="space-y-3">
+                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#44BEAF]/10">
+                                  <span className="text-sm font-bold text-[#44BEAF]">SJ</span>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">Sarah Johnson</p>
+                                  <p className="text-xs text-gray-500">Skilled Nursing • Pending</p>
+                                </div>
+                              </div>
+                              <div className="rounded-full bg-yellow-100 px-2 py-1">
+                                <span className="text-xs font-medium text-yellow-700">Review</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#134675]/10">
+                                  <span className="text-sm font-bold text-[#134675]">MR</span>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">Michael Rodriguez</p>
+                                  <p className="text-xs text-gray-500">Rehabilitation • Matched</p>
+                                </div>
+                              </div>
+                              <div className="rounded-full bg-green-100 px-2 py-1">
+                                <span className="text-xs font-medium text-green-700">Active</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#44BEAF]/10">
+                                  <span className="text-sm font-bold text-[#44BEAF]">EW</span>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">Emily Watson</p>
+                                  <p className="text-xs text-gray-500">Home Health • Placed</p>
+                                </div>
+                              </div>
+                              <div className="rounded-full bg-blue-100 px-2 py-1">
+                                <span className="text-xs font-medium text-blue-700">Done</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Stats Bar */}
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="rounded-lg bg-[#134675] p-2 text-center">
+                            <p className="text-lg font-bold text-white">24</p>
+                            <p className="text-[10px] text-white/70">Active</p>
+                          </div>
+                          <div className="rounded-lg bg-[#44BEAF] p-2 text-center">
+                            <p className="text-lg font-bold text-white">12</p>
+                            <p className="text-[10px] text-white/70">Pending</p>
+                          </div>
+                          <div className="rounded-lg bg-gray-200 p-2 text-center">
+                            <p className="text-lg font-bold text-[#134675]">8</p>
+                            <p className="text-[10px] text-gray-600">Placed</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="rounded-xl bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-[#44BEAF]">3x</div>
-                    <div className="mt-1 text-xs text-foreground/50">
-                      More matches
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-[#134675]">92%</div>
-                    <div className="mt-1 text-xs text-foreground/50">
-                      Satisfaction
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-[#44BEAF]">1,200+</div>
-                    <div className="mt-1 text-xs text-foreground/50">
-                      Facilities
-                    </div>
-                  </div>
+                  {/* iPad Stand */}
+                  <div className="mx-auto mt-2 h-4 w-32 rounded-b-xl bg-gray-700" />
                 </div>
               </div>
             </div>
@@ -444,19 +520,19 @@ export default function Page() {
         </section>
 
         {/* About Section - Okta style: stats + story */}
-        <section id="about" className="bg-[#134675] py-24 sm:py-32">
+        <section id="about" className="bg-white py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
               <div>
-                <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <h2 className="font-heading text-3xl font-bold tracking-tight text-[#134675] sm:text-4xl">
                   Built for those who care
                 </h2>
-                <p className="mt-6 text-base leading-7 text-white/70">
+                <p className="mt-6 text-base leading-7 text-gray-600">
                   CareBridge Health was founded by healthcare professionals who
                   witnessed the challenges hospital social workers face daily:
                   too many patients, too few options, and too much paperwork.
                 </p>
-                <p className="mt-4 text-base leading-7 text-white/70">
+                <p className="mt-4 text-base leading-7 text-gray-600">
                   Our platform streamlines the discharge planning process,
                   reducing placement times from days to hours while ensuring
                   every patient finds the setting that best meets their medical,
@@ -471,7 +547,7 @@ export default function Page() {
                   ].map((item) => (
                     <div key={item} className="flex items-center gap-3">
                       <CheckCircle2 className="h-5 w-5 shrink-0 text-[#44BEAF]" />
-                      <span className="text-sm text-white/80">{item}</span>
+                      <span className="text-sm text-gray-700">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -480,12 +556,12 @@ export default function Page() {
                 {stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
+                    className="rounded-xl border border-gray-200 bg-gray-50 p-6"
                   >
-                    <div className="text-3xl font-bold text-[#44BEAF]">
+                    <div className="text-3xl font-bold text-[#134675]">
                       {stat.value}
                     </div>
-                    <div className="mt-2 text-sm text-white/60">
+                    <div className="mt-2 text-sm text-gray-500">
                       {stat.label}
                     </div>
                   </div>
@@ -496,10 +572,10 @@ export default function Page() {
         </section>
 
         {/* Resources Section - Okta style: content cards */}
-        <section id="resources" className="bg-white py-24 sm:py-32">
+        <section id="resources" className="bg-[#134675] py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-heading text-3xl font-bold tracking-tight text-[#134675] sm:text-4xl">
+              <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Read. Watch. Learn. More.
               </h2>
             </div>
@@ -539,15 +615,15 @@ export default function Page() {
                 <a
                   key={item.title}
                   href="#"
-                  className="group rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md"
+                  className="group rounded-xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm transition-all hover:bg-white/15"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#134675]/5">
-                    <item.icon className="h-5 w-5 text-[#134675]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                    <item.icon className="h-5 w-5 text-[#44BEAF]" />
                   </div>
                   <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#44BEAF]">
                     {item.category}
                   </div>
-                  <h3 className="mt-2 text-sm font-semibold text-[#134675] group-hover:underline">
+                  <h3 className="mt-2 text-sm font-semibold text-white group-hover:underline">
                     {item.title}
                   </h3>
                 </a>
