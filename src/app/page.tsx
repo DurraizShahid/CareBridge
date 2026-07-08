@@ -125,7 +125,7 @@ export default function Page() {
                   {/* Search button */}
                   <button
                     type="button"
-                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
+                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#134675] hover:shadow-xl active:translate-y-px sm:w-auto"
                   >
                     <Search className="h-4 w-4" />
                     <span>Find Facilities</span>
