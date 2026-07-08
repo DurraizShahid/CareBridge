@@ -53,7 +53,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head />
-      <body className="min-h-full flex flex-col font-heading">
+      <body className="min-h-full flex flex-col font-heading" suppressHydrationWarning>
         <Script
           id="theme-init"
           strategy="beforeInteractive"
