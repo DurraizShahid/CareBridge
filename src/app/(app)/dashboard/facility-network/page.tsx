@@ -12,6 +12,7 @@ export default async function FacilityNetworkPage() {
 
   const org = await getServerOrganization();
   if (!org?.organizationId) redirect("/onboarding");
+  if (org.role === "facility-coordinator") redirect("/dashboard");
 
   let defaultLocation = "";
 

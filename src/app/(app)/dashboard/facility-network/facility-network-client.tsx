@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,6 +11,7 @@ import {
   RiStarFill,
   RiMapPinLine,
   RiBuildingLine,
+  RiMapLine,
 } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,12 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchFacilitiesAction } from "./actions";
 import type { Facility, CareLevel, FacilityType } from "@/types";
+import type { MapFacility } from "@/components/map/facility-map";
+
+const FacilityMap = dynamic(
+  () => import("@/components/map/facility-map").then((m) => m.FacilityMap),
+  { ssr: false, loading: () => <MapSkeleton /> },
+);
 
 const CARE_LEVEL_OPTIONS: { value: CareLevel; label: string }[] = [
   { value: "independent-living", label: "Independent Living" },
@@ -77,6 +85,7 @@ export function FacilityNetworkClient({
   const [selectedCareLevels, setSelectedCareLevels] = useState<CareLevel[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<FacilityType[]>([]);
   const [availabilityOnly, setAvailabilityOnly] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
@@ -278,6 +287,16 @@ export function FacilityNetworkClient({
             <RiSearchLine className="size-4" />
             Search
           </Button>
+          {searched && facilities.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setShowMap((v) => !v)}
+              className="gap-2"
+            >
+              <RiMapLine className="size-4" />
+              {showMap ? "List" : "Map"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -374,11 +393,18 @@ export function FacilityNetworkClient({
             <p className="mb-4 text-sm text-muted-foreground">
               {total} facility{total !== 1 ? "ies" : "y"} found
             </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {facilities.map((facility) => (
-                <FacilityCard key={facility.id} facility={facility} />
-              ))}
-            </div>
+            {showMap ? (
+              <FacilityMap
+                facilities={facilities as MapFacility[]}
+                className="h-[500px] w-full rounded-lg border"
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {facilities.map((facility) => (
+                  <FacilityCard key={facility.id} facility={facility} />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -453,6 +479,10 @@ function FacilityCard({ facility }: { facility: Facility }) {
       </Card>
     </Link>
   );
+}
+
+function MapSkeleton() {
+  return <Skeleton className="h-[500px] w-full rounded-lg" />;
 }
 
 export function FacilityCardsSkeleton({

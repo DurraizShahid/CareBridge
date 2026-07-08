@@ -167,3 +167,7 @@ select option {
   background-color: #134675;
   color: white;
 }
+
+.leaflet-container {
+  z-index: 0;
+}

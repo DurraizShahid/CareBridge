@@ -238,7 +238,14 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <NavSection items={mainNavItems} allItems={allNavItems} />
-        <NavSection items={featureNavItems} label="Features" allItems={allNavItems} />
+        <NavSection
+          items={featureNavItems.filter(
+            (item) =>
+              !(item.href === "/dashboard/facility-network" && effectiveRole === "facility-coordinator"),
+          )}
+          label="Features"
+          allItems={allNavItems}
+        />
         <NavSection items={adminNavItems} label="Management" allItems={allNavItems} />
       </SidebarContent>
       <SidebarFooter>

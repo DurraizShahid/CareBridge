@@ -7,7 +7,7 @@ import { getServerOrganization } from "@/lib/server-organization";
 
 const ALLOWED_TYPES: Record<string, readonly string[]> = {
   image: ["image/jpeg", "image/png", "image/webp", "image/avif"],
-  gaussian_splat: ["application/octet-stream", "model/ply", "application/x-ply"],
+   gaussian_splat: ["application/octet-stream", "model/ply", "application/x-ply", "model/spz"],
   video: ["video/mp4", "video/webm", "video/quicktime"],
 };
 

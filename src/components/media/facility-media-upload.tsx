@@ -21,7 +21,7 @@ const MEDIA_TYPE_LABELS: Record<MediaType, string> = {
 
 const ACCEPTED_MIME: Record<MediaType, string> = {
   image: "image/jpeg,image/png,image/webp,image/avif",
-  gaussian_splat: "application/octet-stream,model/ply",
+   gaussian_splat: "application/octet-stream,model/ply,model/spz",
   video: "video/mp4,video/webm,video/quicktime",
 };
 
@@ -177,7 +177,7 @@ export function FacilityMediaUpload({ facilityId, initialMedia }: Props) {
           </p>
           <p className="text-xs text-muted-foreground/60">
             {mediaType === "image" && "JPEG, PNG, WebP, AVIF (max 10 MB)"}
-            {mediaType === "gaussian_splat" && "PLY or binary (max 500 MB)"}
+            {mediaType === "gaussian_splat" && "PLY, SPZ, or binary (max 500 MB)"}
             {mediaType === "video" && "MP4, WebM, MOV (max 500 MB)"}
           </p>
         </div>

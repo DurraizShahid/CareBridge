@@ -686,6 +686,10 @@ export function FacilityNetworkGridSkeleton() {
   );
 }
 
+export function FacilityNetworkMapSkeleton() {
+  return <Skeleton className="h-[500px] w-full rounded-lg" />;
+}
+
 export function FacilityNetworkPageSkeleton() {
   return (
     <div className="flex flex-col gap-6">
