@@ -72,7 +72,8 @@ export default function Page() {
                 <div className="mt-8 flex items-center gap-4">
                   <a
                     href="/sign-up"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-8 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#44BEAF]/90 hover:shadow-xl active:translate-y-px"
+                    style={{ backgroundColor: '#44BEAF' }}
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-8 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px"
                   >
                     Get started
                   </a>
