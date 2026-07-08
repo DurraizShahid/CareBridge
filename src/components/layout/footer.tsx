@@ -64,7 +64,7 @@ export function Footer({ compact = false }: FooterProps) {
   }
 
   return (
-    <footer className="border-t border-border bg-gradient-to-b from-background to-muted/50">
+    <footer className="border-t border-white/10 bg-gradient-to-br from-[#134675] via-[#1a5c8f] to-[#44BEAF]">
       {/* Main footer content */}
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
@@ -74,12 +74,12 @@ export function Footer({ compact = false }: FooterProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-sm">
                 <Heart className="h-5 w-5 text-white" />
               </div>
-              <span className="font-heading text-xl font-bold text-primary">
+              <span className="font-heading text-xl font-bold text-white">
                 CareBridge
-                <span className="text-health"> Health</span>
+                <span className="text-[#44BEAF]"> Health</span>
               </span>
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
               Empowering hospital social workers and discharge planners to find
               the right care settings for every patient — faster, smarter, and
               with confidence.
@@ -94,7 +94,7 @@ export function Footer({ compact = false }: FooterProps) {
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-health/30 hover:bg-health/5 hover:text-health"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white shadow-sm transition-all hover:border-[#44BEAF]/50 hover:bg-[#44BEAF]/10 hover:text-[#44BEAF]"
                   >
                     <Icon className="h-4 w-4" />
                   </a>
@@ -105,14 +105,14 @@ export function Footer({ compact = false }: FooterProps) {
             {/* Trust badges */}
             <div className="mt-8 flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-health" />
-                <span className="text-xs font-medium text-muted-foreground">
+                <Shield className="h-4 w-4 text-[#44BEAF]" />
+                <span className="text-xs font-medium text-white/70">
                   HIPAA Compliant
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <HeartHandshake className="h-4 w-4 text-warmth" />
-                <span className="text-xs font-medium text-muted-foreground">
+                <HeartHandshake className="h-4 w-4 text-[#FFA500]" />
+                <span className="text-xs font-medium text-white/70">
                   SOC 2 Type II
                 </span>
               </div>
@@ -121,7 +121,7 @@ export function Footer({ compact = false }: FooterProps) {
 
           {/* Link columns */}
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-white">
               Product
             </h3>
             <ul className="mt-4 space-y-3">
@@ -129,7 +129,7 @@ export function Footer({ compact = false }: FooterProps) {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-health"
+                    className="text-sm text-white/70 transition-colors hover:text-[#44BEAF]"
                   >
                     {link.label}
                   </Link>
@@ -139,7 +139,7 @@ export function Footer({ compact = false }: FooterProps) {
           </div>
 
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-white">
               Resources
             </h3>
             <ul className="mt-4 space-y-3">
@@ -147,7 +147,7 @@ export function Footer({ compact = false }: FooterProps) {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-health"
+                    className="text-sm text-white/70 transition-colors hover:text-[#44BEAF]"
                   >
                     {link.label}
                   </Link>
@@ -157,7 +157,7 @@ export function Footer({ compact = false }: FooterProps) {
           </div>
 
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-white">
               Company
             </h3>
             <ul className="mt-4 space-y-3">
@@ -165,7 +165,7 @@ export function Footer({ compact = false }: FooterProps) {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-health"
+                    className="text-sm text-white/70 transition-colors hover:text-[#44BEAF]"
                   >
                     {link.label}
                   </Link>
@@ -177,30 +177,30 @@ export function Footer({ compact = false }: FooterProps) {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-border">
+      <div className="border-t border-white/20">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-5 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-white/70">
             &copy; {new Date().getFullYear()} CareBridge Health, Inc. All
             rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link
               href="#"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="text-xs text-white/70 transition-colors hover:text-white"
             >
               Privacy Policy
             </Link>
-            <span className="text-muted-foreground/40">&middot;</span>
+            <span className="text-white/40">&middot;</span>
             <Link
               href="#"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="text-xs text-white/70 transition-colors hover:text-white"
             >
               Terms of Service
             </Link>
-            <span className="text-muted-foreground/40">&middot;</span>
+            <span className="text-white/40">&middot;</span>
             <Link
               href="#"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="text-xs text-white/70 transition-colors hover:text-white"
             >
               Cookie Policy
             </Link>
