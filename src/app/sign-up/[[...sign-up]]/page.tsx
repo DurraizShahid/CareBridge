@@ -1,8 +1,61 @@
-import { SignUp } from "@clerk/nextjs";
-import { Heart } from "lucide-react";
-import Link from "next/link";
+'use client';
+
+import { useState } from 'react';
+import { useSignUp, useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { Heart } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 
 export default function SignUpPage() {
+  const { signUp, errors, fetchStatus } = useSignUp();
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const [step, setStep] = useState<'info' | 'verify'>('info');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [password, setPassword] = useState('');
+  const [verifyCode, setVerifyCode] = useState('');
+
+  if (isSignedIn) {
+    router.push('/onboarding');
+    return null;
+  }
+
+  const handleInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signUp.create({
+      firstName,
+      lastName,
+      emailAddress,
+      password,
+    });
+    if (signUp.status === 'missing_requirements' && signUp.unverifiedFields.includes('email_address')) {
+      await signUp.verifications.sendEmailCode();
+      setStep('verify');
+    }
+  };
+
+  const handleVerifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signUp.verifications.verifyEmailCode({ code: verifyCode });
+    if (signUp.status === 'complete') {
+      await signUp.finalize({
+        navigate: async ({ session, decorateUrl }) => {
+          const url = decorateUrl('/onboarding');
+          if (url.startsWith('http')) {
+            window.location.href = url;
+          } else {
+            router.push(url);
+          }
+        },
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Left — Brand Panel */}
@@ -76,40 +129,151 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          <SignUp
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-none p-0 w-full",
-                headerTitle: "hidden",
-                headerSubtitle: "hidden",
-                socialButtonsBlockButton:
-                  "border border-border bg-background hover:bg-muted text-foreground text-sm font-medium rounded-lg h-10",
-                socialButtonsBlockButton__google:
-                  "border border-border bg-background hover:bg-muted text-foreground text-sm font-medium rounded-lg h-10",
-                dividerLine: "bg-border",
-                dividerText:
-                  "text-xs text-muted-foreground",
-                formFieldLabel:
-                  "text-sm font-medium text-foreground",
-                formFieldInput:
-                  "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-                formButtonPrimary:
-                  "inline-flex h-10 items-center justify-center rounded-lg bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px",
-                footerActionLink:
-                  "text-sm text-health hover:text-health/80",
-                footerActionText:
-                  "text-sm text-muted-foreground",
-                identityPreviewText:
-                  "text-sm text-foreground",
-                identityPreviewEditButton:
-                  "text-sm text-health hover:text-health/80",
-                formFieldAction:
-                  "text-xs text-health hover:text-health/80",
-              },
-            }}
-          />
+          {step === 'info' && (
+            <form onSubmit={handleInfoSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    First name
+                  </label>
+                  <Input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="John"
+                    required
+                  />
+                  {errors?.fields?.firstName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.fields.firstName.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Last name
+                  </label>
+                  <Input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Doe"
+                    required
+                  />
+                  {errors?.fields?.lastName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.fields.lastName.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Email address
+                </label>
+                <Input
+                  type="email"
+                  value={emailAddress}
+                  onChange={(e) => setEmailAddress(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                />
+                {errors?.fields?.emailAddress && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.emailAddress.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Password
+                </label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password"
+                  required
+                />
+                {errors?.fields?.password && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.password.message}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={fetchStatus === 'fetching'}
+              >
+                {fetchStatus === 'fetching' && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Continue
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/sign-in" className="text-health hover:text-health/80">
+                  Sign in
+                </Link>
+              </p>
+            </form>
+          )}
+
+          {step === 'verify' && (
+            <form onSubmit={handleVerifySubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Verification code
+                </label>
+                <Input
+                  type="text"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                  placeholder="Enter 6-digit code"
+                  required
+                />
+                {errors?.fields?.code && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.code.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep('info')}
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  {fetchStatus === 'fetching' && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Verify
+                </Button>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={async () => {
+                  await signUp.verifications.sendEmailCode();
+                }}
+                disabled={fetchStatus === 'fetching'}
+              >
+                Resend code
+              </Button>
+            </form>
+          )}
         </div>
+        {/* Required for sign-up flows */}
+        <div id="clerk-captcha" />
       </div>
     </div>
   );

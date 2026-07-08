@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import type { UserModel as DatabaseUser } from "@/generated/prisma/models/User";
 import { getServerOrganization } from "@/lib/server-organization";
 import { UsersTable } from "./users-table";
+// Import invite codes tab component with proper casing to match actual file name
 import { InviteCodesTab } from "./invite-codes-tab";
 import { JoinRequestsTab } from "./join-requests-tab";
 import type { DashboardUser } from "./types";

@@ -1,8 +1,72 @@
-import { SignIn } from "@clerk/nextjs";
-import Image from "next/image";
-import Link from "next/link";
+'use client';
+
+import { useState } from 'react';
+import { useSignIn, useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 
 export default function SignInPage() {
+  const { signIn, errors, fetchStatus } = useSignIn();
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const [step, setStep] = useState<'email' | 'password' | 'mfa'>('email');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [password, setPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+
+  if (isSignedIn) {
+    router.push('/onboarding');
+    return null;
+  }
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signIn.create({ identifier: emailAddress });
+    if (signIn.status === 'needs_first_factor') {
+      setStep('password');
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signIn.password({ identifier: emailAddress, password });
+    if (signIn.status === 'needs_second_factor') {
+      setStep('mfa');
+    } else if (signIn.status === 'complete') {
+      await signIn.finalize({
+        navigate: async ({ session, decorateUrl }) => {
+          const url = decorateUrl('/onboarding');
+          if (url.startsWith('http')) {
+            window.location.href = url;
+          } else {
+            router.push(url);
+          }
+        },
+      });
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signIn.mfa.verifyTOTP({ code: mfaCode });
+    if (signIn.status === 'complete') {
+      await signIn.finalize({
+        navigate: async ({ session, decorateUrl }) => {
+          const url = decorateUrl('/onboarding');
+          if (url.startsWith('http')) {
+            window.location.href = url;
+          } else {
+            router.push(url);
+          }
+        },
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Left — Brand Panel */}
@@ -84,39 +148,117 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <SignIn
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-none p-0 w-full",
-                headerTitle: "hidden",
-                headerSubtitle: "hidden",
-                socialButtonsBlockButton:
-                  "border border-border bg-background hover:bg-muted text-foreground text-sm font-medium rounded-lg h-10",
-                socialButtonsBlockButton__google:
-                  "border border-border bg-background hover:bg-muted text-foreground text-sm font-medium rounded-lg h-10",
-                dividerLine: "bg-border",
-                dividerText:
-                  "text-xs text-muted-foreground",
-                formFieldLabel:
-                  "text-sm font-medium text-foreground",
-                formFieldInput:
-                  "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-                formButtonPrimary:
-                  "inline-flex h-10 items-center justify-center rounded-lg bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px",
-                footerActionLink:
-                  "text-sm text-health hover:text-health/80",
-                footerActionText:
-                  "text-sm text-muted-foreground",
-                identityPreviewText:
-                  "text-sm text-foreground",
-                identityPreviewEditButton:
-                  "text-sm text-health hover:text-health/80",
-                formFieldAction:
-                  "text-xs text-health hover:text-health/80",
-              },
-            }}
-          />
+          {step === 'email' && (
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Email address
+                </label>
+                <Input
+                  type="email"
+                  value={emailAddress}
+                  onChange={(e) => setEmailAddress(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                />
+                {errors?.fields?.identifier && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.identifier.message}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={fetchStatus === 'fetching'}
+              >
+                {fetchStatus === 'fetching' && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Continue
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link href="/sign-up" className="text-health hover:text-health/80">
+                  Sign up
+                </Link>
+              </p>
+            </form>
+          )}
+
+          {step === 'password' && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Password
+                </label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+                {errors?.fields?.password && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.password.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep('email')}
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  {fetchStatus === 'fetching' && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Sign in
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {step === 'mfa' && (
+            <form onSubmit={handleMfaSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Two-factor code
+                </label>
+                <Input
+                  type="text"
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                  placeholder="Enter your 2FA code"
+                  required
+                />
+                {errors?.fields?.code && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.fields.code.message}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={fetchStatus === 'fetching'}
+              >
+                {fetchStatus === 'fetching' && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Verify
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </div>
