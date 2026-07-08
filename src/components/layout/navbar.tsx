@@ -18,7 +18,7 @@ export function Navbar() {
 
   return (
     <div
-      className={`absolute inset-x-0 z-20 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
+      className={`absolute inset-x-0 z-30 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
         scrolled
           ? "fixed top-0 bg-[#134675] shadow-lg"
           : "top-0 pt-[50px]"
