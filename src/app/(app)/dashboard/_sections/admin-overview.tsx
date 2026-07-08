@@ -157,7 +157,7 @@ export default async function AdminOverview({ organizationId, role }: SectionPro
               <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
               Platform Health
             </h2>
-            <Card className="bg-gradient-to-br from-card to-primary/[0.02] shadow-sm">
+            <Card className="border-l-2 border-l-primary/60 shadow-sm">
               <CardContent className="p-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">

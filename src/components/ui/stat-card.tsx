@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface StatCardProps {
@@ -15,58 +14,56 @@ interface StatCardProps {
 }
 
 const variantStyles = {
-  default: "bg-card text-card-foreground",
-  health:
-    "bg-gradient-to-br from-card to-health/[0.03] text-card-foreground border-health/15",
-  info:
-    "bg-gradient-to-br from-card to-primary/[0.03] text-card-foreground border-primary/15",
+  default: "border-border",
+  health: "border-l-2 border-l-health/60 border-border",
+  info: "border-l-2 border-l-primary/60 border-border",
 };
 
-const iconStyles = {
-  default: "bg-muted text-foreground",
-  health: "bg-health/10 text-health group-hover:bg-health/15",
-  info: "bg-primary/10 text-primary group-hover:bg-primary/15",
+const iconContainerStyles = {
+  default: "bg-muted/80 text-muted-foreground",
+  health: "bg-health/12 text-health",
+  info: "bg-primary/12 text-primary",
+};
+
+const trendStyles = {
+  positive: "text-health",
+  negative: "text-destructive",
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5",
         variantStyles[variant],
       )}
     >
-      <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-full opacity-[0.03]">
-        <div className="h-full w-full rounded-full bg-foreground" />
-      </div>
-      <CardContent className="flex flex-col gap-2 p-5">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">{title}</span>
-          <Badge
-            variant="secondary"
+      <CardContent className="flex flex-col gap-3 p-5">
+        <div className="flex items-start justify-between">
+          <span className="text-sm font-medium leading-none text-muted-foreground">{title}</span>
+          <div
             className={cn(
-              "h-9 w-9 rounded-lg p-0 transition-colors duration-200",
-              iconStyles[variant],
+              "flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-200",
+              iconContainerStyles[variant],
             )}
           >
-            <Icon className="h-5 w-5" />
-          </Badge>
+            <Icon className="size-[18px]" />
+          </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="font-heading text-3xl font-bold tracking-tight text-foreground">
+          <span className="font-heading text-3xl font-bold tracking-tight text-foreground tabular-nums">
             {value}
           </span>
           {trend && (
-            <Badge
-              variant="ghost"
+            <span
               className={cn(
-                "h-auto px-0 text-sm font-medium hover:bg-transparent",
-                trend.positive ? "text-health" : "text-destructive",
+                "text-xs font-medium",
+                trend.positive ? trendStyles.positive : trendStyles.negative,
               )}
             >
               {trend.positive ? "+" : ""}
               {trend.value}
-            </Badge>
+            </span>
           )}
         </div>
       </CardContent>

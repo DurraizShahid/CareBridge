@@ -94,7 +94,7 @@ export default async function FacilityOverview({ organizationId, role, userId }:
               <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
               My Facility
             </h2>
-            <Card className="bg-gradient-to-br from-card to-health/[0.02] shadow-sm">
+            <Card className="border-l-2 border-l-health/60 shadow-sm">
               <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>

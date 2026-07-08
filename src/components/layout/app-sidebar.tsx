@@ -29,6 +29,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 interface NavItem {
@@ -185,6 +186,7 @@ function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
 export function AppSidebar() {
   const { user } = useUser();
   const { role: permissionsRole } = usePermissions();
+  const { setOpen } = useSidebar();
   const [serverRole, setServerRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -197,19 +199,23 @@ export function AppSidebar() {
   const effectiveRole = serverRole ?? permissionsRole;
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar
+      collapsible="icon"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <SidebarHeader>
-        <Link href="/dashboard" className="flex items-center gap-3 px-1 h-14 shrink-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+        <Link href="/dashboard" className="group/logo flex items-center gap-3 px-1 h-14 shrink-0 transition-all duration-200 hover:opacity-80 group-data-[collapsible=icon]:justify-center">
+          <div className="flex size-8 shrink-0 items-center justify-center group-data-[collapsible=icon]:p-2 transition-transform duration-200 group-hover/logo:scale-110 group-hover/logo:drop-shadow-[0_0_8px_rgba(0,200,200,0.3)]">
             <Image
               src="/carebridge.svg"
               alt="CareBridge"
               width={32}
               height={32}
-              className="size-8"
+              className="size-8 group-data-[collapsible=icon]:size-4"
             />
           </div>
-          <span className="text-sm font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+          <span className="text-sm font-semibold text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:hidden group-hover/logo:tracking-wide">
             CareBridge
           </span>
         </Link>
@@ -221,16 +227,18 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <Show when="signed-in">
-          <div className="flex items-center gap-3 px-1 py-2 border-t border-sidebar-border pt-4">
-            <UserButton
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: "size-8",
-                  userButtonTrigger:
-                    "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
-                },
-              }}
-            />
+          <div className="group/user flex items-center gap-3 px-1 py-2 border-t border-sidebar-border pt-4 transition-colors duration-200 hover:bg-sidebar-accent/50 rounded-xl cursor-pointer group-data-[collapsible=icon]:justify-center">
+            <div className="flex items-center justify-center group-data-[collapsible=icon]:p-2 transition-transform duration-200 group-hover/user:scale-110">
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "size-8 group-data-[collapsible=icon]:size-4 transition-shadow duration-200 group-hover/user:shadow-[0_0_0_2px_rgba(0,200,200,0.3)]",
+                    userButtonTrigger:
+                      "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
+                  },
+                }}
+              />
+            </div>
             <UserInfo user={user} effectiveRole={effectiveRole} />
           </div>
         </Show>

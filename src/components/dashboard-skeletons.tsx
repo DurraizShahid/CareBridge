@@ -23,7 +23,7 @@ export function StatsGridSkeleton() {
           <CardContent className="flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <Skeleton className="h-3.5 w-28" />
-              <Skeleton className="h-9 w-9 rounded-lg" />
+              <Skeleton className="h-9 w-9 rounded-xl" />
             </div>
             <div className="flex items-baseline gap-2">
               <Skeleton className="h-7 w-16 align-middle" />
