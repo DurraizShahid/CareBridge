@@ -34,7 +34,7 @@ export function Navbar() {
               alt="CareBridge"
               width={185}
               height={53}
-              className="h-[41px] w-auto sm:h-[47px]"
+              className="h-[35px] w-auto sm:h-[40px]"
             />
           </Link>
 
