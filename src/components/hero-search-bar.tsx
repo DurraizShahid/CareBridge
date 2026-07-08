@@ -53,7 +53,8 @@ export function HeroSearchBar() {
           </div>
           <Button
             size="lg"
-            className="h-12 shrink-0 gap-2 bg-health px-6 text-sm font-semibold text-primary shadow-lg shadow-health/25 transition-all hover:bg-health/90 hover:shadow-xl hover:shadow-health/30 active:translate-y-px sm:w-auto"
+            className="h-12 shrink-0 gap-2 px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
+            style={{ backgroundColor: "#44BEAF" }}
           >
             <Search className="h-4 w-4" />
             <span>Find Facilities</span>

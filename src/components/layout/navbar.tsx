@@ -3,58 +3,60 @@
 import { AuthControls } from "@/components/auth-controls";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="relative z-10 pt-4 sm:pt-5 lg:pt-6">
-      <nav className="relative mx-4 flex h-16 items-center px-4 sm:mx-6 sm:px-6 lg:mx-8 lg:px-8">
-        {/* Logo - Left */}
-        <div className="flex items-center gap-2">
-          <Image
-            src="/carebridge.svg"
-            alt="CareBridge"
-            width={32}
-            height={32}
-            className="h-8 w-8"
-          />
-          <span className="font-heading text-xl font-bold text-white">
-            CareBridge
-          </span>
-        </div>
-
-        {/* Menu Items - Center */}
-        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-6 sm:flex lg:gap-8">
-          <a
-            href="#features"
-            className="text-sm font-medium text-white transition-colors hover:text-white/80"
-          >
-            Features
-          </a>
-          <a
-            href="#about"
-            className="text-sm font-medium text-white transition-colors hover:text-white/80"
-          >
-            About
-          </a>
-          <a
-            href="#contact"
-            className="text-sm font-medium text-white transition-colors hover:text-white/80"
-          >
-            Contact Us
-          </a>
-          <Link
-            href="/sign-up"
-            className="text-sm font-medium text-white transition-colors hover:text-white/80"
-          >
-            Register
+    <div
+      className={`absolute inset-x-0 z-20 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
+        scrolled
+          ? "fixed top-0 bg-[#134675]/95 shadow-lg backdrop-blur-md"
+          : "top-0 pt-[50px]"
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        {/* Left bar - Logo + Nav links */}
+        <nav className="flex h-12 items-center gap-1 rounded-full bg-[#134675]/90 px-3 backdrop-blur-md sm:h-14 sm:px-4 lg:px-5">
+          {/* Logo */}
+          <Link href="/" className="mr-[20px] flex items-center">
+            <Image
+              src="/Images/Logo.png"
+              alt="CareBridge"
+              width={185}
+              height={53}
+              className="h-[41px] w-auto sm:h-[47px]"
+            />
           </Link>
-        </div>
 
-        {/* Auth Controls - Right */}
-        <div className="ml-auto hidden sm:block">
+          {/* Nav links - centered */}
+          <div className="hidden items-center gap-[5px] lg:flex">
+            {["Features", "Solutions", "About", "Resources"].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                {item}
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        {/* Right bar - Auth controls */}
+        <div className="flex h-12 items-center rounded-full bg-[#134675]/90 px-2 backdrop-blur-md sm:h-14 sm:px-3">
           <AuthControls />
         </div>
-      </nav>
+      </div>
     </div>
   );
 }

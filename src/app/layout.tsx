@@ -52,14 +52,13 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", inter.variable, "font-sans", raleway.variable)}
       suppressHydrationWarning
     >
-      <head>
+      <head />
+      <body className="min-h-full flex flex-col font-heading">
         <Script
           id="theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
-      </head>
-      <body className="min-h-full flex flex-col font-heading">
         <ClerkProvider
           signInUrl="/sign-in"
           signUpUrl="/sign-up"

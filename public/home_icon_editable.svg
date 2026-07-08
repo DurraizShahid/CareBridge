@@ -1,0 +1,7 @@
+<svg width="166" height="190" viewBox="0 0 166 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g id="home-icon" stroke="#303236" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path id="roof" d="M9 103L82 39L148 103"/>
+    <path id="chimney" d="M108 50H130V72"/>
+    <path id="walls" d="M30 104V160H131V104"/>
+  </g>
+</svg>

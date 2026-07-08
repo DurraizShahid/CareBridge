@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .brand { stroke: #ff3f6f; stroke-width: 28; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .title { font-family: Poppins, Montserrat, Arial, sans-serif; font-size: 70px; font-weight: 700; fill: #000000; }
+      .subtitle { font-family: Poppins, Montserrat, Arial, sans-serif; font-size: 34px; font-weight: 400; letter-spacing: 1px; fill: #111111; }
+    </style>
+  </defs>
+
+  <!-- transparent background -->
+
+  <!-- icon -->
+  <g transform="translate(0,10)">
+    <!-- house outline -->
+    <path class="brand" d="M485 290
+                           L485 186
+                           L600 84
+                           L715 186
+                           L715 290
+                           C715 328 686 357 647 357
+                           C628 357 611 350 600 338
+                           C589 350 572 357 553 357
+                           C514 357 485 328 485 290"/>
+
+    <!-- heart outline -->
+    <path class="brand" d="M600 318
+                           C600 318 520 254 520 204
+                           C520 172 545 150 578 150
+                           C592 150 604 158 600 173
+                           C596 158 608 150 622 150
+                           C655 150 680 172 680 204
+                           C680 254 600 318 600 318Z"/>
+  </g>
+
+  <!-- text -->
+  <text x="600" y="560" text-anchor="middle" class="title">Home Care</text>
+  <text x="600" y="610" text-anchor="middle" class="subtitle">SLOGAN GOES HERE</text>
+</svg>
