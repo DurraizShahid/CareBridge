@@ -18,7 +18,7 @@ export function Navbar() {
 
   return (
     <div
-      className={`absolute inset-x-0 z-20 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
+      className={`absolute inset-x-0 z-30 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
         scrolled
           ? "fixed top-0 bg-[#134675] shadow-lg"
           : "top-0 pt-[50px]"
@@ -44,7 +44,7 @@ export function Navbar() {
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                className="relative z-10 rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
               >
                 {item}
               </a>

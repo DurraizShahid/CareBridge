@@ -58,7 +58,7 @@ export default function Page() {
           <Navbar />
 
           {/* Content - Left aligned with logo */}
-          <div className="absolute inset-0 z-10 flex items-center">
+          <div className="absolute inset-0 z-20 flex items-center">
             <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
               <div className="ml-[70px] max-w-2xl">
                 <h1 className="font-heading text-4xl font-bold tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl xl:text-7xl">
@@ -72,7 +72,7 @@ export default function Page() {
                 <div className="mt-8 flex items-center gap-4">
                   <a
                     href="/sign-up"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-8 text-sm font-semibold text-[#134675] shadow-lg transition-all hover:bg-white/90 hover:shadow-xl active:translate-y-px"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-8 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#134675] hover:shadow-xl active:translate-y-px"
                   >
                     Get started
                   </a>
@@ -88,7 +88,7 @@ export default function Page() {
           </div>
 
           {/* Search Bar - Bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
+          <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
             <div className="mx-auto max-w-7xl">
               <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 shadow-xl backdrop-blur-md sm:p-6">
                 <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -124,7 +124,7 @@ export default function Page() {
                   {/* Search button */}
                   <button
                     type="button"
-                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
+                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#134675] hover:shadow-xl active:translate-y-px sm:w-auto"
                   >
                     <Search className="h-4 w-4" />
                     <span>Find Facilities</span>
@@ -134,6 +134,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
 
         {/* Trust Bar - Company logos */}
         <section className="border-y border-gray-200 bg-gray-100 py-12">
@@ -154,7 +157,10 @@ export default function Page() {
           </div>
         </section>
 
-        {/* Feature Showcase - Okta style: two-column cards */}
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
+
+        {/* Feature Showcase - 4 cards in one row */}
         <section id="features" className="bg-gradient-to-br from-[#134675] via-[#1a5c8f] to-[#44BEAF] py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
@@ -167,277 +173,162 @@ export default function Page() {
               </p>
             </div>
 
-            {/* Feature Card 1 */}
-            <div className="mx-auto mt-16 grid max-w-5xl items-center gap-12 lg:grid-cols-2">
-              <div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="mt-5 font-heading text-2xl font-bold text-white">
-                  Social Worker Portal
-                </h3>
-                <p className="mt-3 text-base leading-7 text-white/80">
-                  Streamlined case management tools for hospital social workers
-                  and discharge planners to assess, match, and place patients
-                  efficiently.
-                </p>
-                <div className="mt-6 flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Real-time availability
-                    </span>
+            {/* 4 Cards in one row */}
+            <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Card 1 - Social Worker Portal */}
+              <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(0,0,0,0.1),0_0_20px_rgba(255,255,255,0.1)]">
+                <div className="absolute inset-0 rounded-3xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+                <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-gradient-to-r from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-y-0 left-0 w-px rounded-l-3xl bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-x-0 bottom-0 h-px rounded-b-3xl bg-gradient-to-r from-black/0 via-black/20 to-black/0" />
+                <div className="absolute inset-y-0 right-0 w-px rounded-r-3xl bg-gradient-to-b from-black/0 via-black/20 to-black/0" />
+                <div className="absolute -left-16 -top-16 h-32 w-32 rotate-45 bg-gradient-to-br from-pink-400/20 via-purple-400/20 to-cyan-400/20 blur-3xl" />
+                <div className="absolute -bottom-16 -right-16 h-32 w-32 rotate-45 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-purple-400/20 blur-3xl" />
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                    <Users className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      HIPAA compliant
-                    </span>
-                  </div>
-                </div>
-                <a
-                  href="#"
-                  className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline"
-                >
-                  Learn more <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-              <div className="flex justify-center lg:justify-end">
-                <Image
-                  src="/Images/upscalemedia-transformed111.png"
-                  alt="CareBridge Dashboard on Tablet"
-                  width={600}
-                  height={450}
-                  className="w-full max-w-md rounded-2xl shadow-2xl"
-                />
-              </div>
-            </div>
-
-            {/* Feature Card 2 */}
-            <div className="mx-auto mt-20 grid max-w-5xl items-center gap-12 lg:grid-cols-2">
-              <div className="order-2 lg:order-1">
-                <div className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
-                  <div className="space-y-4">
-                    {[
-                      {
-                        icon: Building2,
-                        text: "1,200+ facilities with real-time availability",
-                      },
-                      {
-                        icon: Clock,
-                        text: "Placement decisions in hours, not days",
-                      },
-                      {
-                        icon: FileCheck,
-                        text: "Automated insurance verification",
-                      },
-                      {
-                        icon: Shield,
-                        text: "HIPAA-compliant secure platform",
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.text}
-                        className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm"
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 text-[#44BEAF]" />
-                        <span className="text-sm font-medium text-[#134675]">
-                          {item.text}
-                        </span>
+                  <h4 className="mt-4 font-heading text-lg font-bold leading-tight text-white">
+                    Social Worker Portal
+                  </h4>
+                  <div className="my-4 h-px w-full bg-gradient-to-r from-pink-300/30 via-purple-300/30 to-cyan-300/30" />
+                  <p className="text-sm leading-relaxed text-white/70">
+                    Streamlined case management tools for hospital social workers and discharge planners.
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    {["Real-time availability", "HIPAA compliant"].map((item) => (
+                      <div key={item} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-[#44BEAF]" />
+                        <span className="text-xs text-white/70">{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="order-1 lg:order-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20">
-                  <HomeIcon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="mt-5 font-heading text-2xl font-bold text-white">
-                  Care Setting Discovery
-                </h3>
-                <p className="mt-3 text-base leading-7 text-white/80">
-                  Comprehensive directory of skilled nursing facilities,
-                  rehabilitation centers, assisted living, and home health
-                  agencies with real-time availability.
-                </p>
-                <div className="mt-6 flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Multi-stakeholder tools
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Document sharing
-                    </span>
-                  </div>
-                </div>
-                <a
-                  href="#"
-                  className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline"
-                >
-                  Learn more <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
 
-            {/* Feature Card 3 */}
-            <div className="mx-auto mt-20 grid max-w-5xl items-center gap-12 lg:grid-cols-2">
-              <div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20">
-                  <Shield className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="mt-5 font-heading text-2xl font-bold text-white">
-                  Placement Coordination
-                </h3>
-                <p className="mt-3 text-base leading-7 text-white/80">
-                  End-to-end placement workflow with secure communication,
-                  document sharing, and status tracking across all
-                  stakeholders.
-                </p>
-                <div className="mt-6 flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Secure messaging
-                    </span>
+              {/* Card 2 - Care Setting Discovery */}
+              <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(0,0,0,0.1),0_0_20px_rgba(255,255,255,0.1)]">
+                <div className="absolute inset-0 rounded-3xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+                <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-gradient-to-r from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-y-0 left-0 w-px rounded-l-3xl bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-x-0 bottom-0 h-px rounded-b-3xl bg-gradient-to-r from-black/0 via-black/20 to-black/0" />
+                <div className="absolute inset-y-0 right-0 w-px rounded-r-3xl bg-gradient-to-b from-black/0 via-black/20 to-black/0" />
+                <div className="absolute -left-16 -top-16 h-32 w-32 rotate-45 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-purple-400/20 blur-3xl" />
+                <div className="absolute -bottom-16 -right-16 h-32 w-32 rotate-45 bg-gradient-to-br from-pink-400/20 via-purple-400/20 to-cyan-400/20 blur-3xl" />
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                    <HomeIcon className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Status tracking
-                    </span>
-                  </div>
-                </div>
-                <a
-                  href="#"
-                  className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline"
-                >
-                  Learn more <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-              <div className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
-                <div className="space-y-3">
-                  {[
-                    { step: "01", text: "Patient assessment completed" },
-                    { step: "02", text: "Matching criteria evaluated" },
-                    { step: "03", text: "Facilities notified" },
-                    { step: "04", text: "Placement confirmed" },
-                  ].map((item) => (
-                    <div
-                      key={item.step}
-                      className="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#134675] text-xs font-bold text-white">
-                        {item.step}
+                  <h4 className="mt-4 font-heading text-lg font-bold leading-tight text-white">
+                    Care Setting Discovery
+                  </h4>
+                  <div className="my-4 h-px w-full bg-gradient-to-r from-cyan-300/30 via-blue-300/30 to-purple-300/30" />
+                  <p className="text-sm leading-relaxed text-white/70">
+                    Comprehensive directory of skilled nursing facilities, rehabilitation centers, and home health agencies.
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    {["1,200+ verified facilities", "Real-time availability"].map((item) => (
+                      <div key={item} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-[#44BEAF]" />
+                        <span className="text-xs text-white/70">{item}</span>
                       </div>
-                      <span className="text-sm font-medium text-[#134675]">
-                        {item.text}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Feature Card 4 */}
-            <div className="mx-auto mt-20 grid max-w-5xl items-center gap-12 lg:grid-cols-2">
-              <div className="order-2 lg:order-1">
-                <div className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl bg-white p-4 shadow-sm">
-                      <Heart className="h-6 w-6 text-[#44BEAF]" />
-                      <div className="mt-2 text-sm font-bold text-[#134675]">
-                        Medical Needs
+              {/* Card 3 - Placement Coordination */}
+              <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(0,0,0,0.1),0_0_20px_rgba(255,255,255,0.1)]">
+                <div className="absolute inset-0 rounded-3xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+                <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-gradient-to-r from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-y-0 left-0 w-px rounded-l-3xl bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-x-0 bottom-0 h-px rounded-b-3xl bg-gradient-to-r from-black/0 via-black/20 to-black/0" />
+                <div className="absolute inset-y-0 right-0 w-px rounded-r-3xl bg-gradient-to-b from-black/0 via-black/20 to-black/0" />
+                <div className="absolute -left-16 -top-16 h-32 w-32 rotate-45 bg-gradient-to-br from-green-400/20 via-teal-400/20 to-blue-400/20 blur-3xl" />
+                <div className="absolute -bottom-16 -right-16 h-32 w-32 rotate-45 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 blur-3xl" />
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                    <Shield className="h-5 w-5 text-white" />
+                  </div>
+                  <h4 className="mt-4 font-heading text-lg font-bold leading-tight text-white">
+                    Placement Coordination
+                  </h4>
+                  <div className="my-4 h-px w-full bg-gradient-to-r from-green-300/30 via-teal-300/30 to-blue-300/30" />
+                  <p className="text-sm leading-relaxed text-white/70">
+                    End-to-end placement workflow with secure communication and status tracking.
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    {["Secure messaging", "Status tracking"].map((item) => (
+                      <div key={item} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-[#44BEAF]" />
+                        <span className="text-xs text-white/70">{item}</span>
                       </div>
-                      <div className="mt-1 text-xs text-foreground/50">
-                        Condition-based matching
-                      </div>
-                    </div>
-                    <div className="rounded-xl bg-white p-4 shadow-sm">
-                      <FileCheck className="h-6 w-6 text-[#134675]" />
-                      <div className="mt-2 text-sm font-bold text-[#134675]">
-                        Insurance
-                      </div>
-                      <div className="mt-1 text-xs text-foreground/50">
-                        Coverage verification
-                      </div>
-                    </div>
-                    <div className="rounded-xl bg-white p-4 shadow-sm">
-                      <MapPin className="h-6 w-6 text-[#44BEAF]" />
-                      <div className="mt-2 text-sm font-bold text-[#134675]">
-                        Location
-                      </div>
-                      <div className="mt-1 text-xs text-foreground/50">
-                        Proximity preferences
-                      </div>
-                    </div>
-                    <div className="rounded-xl bg-white p-4 shadow-sm">
-                      <Building2 className="h-6 w-6 text-[#134675]" />
-                      <div className="mt-2 text-sm font-bold text-[#134675]">
-                        Facility
-                      </div>
-                      <div className="mt-1 text-xs text-foreground/50">
-                        Capability matching
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              <div className="order-1 lg:order-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20">
-                  <Heart className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="mt-5 font-heading text-2xl font-bold text-white">
-                  Patient-Centered Matching
-                </h3>
-                <p className="mt-3 text-base leading-7 text-white/80">
-                  Intelligent matching algorithms that consider medical needs,
-                  insurance coverage, location preferences, and facility
-                  capabilities.
-                </p>
-                <div className="mt-6 flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      AI-powered
-                    </span>
+
+              {/* Card 4 - Patient-Centered Matching */}
+              <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(0,0,0,0.1),0_0_20px_rgba(255,255,255,0.1)]">
+                <div className="absolute inset-0 rounded-3xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+                <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-gradient-to-r from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-y-0 left-0 w-px rounded-l-3xl bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+                <div className="absolute inset-x-0 bottom-0 h-px rounded-b-3xl bg-gradient-to-r from-black/0 via-black/20 to-black/0" />
+                <div className="absolute inset-y-0 right-0 w-px rounded-r-3xl bg-gradient-to-b from-black/0 via-black/20 to-black/0" />
+                <div className="absolute -left-16 -top-16 h-32 w-32 rotate-45 bg-gradient-to-br from-rose-400/20 via-orange-400/20 to-yellow-400/20 blur-3xl" />
+                <div className="absolute -bottom-16 -right-16 h-32 w-32 rotate-45 bg-gradient-to-br from-yellow-400/20 via-green-400/20 to-teal-400/20 blur-3xl" />
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                    <Heart className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                    <span className="text-sm text-white/80">
-                      Custom criteria
-                    </span>
+                  <h4 className="mt-4 font-heading text-lg font-bold leading-tight text-white">
+                    Patient-Centered Matching
+                  </h4>
+                  <div className="my-4 h-px w-full bg-gradient-to-r from-rose-300/30 via-orange-300/30 to-yellow-300/30" />
+                  <p className="text-sm leading-relaxed text-white/70">
+                    Intelligent matching algorithms that consider medical needs, insurance, and location.
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    {["AI-powered matching", "Custom criteria"].map((item) => (
+                      <div key={item} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-[#44BEAF]" />
+                        <span className="text-xs text-white/70">{item}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <a
-                  href="#"
-                  className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline"
-                >
-                  Learn more <ArrowRight className="h-4 w-4" />
-                </a>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
+
         {/* About Section - Okta style: stats + story */}
-        <section id="about" className="bg-white py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section id="about" className="relative overflow-hidden py-24 sm:py-32">
+          {/* Background image */}
+          <Image
+            src="/Images/care.png"
+            alt=""
+            fill
+            className="object-cover"
+          />
+          {/* Color overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#134675]/90 via-[#1a5c8f]/85 to-[#44BEAF]/80" />
+          
+          <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
               <div>
-                <h2 className="font-heading text-3xl font-bold tracking-tight text-[#134675] sm:text-4xl">
+                <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
                   Built for those who care
                 </h2>
-                <p className="mt-6 text-base leading-7 text-gray-600">
+                <p className="mt-6 text-base leading-7 text-white/80">
                   CareBridge Health was founded by healthcare professionals who
                   witnessed the challenges hospital social workers face daily:
                   too many patients, too few options, and too much paperwork.
                 </p>
-                <p className="mt-4 text-base leading-7 text-gray-600">
+                <p className="mt-4 text-base leading-7 text-white/80">
                   Our platform streamlines the discharge planning process,
                   reducing placement times from days to hours while ensuring
                   every patient finds the setting that best meets their medical,
@@ -452,7 +343,7 @@ export default function Page() {
                   ].map((item) => (
                     <div key={item} className="flex items-center gap-3">
                       <CheckCircle2 className="h-5 w-5 shrink-0 text-[#44BEAF]" />
-                      <span className="text-sm text-gray-700">{item}</span>
+                      <span className="text-sm text-white/90">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -461,12 +352,12 @@ export default function Page() {
                 {stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-xl border border-gray-200 bg-gray-50 p-6"
+                    className="rounded-xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm"
                   >
-                    <div className="text-3xl font-bold text-[#134675]">
+                    <div className="text-3xl font-bold text-[#44BEAF]">
                       {stat.value}
                     </div>
-                    <div className="mt-2 text-sm text-gray-500">
+                    <div className="mt-2 text-sm text-white/70">
                       {stat.label}
                     </div>
                   </div>
@@ -475,6 +366,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
 
         {/* Resources Section - Okta style: content cards */}
         <section id="resources" className="bg-[#134675] py-24 sm:py-32">
@@ -520,22 +414,37 @@ export default function Page() {
                 <a
                   key={item.title}
                   href="#"
-                  className="group rounded-xl border border-white/10 bg-white/10 p-6 backdrop-blur-sm transition-all hover:bg-white/15"
+                  className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(0,0,0,0.1),0_0_20px_rgba(255,255,255,0.1)] transition-all hover:bg-white/15"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <item.icon className="h-5 w-5 text-[#44BEAF]" />
+                  {/* Beveled edge highlights */}
+                  <div className="absolute inset-0 rounded-3xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+                  <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-gradient-to-r from-white/0 via-white/50 to-white/0" />
+                  <div className="absolute inset-y-0 left-0 w-px rounded-l-3xl bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+                  <div className="absolute inset-x-0 bottom-0 h-px rounded-b-3xl bg-gradient-to-r from-black/0 via-black/20 to-black/0" />
+                  <div className="absolute inset-y-0 right-0 w-px rounded-r-3xl bg-gradient-to-b from-black/0 via-black/20 to-black/0" />
+                  {/* Iridescent effects */}
+                  <div className="absolute -left-12 -top-12 h-24 w-24 rotate-45 bg-gradient-to-br from-pink-400/20 via-purple-400/20 to-cyan-400/20 blur-2xl" />
+                  <div className="absolute -bottom-12 -right-12 h-24 w-24 rotate-45 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-purple-400/20 blur-2xl" />
+                  
+                  <div className="relative">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                      <item.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-white/70">
+                      {item.category}
+                    </div>
+                    <h3 className="mt-2 text-sm font-semibold text-white group-hover:underline">
+                      {item.title}
+                    </h3>
                   </div>
-                  <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#44BEAF]">
-                    {item.category}
-                  </div>
-                  <h3 className="mt-2 text-sm font-semibold text-white group-hover:underline">
-                    {item.title}
-                  </h3>
                 </a>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
 
         {/* CTA Section - Okta style: three cards */}
         <section id="contact" className="bg-muted/30 py-24 sm:py-32">
@@ -603,6 +512,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
       </main>
 
       <Footer />
