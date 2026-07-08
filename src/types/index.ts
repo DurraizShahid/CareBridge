@@ -111,6 +111,8 @@ export interface Hospital {
   address: Address;
   phone: string;
   npi: string;
+  imageUrl?: string;
+  logoUrl?: string;
   organizationId: string;
 }
 
@@ -136,11 +138,26 @@ export interface Patient {
   admissionDate: string;
   estimatedDischargeDate?: string;
   status: PatientStatus;
+  documents?: PatientDocument[];
   createdAt: string;
   updatedAt: string;
 }
 
 export type PatientStatus = "admitted" | "assessment-in-progress" | "ready-for-discharge" | "placed" | "discharged";
+
+export interface PatientDocument {
+  id: string;
+  patientId: string;
+  name: string;
+  key: string;
+  url: string;
+  fileSize?: number;
+  mimeType?: string;
+  category: string;
+  uploadedById: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Facility {
   id: string;
@@ -165,6 +182,25 @@ export interface Facility {
   acceptsMedicare: boolean;
   acceptsMedicaid: boolean;
   organizationId: string;
+  media?: FacilityMedia[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type MediaType = "image" | "gaussian_splat" | "video";
+
+export interface FacilityMedia {
+  id: string;
+  facilityId: string;
+  type: MediaType;
+  key: string;
+  url: string;
+  thumbnailUrl?: string;
+  fileSize?: number;
+  mimeType?: string;
+  width?: number;
+  height?: number;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
 }

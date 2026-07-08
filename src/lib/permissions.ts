@@ -226,6 +226,10 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
     permissions: ["patients:read"],
     redirect: "/dashboard",
   },
+  "/patients/new": {
+    permissions: ["patients:create"],
+    redirect: "/patients",
+  },
   "/facilities": {
     permissions: ["facilities:read"],
     redirect: "/dashboard",

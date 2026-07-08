@@ -24,6 +24,8 @@ export interface HospitalFormValues {
   county?: string;
   phone: string;
   npi: string;
+  imageUrl?: string;
+  logoUrl?: string;
 }
 
 function formValue(formData: FormData, key: string): string {
@@ -42,6 +44,8 @@ function parseHospitalForm(formData: FormData): HospitalFormValues {
     county: formValue(formData, "county") || undefined,
     phone: formValue(formData, "phone"),
     npi: formValue(formData, "npi"),
+    imageUrl: formValue(formData, "imageUrl") || undefined,
+    logoUrl: formValue(formData, "logoUrl") || undefined,
   };
 }
 
@@ -98,6 +102,8 @@ export async function createHospitalAction(
       address: buildAddress(values),
       phone: values.phone,
       npi: values.npi,
+      imageUrl: values.imageUrl,
+      logoUrl: values.logoUrl,
       organizationId,
     });
 
@@ -129,6 +135,8 @@ export async function updateHospitalAction(
         address: buildAddress(values),
         phone: values.phone,
         npi: values.npi,
+        imageUrl: values.imageUrl,
+        logoUrl: values.logoUrl,
       },
       organizationId,
       role,

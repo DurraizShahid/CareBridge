@@ -215,7 +215,7 @@ export function AppSidebar() {
         <NavSection items={mainNavItems} />
         <NavSection items={dashboardNavItems} label="Dashboards" />
         <NavSection items={featureNavItems} label="Features" />
-        <NavSection items={adminNavItems} label="Administration" />
+        <NavSection items={adminNavItems} label="Management" />
       </SidebarContent>
 
       <SidebarSeparator />

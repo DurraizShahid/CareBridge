@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   MapPin,
   Phone,
@@ -7,9 +8,11 @@ import {
   Globe,
   Star,
   Pencil,
-  Trash2,
   Users,
   ClipboardList,
+  ImageIcon,
+  Video,
+  Box,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -279,6 +282,53 @@ export default async function FacilityDetailPage({ params }: Props) {
               )}
             </CardContent>
           </Card>
+
+          {/* Media gallery */}
+          {facility.media && facility.media.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  Media ({facility.media.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {facility.media.map((m) => (
+                    <div
+                      key={m.id}
+                      className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
+                    >
+                      {m.type === "image" && (
+                        <Image
+                          src={m.url}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                        />
+                      )}
+                      {m.type === "gaussian_splat" && (
+                        <div className="flex h-full items-center justify-center">
+                          <Box className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      {m.type === "video" && (
+                        <div className="flex h-full items-center justify-center">
+                          <Video className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <span className="text-xs font-medium text-white capitalize">
+                          {m.type.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Placements section */}
           <Card>

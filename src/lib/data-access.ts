@@ -17,6 +17,8 @@ import type {
   JoinRequest,
   JoinRequestStatus,
   Hospital,
+  FacilityMedia,
+  PatientDocument,
 } from "@/types";
 import { prisma } from "@/lib/prisma";
 
@@ -100,6 +102,7 @@ export async function getFacilities(
   const prismaFacilities = await prisma.facility.findMany({
     where,
     orderBy: { createdAt: "desc" },
+    include: { media: { orderBy: { displayOrder: "asc" } } },
   });
   return prismaFacilities.map((f) => ({
     id: f.id,
@@ -124,6 +127,21 @@ export async function getFacilities(
     acceptsMedicare: f.acceptsMedicare,
     acceptsMedicaid: f.acceptsMedicaid,
     organizationId: f.organizationId,
+    media: f.media?.map((m) => ({
+      id: m.id,
+      facilityId: m.facilityId,
+      type: m.type as any,
+      key: m.key,
+      url: m.url,
+      thumbnailUrl: m.thumbnailUrl ?? undefined,
+      fileSize: m.fileSize ?? undefined,
+      mimeType: m.mimeType ?? undefined,
+      width: m.width ?? undefined,
+      height: m.height ?? undefined,
+      displayOrder: m.displayOrder,
+      createdAt: toISO(m.createdAt),
+      updatedAt: toISO(m.updatedAt),
+    })),
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   }));
@@ -217,7 +235,7 @@ export async function getUsers(
     title: u.title,
     department: u.department,
     hospitalId: u.hospitalId,
-    organizationId: u.organizationId,
+    organizationId: u.organizationId ?? "",
     avatarUrl: u.avatarUrl ?? undefined,
     phone: u.phone,
     createdAt: toISO(u.createdAt),
@@ -323,7 +341,7 @@ export async function getFacilityUsers(
     title: u.title,
     department: u.department,
     hospitalId: u.hospitalId,
-    organizationId: u.organizationId,
+    organizationId: u.organizationId ?? "",
     avatarUrl: u.avatarUrl ?? undefined,
     phone: u.phone,
     createdAt: toISO(u.createdAt),
@@ -399,7 +417,10 @@ export async function getFacility(
   role: string,
 ): Promise<Facility | null> {
   const where = isSuperadmin(role) ? { id } : { id, organizationId };
-  const f = await prisma.facility.findFirst({ where });
+  const f = await prisma.facility.findFirst({
+    where,
+    include: { media: { orderBy: { displayOrder: "asc" } } },
+  });
   if (!f) return null;
   return {
     id: f.id,
@@ -424,6 +445,21 @@ export async function getFacility(
     acceptsMedicare: f.acceptsMedicare,
     acceptsMedicaid: f.acceptsMedicaid,
     organizationId: f.organizationId,
+    media: f.media?.map((m) => ({
+      id: m.id,
+      facilityId: m.facilityId,
+      type: m.type as any,
+      key: m.key,
+      url: m.url,
+      thumbnailUrl: m.thumbnailUrl ?? undefined,
+      fileSize: m.fileSize ?? undefined,
+      mimeType: m.mimeType ?? undefined,
+      width: m.width ?? undefined,
+      height: m.height ?? undefined,
+      displayOrder: m.displayOrder,
+      createdAt: toISO(m.createdAt),
+      updatedAt: toISO(m.updatedAt),
+    })),
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };
@@ -485,6 +521,7 @@ export async function createFacility(
     acceptsMedicare: f.acceptsMedicare,
     acceptsMedicaid: f.acceptsMedicaid,
     organizationId: f.organizationId,
+    media: [],
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };
@@ -554,6 +591,7 @@ export async function updateFacility(
     acceptsMedicare: f.acceptsMedicare,
     acceptsMedicaid: f.acceptsMedicaid,
     organizationId: f.organizationId,
+    media: [],
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };
@@ -590,7 +628,262 @@ export async function deleteFacility(
   return { success: true };
 }
 
+/**
+ * Return a single patient by ID, scoped to the given organization.
+ * Superadmin sees any patient.
+ */
+export async function getPatient(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<Patient | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const p = await prisma.patient.findFirst({ where });
+  if (!p) return null;
+  return {
+    id: p.id,
+    mrn: p.mrn,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    dateOfBirth: toISO(p.dateOfBirth),
+    age: p.age,
+    gender: p.gender as any,
+    address: p.address as any,
+    phone: p.phone,
+    emergencyContact: p.emergencyContact as any,
+    insurance: p.insurance as any,
+    primaryDiagnosis: p.primaryDiagnosis,
+    secondaryDiagnoses: p.secondaryDiagnoses,
+    careLevelRequired: p.careLevelRequired as any,
+    notes: p.notes,
+    socialWorkerId: p.socialWorkerId,
+    hospitalId: p.hospitalId,
+    organizationId: p.organizationId,
+    admissionDate: toISO(p.admissionDate),
+    estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
+    status: p.status as any,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Create a new patient. Permission check handled by calling API route.
+ */
+export async function createPatient(
+  data: Omit<Patient, "id" | "createdAt" | "updatedAt">,
+): Promise<Patient> {
+  const p = await prisma.patient.create({
+    data: {
+      id: crypto.randomUUID(),
+      mrn: data.mrn,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      dateOfBirth: new Date(data.dateOfBirth),
+      age: data.age,
+      gender: data.gender,
+      address: data.address as any,
+      phone: data.phone,
+      emergencyContact: data.emergencyContact as any,
+      insurance: data.insurance as any,
+      primaryDiagnosis: data.primaryDiagnosis,
+      secondaryDiagnoses: data.secondaryDiagnoses,
+      careLevelRequired: kebabToSnake(data.careLevelRequired) as any,
+      notes: data.notes,
+      socialWorkerId: data.socialWorkerId,
+      hospitalId: data.hospitalId,
+      organizationId: data.organizationId,
+      admissionDate: new Date(data.admissionDate),
+      estimatedDischargeDate: data.estimatedDischargeDate ? new Date(data.estimatedDischargeDate) : null,
+      status: kebabToSnake(data.status) as any,
+    },
+  });
+  return {
+    id: p.id,
+    mrn: p.mrn,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    dateOfBirth: toISO(p.dateOfBirth),
+    age: p.age,
+    gender: p.gender as any,
+    address: p.address as any,
+    phone: p.phone,
+    emergencyContact: p.emergencyContact as any,
+    insurance: p.insurance as any,
+    primaryDiagnosis: p.primaryDiagnosis,
+    secondaryDiagnoses: p.secondaryDiagnoses,
+    careLevelRequired: p.careLevelRequired as any,
+    notes: p.notes,
+    socialWorkerId: p.socialWorkerId,
+    hospitalId: p.hospitalId,
+    organizationId: p.organizationId,
+    admissionDate: toISO(p.admissionDate),
+    estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
+    status: p.status as any,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Update an existing patient, scoped to organization.
+ */
+export async function updatePatient(
+  id: string,
+  data: Partial<Omit<Patient, "id" | "createdAt" | "updatedAt">>,
+  organizationId: string,
+  role: string,
+): Promise<Patient | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.patient.findFirst({ where });
+  if (!existing) return null;
+
+  const updateData: Record<string, any> = {};
+  if (data.mrn !== undefined) updateData.mrn = data.mrn;
+  if (data.firstName !== undefined) updateData.firstName = data.firstName;
+  if (data.lastName !== undefined) updateData.lastName = data.lastName;
+  if (data.dateOfBirth !== undefined) updateData.dateOfBirth = new Date(data.dateOfBirth);
+  if (data.age !== undefined) updateData.age = data.age;
+  if (data.gender !== undefined) updateData.gender = data.gender;
+  if (data.address !== undefined) updateData.address = data.address as any;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.emergencyContact !== undefined) updateData.emergencyContact = data.emergencyContact as any;
+  if (data.insurance !== undefined) updateData.insurance = data.insurance as any;
+  if (data.primaryDiagnosis !== undefined) updateData.primaryDiagnosis = data.primaryDiagnosis;
+  if (data.secondaryDiagnoses !== undefined) updateData.secondaryDiagnoses = data.secondaryDiagnoses;
+  if (data.careLevelRequired !== undefined) updateData.careLevelRequired = kebabToSnake(data.careLevelRequired) as any;
+  if (data.notes !== undefined) updateData.notes = data.notes;
+  if (data.socialWorkerId !== undefined) updateData.socialWorkerId = data.socialWorkerId;
+  if (data.hospitalId !== undefined) updateData.hospitalId = data.hospitalId;
+  if (data.admissionDate !== undefined) updateData.admissionDate = new Date(data.admissionDate);
+  if (data.estimatedDischargeDate !== undefined) updateData.estimatedDischargeDate = data.estimatedDischargeDate ? new Date(data.estimatedDischargeDate) : null;
+  if (data.status !== undefined) updateData.status = kebabToSnake(data.status) as any;
+
+  const p = await prisma.patient.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return {
+    id: p.id,
+    mrn: p.mrn,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    dateOfBirth: toISO(p.dateOfBirth),
+    age: p.age,
+    gender: p.gender as any,
+    address: p.address as any,
+    phone: p.phone,
+    emergencyContact: p.emergencyContact as any,
+    insurance: p.insurance as any,
+    primaryDiagnosis: p.primaryDiagnosis,
+    secondaryDiagnoses: p.secondaryDiagnoses,
+    careLevelRequired: p.careLevelRequired as any,
+    notes: p.notes,
+    socialWorkerId: p.socialWorkerId,
+    hospitalId: p.hospitalId,
+    organizationId: p.organizationId,
+    admissionDate: toISO(p.admissionDate),
+    estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
+    status: p.status as any,
+    createdAt: toISO(p.createdAt),
+    updatedAt: toISO(p.updatedAt),
+  };
+}
+
+/**
+ * Delete a patient, scoped to organization.
+ * Returns false if patient not found or has active placements.
+ */
+export async function deletePatient(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<{ success: boolean; error?: string }> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.patient.findFirst({ where });
+  if (!existing) return { success: false, error: "Patient not found" };
+
+  const activePlacements = await prisma.placement.count({
+    where: {
+      patientId: id,
+      NOT: { status: { in: ["completed", "cancelled"] } },
+    },
+  });
+  if (activePlacements > 0) {
+    return {
+      success: false,
+      error: `Cannot delete patient with ${activePlacements} active placement(s)`,
+    };
+  }
+
+  await prisma.patient.delete({ where: { id } });
+  return { success: true };
+}
+
 // ── Organization Functions ──
+
+// ── Patient Document Functions ──
+
+export async function getPatientDocuments(
+  patientId: string,
+): Promise<PatientDocument[]> {
+  const docs = await prisma.patientDocument.findMany({
+    where: { patientId },
+    orderBy: { createdAt: "desc" },
+  });
+  return docs.map((d) => ({
+    id: d.id,
+    patientId: d.patientId,
+    name: d.name,
+    key: d.key,
+    url: d.url,
+    fileSize: d.fileSize ?? undefined,
+    mimeType: d.mimeType ?? undefined,
+    category: d.category,
+    uploadedById: d.uploadedById,
+    createdAt: toISO(d.createdAt),
+    updatedAt: toISO(d.updatedAt),
+  }));
+}
+
+export async function createPatientDocument(
+  data: Omit<PatientDocument, "id" | "createdAt" | "updatedAt">,
+): Promise<PatientDocument> {
+  const d = await prisma.patientDocument.create({
+    data: {
+      id: crypto.randomUUID(),
+      patientId: data.patientId,
+      name: data.name,
+      key: data.key,
+      url: data.url,
+      fileSize: data.fileSize ?? null,
+      mimeType: data.mimeType ?? null,
+      category: data.category,
+      uploadedById: data.uploadedById,
+    },
+  });
+  return {
+    id: d.id,
+    patientId: d.patientId,
+    name: d.name,
+    key: d.key,
+    url: d.url,
+    fileSize: d.fileSize ?? undefined,
+    mimeType: d.mimeType ?? undefined,
+    category: d.category,
+    uploadedById: d.uploadedById,
+    createdAt: toISO(d.createdAt),
+    updatedAt: toISO(d.updatedAt),
+  };
+}
+
+export async function deletePatientDocument(
+  id: string,
+): Promise<{ success: boolean }> {
+  await prisma.patientDocument.delete({ where: { id } });
+  return { success: true };
+}
 
 // ── Hospital Functions ──
 
@@ -613,6 +906,8 @@ export async function getHospitals(
     address: h.address as any,
     phone: h.phone,
     npi: h.npi,
+    imageUrl: h.imageUrl ?? undefined,
+    logoUrl: h.logoUrl ?? undefined,
     organizationId: h.organizationId,
   }));
 }
@@ -634,6 +929,8 @@ export async function getHospital(
     address: h.address as any,
     phone: h.phone,
     npi: h.npi,
+    imageUrl: h.imageUrl ?? undefined,
+    logoUrl: h.logoUrl ?? undefined,
     organizationId: h.organizationId,
   };
 }
@@ -652,6 +949,8 @@ export async function createHospital(
       address: data.address as any,
       phone: data.phone,
       npi: data.npi,
+      imageUrl: data.imageUrl ?? null,
+      logoUrl: data.logoUrl ?? null,
       organizationId: data.organizationId,
     },
   });
@@ -661,6 +960,8 @@ export async function createHospital(
     address: h.address as any,
     phone: h.phone,
     npi: h.npi,
+    imageUrl: h.imageUrl ?? undefined,
+    logoUrl: h.logoUrl ?? undefined,
     organizationId: h.organizationId,
   };
 }
@@ -683,6 +984,8 @@ export async function updateHospital(
   if (data.address !== undefined) updateData.address = data.address as any;
   if (data.phone !== undefined) updateData.phone = data.phone;
   if (data.npi !== undefined) updateData.npi = data.npi;
+  if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl ?? null;
+  if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl ?? null;
 
   const h = await prisma.hospital.update({
     where: { id },
@@ -695,6 +998,8 @@ export async function updateHospital(
     address: h.address as any,
     phone: h.phone,
     npi: h.npi,
+    imageUrl: h.imageUrl ?? undefined,
+    logoUrl: h.logoUrl ?? undefined,
     organizationId: h.organizationId,
   };
 }
@@ -946,6 +1251,84 @@ export async function approveJoinRequest(
   }
 
   return { success: true };
+}
+
+// ── Facility Media Functions ──
+
+export async function getFacilityMedia(
+  facilityId: string,
+): Promise<FacilityMedia[]> {
+  const prismaMedia = await prisma.facilityMedia.findMany({
+    where: { facilityId },
+    orderBy: { displayOrder: "asc" },
+  });
+  return prismaMedia.map((m) => ({
+    id: m.id,
+    facilityId: m.facilityId,
+    type: m.type as any,
+    key: m.key,
+    url: m.url,
+    thumbnailUrl: m.thumbnailUrl ?? undefined,
+    fileSize: m.fileSize ?? undefined,
+    mimeType: m.mimeType ?? undefined,
+    width: m.width ?? undefined,
+    height: m.height ?? undefined,
+    displayOrder: m.displayOrder,
+    createdAt: toISO(m.createdAt),
+    updatedAt: toISO(m.updatedAt),
+  }));
+}
+
+export async function createFacilityMedia(
+  data: Omit<FacilityMedia, "id" | "createdAt" | "updatedAt">,
+): Promise<FacilityMedia> {
+  const m = await prisma.facilityMedia.create({
+    data: {
+      id: crypto.randomUUID(),
+      facilityId: data.facilityId,
+      type: kebabToSnake(data.type) as any,
+      key: data.key,
+      url: data.url,
+      thumbnailUrl: data.thumbnailUrl ?? null,
+      fileSize: data.fileSize ?? null,
+      mimeType: data.mimeType ?? null,
+      width: data.width ?? null,
+      height: data.height ?? null,
+      displayOrder: data.displayOrder,
+    },
+  });
+  return {
+    id: m.id,
+    facilityId: m.facilityId,
+    type: m.type as any,
+    key: m.key,
+    url: m.url,
+    thumbnailUrl: m.thumbnailUrl ?? undefined,
+    fileSize: m.fileSize ?? undefined,
+    mimeType: m.mimeType ?? undefined,
+    width: m.width ?? undefined,
+    height: m.height ?? undefined,
+    displayOrder: m.displayOrder,
+    createdAt: toISO(m.createdAt),
+    updatedAt: toISO(m.updatedAt),
+  };
+}
+
+export async function deleteFacilityMedia(
+  id: string,
+): Promise<{ success: boolean }> {
+  await prisma.facilityMedia.delete({ where: { id } });
+  return { success: true };
+}
+
+export async function updateFacilityMediaOrder(
+  id: string,
+  displayOrder: number,
+): Promise<void> {
+  await prisma.facilityMedia.update({
+    where: { id },
+    data: { displayOrder },
+  });
 }
 
 export async function denyJoinRequest(

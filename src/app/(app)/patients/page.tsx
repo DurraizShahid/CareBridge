@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { Plus, Search } from "lucide-react";
+import { roleHasPermission } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { getPatients } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 
@@ -33,19 +36,19 @@ export default async function PatientsPage() {
   const role = org?.role ?? "customer";
   const patients = await getPatients(organizationId, role);
 
+  const canCreate = org ? roleHasPermission(role, "patients:create") : false;
+
   return (
     <div className="space-y-6">
       <PageHeader title="Patients" description="Manage and view all patients under your care.">
-        <button
-          type="button"
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-        >
-          <Plus className="h-4 w-4" />
-          Add Patient
-        </button>
+        {canCreate && (
+          <Button render={<Link href="/patients/new" />}>
+            <Plus className="h-4 w-4" />
+            Add Patient
+          </Button>
+        )}
       </PageHeader>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -55,7 +58,6 @@ export default async function PatientsPage() {
         />
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full">
           <thead>
@@ -82,41 +84,55 @@ export default async function PatientsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {patients.map((patient) => (
-              <tr
-                key={patient.id}
-                className="transition-colors hover:bg-muted/30"
-              >
+              <tr key={patient.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
-                  <span className="text-sm font-medium text-card-foreground">
+                  <Link
+                    href={`/patients/${patient.id}`}
+                    className="block text-sm font-medium text-card-foreground"
+                  >
                     {patient.firstName} {patient.lastName}
-                  </span>
+                  </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm text-muted-foreground">
+                  <Link
+                    href={`/patients/${patient.id}`}
+                    className="block text-sm text-muted-foreground"
+                  >
                     {patient.mrn}
-                  </span>
+                  </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm text-muted-foreground">
+                  <Link
+                    href={`/patients/${patient.id}`}
+                    className="block text-sm text-muted-foreground"
+                  >
                     {patient.age} / {patient.gender}
-                  </span>
+                  </Link>
                 </td>
                 <td className="max-w-xs truncate px-4 py-3">
-                  <span className="text-sm text-muted-foreground">
-                    {patient.primaryDiagnosis}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm capitalize text-muted-foreground">
-                    {patient.careLevelRequired.replace("-", " ").replace("_", " ")}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[patient.status] ?? ""}`}
+                  <Link
+                    href={`/patients/${patient.id}`}
+                    className="block text-sm text-muted-foreground"
                   >
-                    {statusLabels[patient.status] ?? patient.status}
-                  </span>
+                    {patient.primaryDiagnosis}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/patients/${patient.id}`}
+                    className="block text-sm capitalize text-muted-foreground"
+                  >
+                    {patient.careLevelRequired.replace("-", " ").replace("_", " ")}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  <Link href={`/patients/${patient.id}`} className="block">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[patient.status] ?? ""}`}
+                    >
+                      {statusLabels[patient.status] ?? patient.status}
+                    </span>
+                  </Link>
                 </td>
               </tr>
             ))}

@@ -45,7 +45,7 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
       where: { id: sessionAuth.userId },
     });
     if (dbUser) {
-      organizationId = dbUser.organizationId;
+      organizationId = dbUser.organizationId ?? "";
       role = dbUser.role;
     }
   } catch {

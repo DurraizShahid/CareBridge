@@ -75,6 +75,12 @@ enum FacilityType {
   hospice
 }
 
+enum MediaType {
+  image
+  gaussian_splat
+  video
+}
+
 enum ActivityType {
   placement
   assessment
@@ -170,11 +176,11 @@ model User {
   hospitalId             String
   avatarUrl              String?
   phone                  String
-  organizationId         String
+  organizationId         String?
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
 
-  organization           Organization     @relation(fields: [organizationId], references: [id])
+  organization           Organization?    @relation(fields: [organizationId], references: [id])
   patients               Patient[]
   placements             Placement[]
   activities             ActivityEvent[]
@@ -240,8 +246,48 @@ model Facility {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  organization       Organization @relation(fields: [organizationId], references: [id])
+  organization       Organization     @relation(fields: [organizationId], references: [id])
   placements         Placement[]
+  media              FacilityMedia[]
+}
+
+model FacilityMedia {
+  id             String     @id @default(cuid())
+  facilityId     String
+  type           MediaType
+  key            String
+  url            String
+  thumbnailUrl   String?
+  fileSize       Int?
+  mimeType       String?
+  width          Int?
+  height         Int?
+  displayOrder   Int        @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  facility       Facility   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+}
+
+model PatientDocument {
+  id             String     @id @default(cuid())
+  patientId      String
+  name           String
+  key            String
+  url            String
+  fileSize       Int?
+  mimeType       String?
+  category       String     @default("other")
+  uploadedById   String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  patient        Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  uploadedBy     User       @relation(fields: [uploadedById], references: [id])
+
+  @@index([patientId])
 }
 
 model Placement {
@@ -296,6 +342,8 @@ model Hospital {
   address        Json
   phone          String
   npi            String
+  imageUrl       String?
+  logoUrl        String?
   organizationId String
 
   organization   Organization @relation(fields: [organizationId], references: [id])

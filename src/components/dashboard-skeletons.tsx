@@ -430,6 +430,86 @@ export function FacilityDetailSkeleton() {
   );
 }
 
+export function PatientDetailSkeleton() {
+  return (
+    <div className="space-y-8">
+      <PageHeaderSkeleton />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-44" />
+            <Skeleton className="h-4 w-36" />
+          </CardContent>
+        </Card>
+      </div>
+      <Card>
+        <CardContent className="space-y-3 p-6">
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-4 w-56" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="space-y-3 p-6">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-4 w-40" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function HospitalsTableSkeleton() {
+  return (
+    <div className="space-y-6">
+      <PageHeaderSkeleton />
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-36" />
+      </div>
+      <Card className="py-0">
+        <div className="space-y-1 p-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-48" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function HospitalsPageSkeleton() {
+  return <HospitalsTableSkeleton />;
+}
+
 export function AdminDashboardSkeleton() {
   return (
     <div className="space-y-8">

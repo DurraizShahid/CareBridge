@@ -21,16 +21,18 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ImageIcon,
   MoreHorizontal,
   Pencil,
   Plus,
   Search,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -662,6 +664,30 @@ export function HospitalsTable({
                       required
                     />
                   </FormField>
+                </div>
+
+                <Separator className="my-2" />
+
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Branding</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <ImageUploadButton
+                      label="Hospital Image"
+                      hospitalId={formValues.id}
+                      currentUrl={formValues.imageUrl}
+                      field="image"
+                      onUploaded={(url) => updateField("imageUrl", url)}
+                    />
+                    <ImageUploadButton
+                      label="Hospital Logo"
+                      hospitalId={formValues.id}
+                      currentUrl={formValues.logoUrl}
+                      field="logo"
+                      onUploaded={(url) => updateField("logoUrl", url)}
+                    />
+                  </div>
+                  <input type="hidden" name="imageUrl" value={formValues.imageUrl ?? ""} />
+                  <input type="hidden" name="logoUrl" value={formValues.logoUrl ?? ""} />
                 </div>
               </FieldGroup>
             </form>
