@@ -136,16 +136,16 @@ export default function Page() {
         </section>
 
         {/* Trust Bar - Company logos */}
-        <section className="border-y border-gray-200 bg-gray-100 py-8">
+        <section className="border-y border-gray-200 bg-gray-100 py-12">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <p className="text-center text-sm font-medium text-gray-700">
+            <p className="text-center text-base font-semibold text-gray-700">
               Trusted by leading healthcare organizations
             </p>
-            <div className="mt-6 flex items-center justify-center gap-8 sm:gap-12 lg:gap-16">
+            <div className="mt-8 flex items-center justify-center gap-8 sm:gap-12 lg:gap-16">
               {customerLogos.map((logo) => (
                 <span
                   key={logo}
-                  className="text-sm font-semibold text-gray-600 sm:text-base"
+                  className="text-base font-semibold text-gray-600 sm:text-lg"
                 >
                   {logo}
                 </span>
