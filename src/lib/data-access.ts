@@ -16,6 +16,7 @@ import type {
   InviteCode,
   JoinRequest,
   JoinRequestStatus,
+  Hospital,
 } from "@/types";
 import { prisma } from "@/lib/prisma";
 
@@ -590,6 +591,142 @@ export async function deleteFacility(
 }
 
 // ── Organization Functions ──
+
+// ── Hospital Functions ──
+
+/**
+ * Return hospitals scoped to the given organization.
+ * Superadmin sees all hospitals.
+ */
+export async function getHospitals(
+  organizationId: string,
+  role: string,
+): Promise<Hospital[]> {
+  const where = isSuperadmin(role) ? {} : { organizationId };
+  const prismaHospitals = await prisma.hospital.findMany({
+    where,
+    orderBy: { name: "asc" },
+  });
+  return prismaHospitals.map((h) => ({
+    id: h.id,
+    name: h.name,
+    address: h.address as any,
+    phone: h.phone,
+    npi: h.npi,
+    organizationId: h.organizationId,
+  }));
+}
+
+/**
+ * Return a single hospital by ID, scoped to the given organization.
+ */
+export async function getHospital(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<Hospital | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const h = await prisma.hospital.findFirst({ where });
+  if (!h) return null;
+  return {
+    id: h.id,
+    name: h.name,
+    address: h.address as any,
+    phone: h.phone,
+    npi: h.npi,
+    organizationId: h.organizationId,
+  };
+}
+
+/**
+ * Create a new hospital record.
+ * Permission check is handled by the calling server action.
+ */
+export async function createHospital(
+  data: Omit<Hospital, "id">,
+): Promise<Hospital> {
+  const h = await prisma.hospital.create({
+    data: {
+      id: crypto.randomUUID(),
+      name: data.name,
+      address: data.address as any,
+      phone: data.phone,
+      npi: data.npi,
+      organizationId: data.organizationId,
+    },
+  });
+  return {
+    id: h.id,
+    name: h.name,
+    address: h.address as any,
+    phone: h.phone,
+    npi: h.npi,
+    organizationId: h.organizationId,
+  };
+}
+
+/**
+ * Update an existing hospital, scoped to organization.
+ */
+export async function updateHospital(
+  id: string,
+  data: Partial<Omit<Hospital, "id" | "organizationId">>,
+  organizationId: string,
+  role: string,
+): Promise<Hospital | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.hospital.findFirst({ where });
+  if (!existing) return null;
+
+  const updateData: Record<string, any> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.address !== undefined) updateData.address = data.address as any;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.npi !== undefined) updateData.npi = data.npi;
+
+  const h = await prisma.hospital.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return {
+    id: h.id,
+    name: h.name,
+    address: h.address as any,
+    phone: h.phone,
+    npi: h.npi,
+    organizationId: h.organizationId,
+  };
+}
+
+/**
+ * Delete a hospital, scoped to organization.
+ * Warns but does not block if users are still assigned to this hospital.
+ */
+export async function deleteHospital(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<{ success: boolean; error?: string; warning?: string }> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.hospital.findFirst({ where });
+  if (!existing) return { success: false, error: "Hospital not found" };
+
+  const assignedUsers = await prisma.user.count({
+    where: { hospitalId: id },
+  });
+
+  if (assignedUsers > 0) {
+    await prisma.hospital.delete({ where: { id } });
+    return {
+      success: true,
+      warning: `Deleted hospital with ${assignedUsers} user(s) still assigned.`,
+    };
+  }
+
+  await prisma.hospital.delete({ where: { id } });
+  return { success: true };
+}
 
 export async function getOrganizationById(organizationId: string): Promise<Organization | null> {
   const org = await prisma.organization.findUnique({

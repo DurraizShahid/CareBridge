@@ -3,12 +3,13 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UserRole as UserRoleEnum } from "@/generated/prisma/enums";
 import type { UserRole } from "@/generated/prisma/enums";
+import { normalizeOrganizationType } from "@/lib/organization-role";
 
 /**
  * Maps kebab-case role strings (from Clerk public_metadata)
  * to Prisma's UserRole enum values (snake_case).
  */
-function resolveRole(metadata: Record<string, unknown> | undefined): UserRole {
+function resolveRole(metadata: Record<string, unknown> | undefined): UserRole | null {
   if (metadata?.role && typeof metadata.role === "string") {
     const mapping: Record<string, UserRole> = {
       "social-worker": UserRoleEnum.social_worker,
@@ -18,9 +19,9 @@ function resolveRole(metadata: Record<string, unknown> | undefined): UserRole {
       superadmin: UserRoleEnum.superadmin,
       customer: UserRoleEnum.customer,
     };
-    return mapping[metadata.role] ?? UserRoleEnum.customer;
+    return mapping[metadata.role] ?? null;
   }
-  return UserRoleEnum.customer;
+  return null;
 }
 
 function resolveOrganizationId(metadata: Record<string, unknown> | undefined): string | null {
@@ -61,10 +62,11 @@ export async function POST(req: NextRequest) {
       const data = evt.data as ClerkUserData;
       const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
       const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
-      const role = resolveRole(public_metadata);
-      const orgId = resolveOrganizationId(public_metadata);
       try {
-        const userData: any = {
+        const existingUser = await prisma.user.findUnique({ where: { id } });
+        const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
+        const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
+        const createData = {
           id,
           email,
           firstName: first_name ?? "",
@@ -75,10 +77,8 @@ export async function POST(req: NextRequest) {
           hospitalId: "",
           phone: "",
           avatarUrl: image_url,
+          ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
         };
-        if (orgId) {
-          userData.organization = { connect: { id: orgId } };
-        }
 
         await prisma.user.upsert({
           where: { id },
@@ -88,8 +88,9 @@ export async function POST(req: NextRequest) {
             lastName: last_name ?? "",
             role,
             avatarUrl: image_url,
+            ...(orgId ? { organizationId: orgId } : {}),
           },
-          create: userData,
+          create: createData,
         });
           console.log(`✅ Webhook: user.created — ${email} (${role})`);
       } catch (err) {
@@ -102,10 +103,11 @@ export async function POST(req: NextRequest) {
       const data = evt.data as ClerkUserData;
       const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
       const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
-      const role = resolveRole(public_metadata);
-      const orgId = resolveOrganizationId(public_metadata);
       try {
-        const userData: any = {
+        const existingUser = await prisma.user.findUnique({ where: { id } });
+        const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
+        const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
+        const createData = {
           id,
           email,
           firstName: first_name ?? "",
@@ -116,10 +118,8 @@ export async function POST(req: NextRequest) {
           hospitalId: "",
           phone: "",
           avatarUrl: image_url,
+          ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
         };
-        if (orgId) {
-          userData.organization = { connect: { id: orgId } };
-        }
 
         await prisma.user.upsert({
           where: { id },
@@ -129,8 +129,9 @@ export async function POST(req: NextRequest) {
             lastName: last_name ?? "",
             role,
             avatarUrl: image_url,
+            ...(orgId ? { organizationId: orgId } : {}),
           },
-          create: userData,
+          create: createData,
         });
           console.log(`✅ Webhook: user.updated — ${email} (${role})`);
       } catch (err) {
@@ -156,13 +157,12 @@ export async function POST(req: NextRequest) {
     case "organization.created": {
       const data = evt.data as ClerkOrganizationData;
       const { id, name, slug, public_metadata } = data;
-      // Default to hospital if type not provided
-      const orgType = (public_metadata?.type as string) || "hospital";
+      const orgType = normalizeOrganizationType(public_metadata?.type) ?? "hospital";
       try {
         await prisma.organization.upsert({
           where: { id },
           update: { name, slug },
-          create: { id, name, slug, type: orgType as any },
+          create: { id, name, slug, type: orgType },
         });
         console.log(`✅ Webhook: organization.created — ${name}`);
       } catch (err) {

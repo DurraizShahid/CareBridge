@@ -28,6 +28,8 @@ export const PERMISSION_CATALOG: {
   { key: "facilities:create", label: "Create Facilities", description: "Add new facilities", resource: "facilities" },
   { key: "facilities:update", label: "Update Facilities", description: "Edit facility details", resource: "facilities" },
   { key: "facilities:delete", label: "Delete Facilities", description: "Remove facility records", resource: "facilities" },
+  // Hospitals
+  { key: "hospitals:manage", label: "Manage Hospitals", description: "Create, edit, and delete hospital records", resource: "hospitals" },
   // Users
   { key: "users:read", label: "View Users", description: "View user accounts", resource: "users" },
   { key: "users:read-org", label: "View Org Users", description: "View users within own organization", resource: "users" },
@@ -60,6 +62,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "patients:read", "patients:create", "patients:update", "patients:delete",
     "placements:read", "placements:create", "placements:update", "placements:approve", "placements:delete",
     "facilities:read", "facilities:create", "facilities:update", "facilities:delete",
+    "hospitals:manage",
     "users:read", "users:read-org", "users:create", "users:update", "users:delete", "users:manage-roles",
     "dashboard:overview", "dashboard:staff", "dashboard:facility", "dashboard:admin",
     "settings:read", "settings:write",
@@ -71,6 +74,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "patients:read", "patients:create", "patients:update", "patients:delete",
     "placements:read", "placements:create", "placements:update", "placements:approve", "placements:delete",
     "facilities:read", "facilities:create", "facilities:update",
+    "hospitals:manage",
     "users:read", "users:read-org",
     "dashboard:overview", "dashboard:staff", "dashboard:admin",
     "settings:read",
@@ -207,6 +211,10 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
   },
   "/dashboard/admin": {
     permissions: ["dashboard:admin"],
+    redirect: "/dashboard",
+  },
+  "/dashboard/hospitals": {
+    permissions: ["hospitals:manage"],
     redirect: "/dashboard",
   },
   "/dashboard/users": {

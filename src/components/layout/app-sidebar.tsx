@@ -12,6 +12,7 @@ import {
   Warehouse,
   Shield,
   ShieldCheck,
+  Hospital,
 } from "lucide-react";
 import { UserButton, Show, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ const featureNavItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
   { href: "/dashboard/users", label: "Users", icon: Users, requiredPermission: "users:read-org" },
+  { href: "/dashboard/hospitals", label: "Hospitals", icon: Hospital, requiredPermission: "hospitals:manage" },
   { href: "/admin/permissions", label: "Permissions", icon: ShieldCheck, requiredPermission: "users:manage-roles" },
 ];
 

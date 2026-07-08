@@ -1,7 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UserRole as UserRoleEnum } from '@/generated/prisma/enums';
+import { prismaRoleToAppRole } from '@/lib/organization-role';
 
 export async function PATCH(
   req: Request,
@@ -18,7 +19,7 @@ export async function PATCH(
 
     const joinRequest = await prisma.joinRequest.findUnique({
       where: { id },
-      include: { inviteCode: true },
+      include: { inviteCode: true, organization: true },
     });
 
     if (!joinRequest) {
@@ -38,6 +39,14 @@ export async function PATCH(
         data: {
           organizationId: joinRequest.organizationId,
           role,
+        },
+      });
+
+      await (await clerkClient()).users.updateUserMetadata(joinRequest.userId, {
+        publicMetadata: {
+          organizationId: joinRequest.organizationId,
+          organizationType: joinRequest.organization.type,
+          role: prismaRoleToAppRole(role),
         },
       });
 
@@ -74,7 +83,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error processing join request:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

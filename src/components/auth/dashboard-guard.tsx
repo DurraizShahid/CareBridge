@@ -10,6 +10,7 @@ const DASHBOARD_PERMISSION_MAP: Record<string, Permission | Permission[]> = {
   "/dashboard/staff": "dashboard:staff",
   "/dashboard/facility": "dashboard:facility",
   "/dashboard/admin": "dashboard:admin",
+  "/dashboard/hospitals": "hospitals:manage",
   "/dashboard/users": ["users:manage-roles", "users:read-org"],
 };
 

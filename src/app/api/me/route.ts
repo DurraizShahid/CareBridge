@@ -30,7 +30,7 @@ export async function GET() {
       // DB may not be available
     }
 
-    const role = resolveRole(clerkUser?.publicMetadata?.role, dbUser?.role);
+    const role = resolveRole(dbUser?.role, clerkUser?.publicMetadata?.role);
 
     return NextResponse.json({
     id: authObj.userId,

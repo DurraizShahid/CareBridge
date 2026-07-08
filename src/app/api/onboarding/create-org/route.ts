@@ -1,7 +1,11 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { UserRole as UserRoleEnum } from "@/generated/prisma/enums";
+import {
+  getHighestRoleForOrganizationType,
+  normalizeOrganizationType,
+  prismaRoleToAppRole,
+} from "@/lib/organization-role";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +15,8 @@ export async function POST(req: Request) {
     }
 
     const { name, slug, type } = await req.json();
-    if (!name || !slug || !type) {
+    const organizationType = normalizeOrganizationType(type);
+    if (!name || !slug || !organizationType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -27,11 +32,13 @@ export async function POST(req: Request) {
         id: crypto.randomUUID(),
         name,
         slug,
-        type: (type === "hospital" ? "hospital" : "facility") as any,
+        type: organizationType,
       },
     });
 
-    // Update the user's organization and set role to administrator
+    const ownerRole = getHighestRoleForOrganizationType(organizationType);
+
+    // Update the user's organization and assign the top role for the selected org type.
     const clerkUser = await currentUser();
     const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? "unknown@email.com";
 
@@ -39,14 +46,14 @@ export async function POST(req: Request) {
       where: { id: userId },
       update: {
         organizationId: org.id,
-        role: UserRoleEnum.administrator,
+        role: ownerRole,
       },
       create: {
         id: userId,
         email,
         firstName: clerkUser?.firstName ?? "",
         lastName: clerkUser?.lastName ?? "",
-        role: UserRoleEnum.administrator,
+        role: ownerRole,
         title: "",
         department: "",
         hospitalId: "",
@@ -56,8 +63,16 @@ export async function POST(req: Request) {
       },
     });
 
+    await (await clerkClient()).users.updateUserMetadata(userId, {
+      publicMetadata: {
+        organizationId: org.id,
+        organizationType,
+        role: prismaRoleToAppRole(ownerRole),
+      },
+    });
+
     return NextResponse.json({ success: true, organization: org });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating organization:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

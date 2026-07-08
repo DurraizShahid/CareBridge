@@ -22,6 +22,8 @@ export type Permission =
   | "facilities:create"
   | "facilities:update"
   | "facilities:delete"
+  // ── Hospitals ──
+  | "hospitals:manage"
   // ── Users (admin) ──
   | "users:read"
   | "users:read-org"
