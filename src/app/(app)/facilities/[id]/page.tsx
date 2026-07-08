@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -88,8 +88,9 @@ interface Props {
 export default async function FacilityDetailPage({ params }: Props) {
   const { id } = await params;
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
-  const role = org?.role ?? "customer";
+  if (!org) redirect("/onboarding");
+  const organizationId = org.organizationId;
+  const role = org.role;
 
   const facility = await getFacility(id, organizationId, role);
   if (!facility) notFound();

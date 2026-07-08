@@ -292,77 +292,6 @@ export function PlatformHealthSkeleton() {
   );
 }
 
-export function DashboardPageSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-      <PageHeaderSkeleton />
-      <StatsGridSkeleton />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <Skeleton className="h-3.5 w-36" />
-          <ActivePlacementsSkeleton count={3} />
-        </section>
-        <section className="flex flex-col gap-4">
-          <Skeleton className="h-3.5 w-32" />
-          <RecentActivitySkeleton count={4} />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export function StaffDashboardSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-      <PageHeaderSkeleton />
-      <StatsGridSkeleton />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3.5 w-28" />
-            <Skeleton className="h-3.5 w-20" />
-          </div>
-          <MyCaseloadSkeleton count={3} />
-        </section>
-        <section className="flex flex-col gap-4">
-          <Skeleton className="h-3.5 w-36" />
-          <PendingApprovalsSkeleton count={2} />
-          <Skeleton className="h-3.5 w-32" />
-          <RecentActivitySkeleton count={4} />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export function FacilityDashboardSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-      <PageHeaderSkeleton />
-      <StatsGridSkeleton />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3.5 w-36" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-          <ReferralRequestsSkeleton count={3} />
-        </section>
-        <section className="flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-3.5 w-24" />
-            <MyFacilitySkeleton />
-          </div>
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-3.5 w-36" />
-            <FacilityNetworkSkeleton count={3} />
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
 export function FacilityDetailSkeleton() {
   return (
     <div className="flex flex-col gap-8">
@@ -575,46 +504,136 @@ export function HospitalsPageSkeleton() {
   return <HospitalsTableSkeleton />;
 }
 
-export function AdminDashboardSkeleton() {
+export function UsersTableSkeleton() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <PageHeaderSkeleton />
-      <StatsGridSkeleton />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3.5 w-44" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-          <PlacementsByMonthSkeleton />
-        </section>
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3.5 w-36" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-          <UsersByRoleSkeleton />
-        </section>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-56" />
+        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-28" />
       </div>
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3.5 w-28" />
-            <Skeleton className="h-3.5 w-20" />
-          </div>
-          <RecentUsersSkeleton count={3} />
-        </section>
-        <section className="flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-3.5 w-48" />
-            <RecentActivitySkeleton count={4} />
-          </div>
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-3.5 w-32" />
-            <PlatformHealthSkeleton />
-          </div>
-        </section>
+      <Card className="overflow-hidden py-0 shadow-sm">
+        <div className="flex flex-col gap-1 p-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <Skeleton className="h-4 w-4 rounded-[4px]" />
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <Skeleton className="h-3.5 w-40" />
+                <Skeleton className="h-3 w-56" />
+              </div>
+              <Skeleton className="h-5 w-28 rounded-md" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-20 rounded-md" />
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-56" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+        </div>
       </div>
     </div>
   );
 }
+
+export function InviteCodesTableSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-40" />
+      </div>
+      <Card className="overflow-hidden py-0 shadow-sm">
+        <CardContent className="flex flex-col gap-1 p-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <Skeleton className="h-4 w-4 rounded-[4px]" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-28 rounded-md" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-5 w-20 rounded-md" />
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function JoinRequestsTableSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-28" />
+      </div>
+      <Card className="overflow-hidden py-0 shadow-sm">
+        <CardContent className="flex flex-col gap-1 p-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <Skeleton className="h-4 w-4 rounded-[4px]" />
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <Skeleton className="h-3.5 w-36" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-5 w-20 rounded-md" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function UsersPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-20" />
+        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-32" />
+      </div>
+      <UsersTableSkeleton />
+    </div>
+  );
+}
+
+export function DashboardPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <PageHeaderSkeleton />
+      <StatsGridSkeleton />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
+        <Card>
+          <CardContent className="flex flex-col gap-4 p-6">
+            <Skeleton className="h-5 w-40" />
+            <ActivePlacementsSkeleton />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col gap-4 p-6">
+            <Skeleton className="h-5 w-36" />
+            <RecentActivitySkeleton />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+

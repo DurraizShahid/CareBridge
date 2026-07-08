@@ -1,11 +1,8 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import { resolveRole, roleHasPermission } from "@/lib/permissions";
 import { createHospital, updateHospital, deleteHospital } from "@/lib/data-access";
-import { getServerOrganization } from "@/lib/server-organization";
+import { requireOrgPermission } from "@/lib/server-auth";
 import type { Address } from "@/types";
 
 export type HospitalActionState = {
@@ -72,20 +69,9 @@ function buildAddress(values: HospitalFormValues): Address {
 }
 
 async function requireHospitalManager() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const { userId, org } = await requireOrgPermission("hospitals:manage");
 
-  const dbUser = await prisma.user.findUnique({ where: { id: userId } });
-  const role = resolveRole(dbUser?.role);
-
-  if (!roleHasPermission(role, "hospitals:manage")) {
-    throw new Error("Forbidden");
-  }
-
-  const org = await getServerOrganization();
-  if (!org) throw new Error("No organization context");
-
-  return { userId, role, organizationId: org.organizationId };
+  return { userId, role: org.role, organizationId: org.organizationId };
 }
 
 export async function createHospitalAction(

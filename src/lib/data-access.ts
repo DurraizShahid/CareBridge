@@ -5,13 +5,17 @@
 
 import type {
   Patient,
+  PatientStatus,
   Facility,
+  FacilityType,
   Placement,
+  PlacementStatus,
   DashboardStats,
   FacilityDashboardStats,
   Referral,
   ActivityEvent,
   User,
+  UserRole,
   Organization,
   OrganizationType,
   InviteCode,
@@ -20,6 +24,7 @@ import type {
   Hospital,
   FacilityMedia,
   PatientDocument,
+  CareLevel,
 } from "@/types";
 import { prisma } from "@/lib/prisma";
 
@@ -44,9 +49,333 @@ function kebabToSnake(str: string): string {
   return str.replace(/-/g, "_");
 }
 
+function toCareLevel(value: string): CareLevel {
+  return snakeToKebab(value) as CareLevel;
+}
+
+function toPatientStatus(value: string): PatientStatus {
+  return snakeToKebab(value) as PatientStatus;
+}
+
+function toPlacementStatus(value: string): PlacementStatus {
+  return snakeToKebab(value) as PlacementStatus;
+}
+
+function toFacilityType(value: string): FacilityType {
+  return snakeToKebab(value) as FacilityType;
+}
+
+function toUserRole(value: string): UserRole {
+  return snakeToKebab(value) as UserRole;
+}
+
+function toPrismaCareLevels(values: CareLevel[]): string[] {
+  return values.map(kebabToSnake);
+}
+
+function startOfMonth(date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, months: number): Date {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function roundOneDecimal(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function averageDays(
+  records: { createdAt?: Date; startDate?: Date | null; completedDate: Date | null }[],
+  startKey: "createdAt" | "startDate",
+): number {
+  const durations = records
+    .map((record) => {
+      const start = startKey === "createdAt" ? record.createdAt : record.startDate;
+      if (!start || !record.completedDate) return null;
+      return (record.completedDate.getTime() - start.getTime()) / 86400000;
+    })
+    .filter((value): value is number => value !== null && Number.isFinite(value) && value >= 0);
+
+  if (durations.length === 0) return 0;
+  return roundOneDecimal(durations.reduce((sum, value) => sum + value, 0) / durations.length);
+}
+
 // Generate random invite code
 function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+export class DataAccessError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "DataAccessError";
+    this.status = status;
+  }
+}
+
+type PlacementInput = Omit<Placement, "id" | "createdAt" | "updatedAt">;
+type PlacementUpdateInput = Partial<PlacementInput>;
+
+const CONFIRMED_PLACEMENT_STATUSES = new Set<PlacementStatus>([
+  "approved",
+  "in-progress",
+  "completed",
+]);
+
+function uniqueStrings(values: (string | null | undefined)[]): string[] {
+  return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
+}
+
+function normalizeSearchValue(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function getPatientInsuranceTerms(insurance: unknown): string[] {
+  const entries = Array.isArray(insurance) ? insurance : [insurance];
+  return entries.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const record = entry as Record<string, unknown>;
+    return ["provider", "type", "plan", "payer"]
+      .map((key) => record[key])
+      .filter((value): value is string => typeof value === "string")
+      .map(normalizeSearchValue);
+  });
+}
+
+function facilityAcceptsPatientInsurance(facility: {
+  insuranceAccepted: string[];
+  acceptsMedicare: boolean;
+  acceptsMedicaid: boolean;
+}, patientInsurance: unknown): boolean {
+  const terms = getPatientInsuranceTerms(patientInsurance);
+  if (terms.length === 0) return true;
+  if (terms.some((term) => term.includes("medicare"))) return facility.acceptsMedicare;
+  if (terms.some((term) => term.includes("medicaid"))) return facility.acceptsMedicaid;
+
+  const accepted = facility.insuranceAccepted.map(normalizeSearchValue);
+  return terms.some((term) =>
+    accepted.some((acceptedTerm) => term.includes(acceptedTerm) || acceptedTerm.includes(term)),
+  );
+}
+
+function patientStatusForPlacementStatus(status: PlacementStatus): PatientStatus | null {
+  if (status === "completed" || status === "in-progress") return "placed";
+  if (status === "approved" || status === "pending-approval") return "ready-for-discharge";
+  if (status === "assessment" || status === "searching" || status === "matching") {
+    return "assessment-in-progress";
+  }
+  return null;
+}
+
+function isConfirmedPlacementStatus(status: PlacementStatus): boolean {
+  return CONFIRMED_PLACEMENT_STATUSES.has(status);
+}
+
+function calculateFacilityScore(
+  facility: {
+    id: string;
+    capacity: number;
+    currentOccupancy: number;
+    hasAvailability: boolean;
+    waitlistDays: number | null;
+    rating: number;
+    careLevelsOffered: string[];
+    insuranceAccepted: string[];
+    acceptsMedicare: boolean;
+    acceptsMedicaid: boolean;
+    address: unknown;
+  },
+  patient: { careLevelRequired: string; insurance: unknown },
+  preferredLocation: Placement["preferredLocation"] | undefined,
+): number {
+  const careLevel = kebabToSnake(toCareLevel(patient.careLevelRequired));
+  if (!facility.careLevelsOffered.includes(careLevel)) return -1;
+  if (!facility.hasAvailability || facility.currentOccupancy >= facility.capacity) return -1;
+  if (!facilityAcceptsPatientInsurance(facility, patient.insurance)) return -1;
+
+  let score = 50;
+  score += Math.max(facility.capacity - facility.currentOccupancy, 0);
+  score += Math.round(facility.rating * 5);
+  score -= facility.waitlistDays ?? 0;
+
+  const address = facility.address as Record<string, unknown> | null;
+  const facilityCity = typeof address?.city === "string" ? normalizeSearchValue(address.city) : "";
+  const facilityState = typeof address?.state === "string" ? normalizeSearchValue(address.state) : "";
+  const preferredCity = preferredLocation?.city ? normalizeSearchValue(preferredLocation.city) : "";
+  const preferredState = preferredLocation?.state ? normalizeSearchValue(preferredLocation.state) : "";
+  if (preferredCity && facilityCity === preferredCity) score += 10;
+  if (preferredState && facilityState === preferredState) score += 5;
+
+  return score;
+}
+
+async function computeMatchedFacilities(
+  tx: any,
+  organizationId: string,
+  patient: { careLevelRequired: string; insurance: unknown },
+  preferredLocation: Placement["preferredLocation"] | undefined,
+): Promise<string[]> {
+  const facilities = await tx.facility.findMany({
+    where: { organizationId },
+  });
+
+  return facilities
+    .map((facility: any) => ({
+      id: facility.id,
+      score: calculateFacilityScore(facility, patient, preferredLocation),
+    }))
+    .filter((facility: { score: number }) => facility.score >= 0)
+    .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+    .slice(0, 5)
+    .map((facility: { id: string }) => facility.id);
+}
+
+async function recalculateFacilityOccupancy(
+  tx: any,
+  facilityIds: (string | null | undefined)[],
+): Promise<void> {
+  await Promise.all(uniqueStrings(facilityIds).map(async (facilityId) => {
+    const [facility, activeCount] = await Promise.all([
+      tx.facility.findUnique({ where: { id: facilityId }, select: { capacity: true } }),
+      tx.placement.count({
+        where: {
+          facilityId,
+          status: "in_progress",
+        },
+      }),
+    ]);
+    if (!facility) return;
+    await tx.facility.update({
+      where: { id: facilityId },
+      data: {
+        currentOccupancy: activeCount,
+        hasAvailability: activeCount < facility.capacity,
+      },
+    });
+  }));
+}
+
+async function validatePlacementReferences(
+  tx: any,
+  data: PlacementInput | PlacementUpdateInput,
+  organizationId: string,
+  role: string,
+  existing?: {
+    patientId: string;
+    facilityId: string | null;
+    socialWorkerId: string;
+    status: string;
+    careLevel: string;
+    preferredLocation: unknown;
+    selectedFacilityId: string | null;
+    matchedFacilities: string[];
+    organizationId: string;
+  },
+) {
+  const effectiveOrganizationId = existing?.organizationId ?? organizationId;
+  const patientId = data.patientId ?? existing?.patientId;
+  const socialWorkerId = data.socialWorkerId ?? existing?.socialWorkerId;
+  const status = data.status ?? (existing ? toPlacementStatus(existing.status) : undefined);
+  const careLevel = data.careLevel ?? (existing ? toCareLevel(existing.careLevel) : undefined);
+  const preferredLocation = data.preferredLocation !== undefined
+    ? data.preferredLocation
+    : existing?.preferredLocation as Placement["preferredLocation"] | undefined;
+  const selectedFacilityId = data.selectedFacilityId !== undefined
+    ? data.selectedFacilityId
+    : existing?.selectedFacilityId ?? undefined;
+  const requestedFacilityId = data.facilityId !== undefined
+    ? data.facilityId
+    : existing?.facilityId ?? undefined;
+
+  if (!patientId) throw new DataAccessError(400, "Patient is required");
+  if (!socialWorkerId) throw new DataAccessError(400, "Social worker is required");
+  if (!status) throw new DataAccessError(400, "Placement status is required");
+  if (!careLevel) throw new DataAccessError(400, "Care level is required");
+
+  const [patient, socialWorker] = await Promise.all([
+    tx.patient.findFirst({
+      where: isSuperadmin(role) ? { id: patientId } : { id: patientId, organizationId },
+    }),
+    tx.user.findFirst({
+      where: isSuperadmin(role) ? { id: socialWorkerId } : { id: socialWorkerId, organizationId },
+    }),
+  ]);
+
+  if (!patient || patient.organizationId !== effectiveOrganizationId) {
+    throw new DataAccessError(400, "Patient must belong to this organization");
+  }
+  if (!socialWorker || socialWorker.organizationId !== effectiveOrganizationId) {
+    throw new DataAccessError(400, "Social worker must belong to this organization");
+  }
+
+  const selectedFacility = selectedFacilityId
+    ? await tx.facility.findFirst({
+        where: isSuperadmin(role)
+          ? { id: selectedFacilityId }
+          : { id: selectedFacilityId, organizationId },
+      })
+    : null;
+  if (selectedFacilityId && (!selectedFacility || selectedFacility.organizationId !== effectiveOrganizationId)) {
+    throw new DataAccessError(400, "Selected facility must belong to this organization");
+  }
+
+  if (selectedFacility) {
+    const careLevelValue = kebabToSnake(careLevel);
+    if (!selectedFacility.careLevelsOffered.includes(careLevelValue)) {
+      throw new DataAccessError(409, "Selected facility does not support this care level");
+    }
+    const isExistingActiveAssignment =
+      !!existing &&
+      existing.facilityId === selectedFacility.id &&
+      existing.status === "in_progress";
+    if (
+      !isExistingActiveAssignment &&
+      (!selectedFacility.hasAvailability || selectedFacility.currentOccupancy >= selectedFacility.capacity)
+    ) {
+      throw new DataAccessError(409, "Selected facility has no current availability");
+    }
+    if (!facilityAcceptsPatientInsurance(selectedFacility, patient.insurance)) {
+      throw new DataAccessError(409, "Selected facility does not accept the patient's insurance");
+    }
+  }
+
+  const confirmedFacilityId = isConfirmedPlacementStatus(status)
+    ? selectedFacilityId || requestedFacilityId
+    : requestedFacilityId;
+  if (isConfirmedPlacementStatus(status) && !confirmedFacilityId) {
+    throw new DataAccessError(400, "A selected facility is required before confirming a placement");
+  }
+
+  const confirmedFacility = confirmedFacilityId
+    ? await tx.facility.findFirst({
+        where: isSuperadmin(role)
+          ? { id: confirmedFacilityId }
+          : { id: confirmedFacilityId, organizationId },
+      })
+    : null;
+  if (confirmedFacilityId && (!confirmedFacility || confirmedFacility.organizationId !== effectiveOrganizationId)) {
+    throw new DataAccessError(400, "Assigned facility must belong to this organization");
+  }
+
+  const matchedFacilities = data.matchedFacilities !== undefined
+    ? data.matchedFacilities
+    : await computeMatchedFacilities(tx, effectiveOrganizationId, patient, preferredLocation);
+
+  return {
+    patient,
+    status,
+    careLevel,
+    preferredLocation,
+    selectedFacilityId: selectedFacilityId || null,
+    facilityId: isConfirmedPlacementStatus(status)
+      ? (selectedFacilityId || requestedFacilityId || null)
+      : (requestedFacilityId || null),
+    matchedFacilities: uniqueStrings(matchedFacilities),
+    effectiveOrganizationId,
+  };
 }
 
 // ── Scoped Data Functions ──
@@ -78,14 +407,14 @@ export async function getPatients(
     insurance: p.insurance as any,
     primaryDiagnosis: p.primaryDiagnosis,
     secondaryDiagnoses: p.secondaryDiagnoses,
-    careLevelRequired: p.careLevelRequired as any,
+    careLevelRequired: toCareLevel(p.careLevelRequired),
     notes: p.notes,
     socialWorkerId: p.socialWorkerId,
     hospitalId: p.hospitalId,
     organizationId: p.organizationId,
     admissionDate: toISO(p.admissionDate),
     estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
-    status: p.status as any,
+    status: toPatientStatus(p.status),
     createdAt: toISO(p.createdAt),
     updatedAt: toISO(p.updatedAt),
   }));
@@ -108,7 +437,7 @@ export async function getFacilities(
   return prismaFacilities.map((f) => ({
     id: f.id,
     name: f.name,
-    type: f.type as any,
+    type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
     email: f.email,
@@ -119,7 +448,7 @@ export async function getFacilities(
     capacity: f.capacity,
     currentOccupancy: f.currentOccupancy,
     insuranceAccepted: f.insuranceAccepted,
-    careLevelsOffered: f.careLevelsOffered as any,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
     specialties: f.specialties,
     rating: f.rating,
     reviewsCount: f.reviewsCount,
@@ -166,8 +495,8 @@ export async function getPlacements(
     patientId: p.patientId,
     facilityId: p.facilityId ?? undefined,
     socialWorkerId: p.socialWorkerId,
-    status: p.status as any,
-    careLevel: p.careLevel as any,
+    status: toPlacementStatus(p.status),
+    careLevel: toCareLevel(p.careLevel),
     priority: p.priority as any,
     assessmentNotes: p.assessmentNotes ?? undefined,
     preferredLocation: p.preferredLocation as any ?? undefined,
@@ -232,7 +561,7 @@ export async function getUsers(
     email: u.email,
     firstName: u.firstName,
     lastName: u.lastName,
-    role: u.role as any,
+    role: toUserRole(u.role),
     title: u.title,
     department: u.department,
     hospitalId: u.hospitalId,
@@ -261,8 +590,8 @@ export async function getPlacement(
     patientId: p.patientId,
     facilityId: p.facilityId ?? undefined,
     socialWorkerId: p.socialWorkerId,
-    status: p.status as any,
-    careLevel: p.careLevel as any,
+    status: toPlacementStatus(p.status),
+    careLevel: toCareLevel(p.careLevel),
     priority: p.priority as any,
     assessmentNotes: p.assessmentNotes ?? undefined,
     preferredLocation: p.preferredLocation as any ?? undefined,
@@ -287,39 +616,52 @@ export async function getPlacement(
  * Permission check is handled by the calling API route.
  */
 export async function createPlacement(
-  data: Omit<Placement, "id" | "createdAt" | "updatedAt">,
+  data: PlacementInput,
 ): Promise<Placement> {
-  const p = await prisma.placement.create({
-    data: {
-      id: crypto.randomUUID(),
-      patientId: data.patientId,
-      facilityId: data.facilityId ?? null,
-      socialWorkerId: data.socialWorkerId,
-      status: kebabToSnake(data.status) as any,
-      careLevel: kebabToSnake(data.careLevel) as any,
-      priority: kebabToSnake(data.priority) as any,
-      assessmentNotes: data.assessmentNotes ?? null,
-      preferredLocation: data.preferredLocation as any ?? null,
-      matchedFacilities: data.matchedFacilities,
-      selectedFacilityId: data.selectedFacilityId ?? null,
-      insurancePreAuthorized: data.insurancePreAuthorized,
-      estimatedCost: data.estimatedCost ?? null,
-      approvedBy: data.approvedBy ?? null,
-      approvalDate: data.approvalDate ? new Date(data.approvalDate) : null,
-      startDate: data.startDate ? new Date(data.startDate) : null,
-      completedDate: data.completedDate ? new Date(data.completedDate) : null,
-      cancellationReason: data.cancellationReason ?? null,
-      notes: data.notes,
-      organizationId: data.organizationId,
-    },
+  const p = await prisma.$transaction(async (tx) => {
+    const flow = await validatePlacementReferences(tx, data, data.organizationId, "customer");
+    const created = await tx.placement.create({
+      data: {
+        id: crypto.randomUUID(),
+        patientId: data.patientId,
+        facilityId: flow.facilityId,
+        socialWorkerId: data.socialWorkerId,
+        status: kebabToSnake(flow.status) as any,
+        careLevel: kebabToSnake(flow.careLevel) as any,
+        priority: kebabToSnake(data.priority) as any,
+        assessmentNotes: data.assessmentNotes ?? null,
+        preferredLocation: flow.preferredLocation as any ?? null,
+        matchedFacilities: flow.matchedFacilities,
+        selectedFacilityId: flow.selectedFacilityId,
+        insurancePreAuthorized: data.insurancePreAuthorized,
+        estimatedCost: data.estimatedCost ?? null,
+        approvedBy: data.approvedBy ?? null,
+        approvalDate: data.approvalDate ? new Date(data.approvalDate) : null,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        completedDate: data.completedDate ? new Date(data.completedDate) : null,
+        cancellationReason: data.cancellationReason ?? null,
+        notes: data.notes,
+        organizationId: flow.effectiveOrganizationId,
+      },
+    });
+
+    const patientStatus = patientStatusForPlacementStatus(flow.status);
+    if (patientStatus) {
+      await tx.patient.update({
+        where: { id: data.patientId },
+        data: { status: kebabToSnake(patientStatus) as any },
+      });
+    }
+    await recalculateFacilityOccupancy(tx, [flow.facilityId]);
+    return created;
   });
   return {
     id: p.id,
     patientId: p.patientId,
     facilityId: p.facilityId ?? undefined,
     socialWorkerId: p.socialWorkerId,
-    status: p.status as any,
-    careLevel: p.careLevel as any,
+    status: toPlacementStatus(p.status),
+    careLevel: toCareLevel(p.careLevel),
     priority: p.priority as any,
     assessmentNotes: p.assessmentNotes ?? undefined,
     preferredLocation: p.preferredLocation as any ?? undefined,
@@ -345,46 +687,62 @@ export async function createPlacement(
  */
 export async function updatePlacement(
   id: string,
-  data: Partial<Omit<Placement, "id" | "createdAt" | "updatedAt">>,
+  data: PlacementUpdateInput,
   organizationId: string,
   role: string,
 ): Promise<Placement | null> {
-  const where = isSuperadmin(role) ? { id } : { id, organizationId };
-  const existing = await prisma.placement.findFirst({ where });
-  if (!existing) return null;
+  const p = await prisma.$transaction(async (tx) => {
+    const where = isSuperadmin(role) ? { id } : { id, organizationId };
+    const existing = await tx.placement.findFirst({ where });
+    if (!existing) return null;
 
-  const updateData: Record<string, any> = {};
-  if (data.patientId !== undefined) updateData.patientId = data.patientId;
-  if (data.facilityId !== undefined) updateData.facilityId = data.facilityId ?? null;
-  if (data.socialWorkerId !== undefined) updateData.socialWorkerId = data.socialWorkerId;
-  if (data.status !== undefined) updateData.status = kebabToSnake(data.status) as any;
-  if (data.careLevel !== undefined) updateData.careLevel = kebabToSnake(data.careLevel) as any;
-  if (data.priority !== undefined) updateData.priority = kebabToSnake(data.priority) as any;
-  if (data.assessmentNotes !== undefined) updateData.assessmentNotes = data.assessmentNotes ?? null;
-  if (data.preferredLocation !== undefined) updateData.preferredLocation = data.preferredLocation as any ?? null;
-  if (data.matchedFacilities !== undefined) updateData.matchedFacilities = data.matchedFacilities;
-  if (data.selectedFacilityId !== undefined) updateData.selectedFacilityId = data.selectedFacilityId ?? null;
-  if (data.insurancePreAuthorized !== undefined) updateData.insurancePreAuthorized = data.insurancePreAuthorized;
-  if (data.estimatedCost !== undefined) updateData.estimatedCost = data.estimatedCost ?? null;
-  if (data.approvedBy !== undefined) updateData.approvedBy = data.approvedBy ?? null;
-  if (data.approvalDate !== undefined) updateData.approvalDate = data.approvalDate ? new Date(data.approvalDate) : null;
-  if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
-  if (data.completedDate !== undefined) updateData.completedDate = data.completedDate ? new Date(data.completedDate) : null;
-  if (data.cancellationReason !== undefined) updateData.cancellationReason = data.cancellationReason ?? null;
-  if (data.notes !== undefined) updateData.notes = data.notes;
+    const flow = await validatePlacementReferences(tx, data, organizationId, role, existing);
+    const updateData: Record<string, any> = {
+      facilityId: flow.facilityId,
+      matchedFacilities: flow.matchedFacilities,
+      selectedFacilityId: flow.selectedFacilityId,
+    };
+    if (data.patientId !== undefined) updateData.patientId = data.patientId;
+    if (data.socialWorkerId !== undefined) updateData.socialWorkerId = data.socialWorkerId;
+    if (data.status !== undefined) updateData.status = kebabToSnake(flow.status) as any;
+    if (data.careLevel !== undefined) updateData.careLevel = kebabToSnake(flow.careLevel) as any;
+    if (data.priority !== undefined) updateData.priority = kebabToSnake(data.priority) as any;
+    if (data.assessmentNotes !== undefined) updateData.assessmentNotes = data.assessmentNotes ?? null;
+    if (data.preferredLocation !== undefined) updateData.preferredLocation = flow.preferredLocation as any ?? null;
+    if (data.insurancePreAuthorized !== undefined) updateData.insurancePreAuthorized = data.insurancePreAuthorized;
+    if (data.estimatedCost !== undefined) updateData.estimatedCost = data.estimatedCost ?? null;
+    if (data.approvedBy !== undefined) updateData.approvedBy = data.approvedBy ?? null;
+    if (data.approvalDate !== undefined) updateData.approvalDate = data.approvalDate ? new Date(data.approvalDate) : null;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+    if (data.completedDate !== undefined) updateData.completedDate = data.completedDate ? new Date(data.completedDate) : null;
+    if (data.cancellationReason !== undefined) updateData.cancellationReason = data.cancellationReason ?? null;
+    if (data.notes !== undefined) updateData.notes = data.notes;
 
-  const p = await prisma.placement.update({
-    where: { id },
-    data: updateData,
+    const updated = await tx.placement.update({
+      where: { id },
+      data: updateData,
+    });
+
+    const patientStatus = patientStatusForPlacementStatus(flow.status);
+    if (patientStatus) {
+      await tx.patient.update({
+        where: { id: updated.patientId },
+        data: { status: kebabToSnake(patientStatus) as any },
+      });
+    }
+    await recalculateFacilityOccupancy(tx, [existing.facilityId, flow.facilityId]);
+    return updated;
   });
+
+  if (!p) return null;
 
   return {
     id: p.id,
     patientId: p.patientId,
     facilityId: p.facilityId ?? undefined,
     socialWorkerId: p.socialWorkerId,
-    status: p.status as any,
-    careLevel: p.careLevel as any,
+    status: toPlacementStatus(p.status),
+    careLevel: toCareLevel(p.careLevel),
     priority: p.priority as any,
     assessmentNotes: p.assessmentNotes ?? undefined,
     preferredLocation: p.preferredLocation as any ?? undefined,
@@ -429,10 +787,30 @@ export async function getDashboardStats(
   role: string,
 ): Promise<DashboardStats> {
   const where = isSuperadmin(role) ? {} : { organizationId };
+  const monthStart = startOfMonth();
 
-  const [patientCount, placementCount, pendingAssessmentCount, availableFacilityCount] = await Promise.all([
-    prisma.patient.count({ where }),
-    prisma.placement.count({ where }),
+  const [
+    activePatientCount,
+    activePlacementCount,
+    pendingAssessmentCount,
+    availableFacilityCount,
+    placementsThisMonth,
+    completedPlacements,
+  ] = await Promise.all([
+    prisma.patient.count({
+      where: {
+        ...where,
+        NOT: { status: "discharged" },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        NOT: {
+          status: { in: ["completed", "cancelled"] },
+        },
+      },
+    }),
     prisma.patient.count({ 
       where: { 
         ...where,
@@ -445,15 +823,29 @@ export async function getDashboardStats(
         hasAvailability: true 
       } 
     }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        createdAt: { gte: monthStart },
+      },
+    }),
+    prisma.placement.findMany({
+      where: {
+        ...where,
+        status: "completed",
+        completedDate: { not: null },
+      },
+      select: { createdAt: true, completedDate: true },
+    }),
   ]);
 
   return {
-    activePatients: patientCount,
-    activePlacements: placementCount,
+    activePatients: activePatientCount,
+    activePlacements: activePlacementCount,
     pendingAssessments: pendingAssessmentCount,
     facilitiesAvailable: availableFacilityCount,
-    placementsThisMonth: 12, // simplified; would be date-filtered in production
-    averagePlacementTimeDays: 3.5,
+    placementsThisMonth,
+    averagePlacementTimeDays: averageDays(completedPlacements, "createdAt"),
   };
 }
 
@@ -463,36 +855,145 @@ export async function getDashboardStats(
 export async function getFacilityDashboardStats(
   organizationId: string,
   role: string,
+  facilityId?: string,
 ): Promise<FacilityDashboardStats> {
-  const where = isSuperadmin(role) ? {} : { organizationId };
+  const where = isSuperadmin(role)
+    ? facilityId ? { id: facilityId } : {}
+    : facilityId ? { id: facilityId, organizationId } : { organizationId };
   
-  // Get first facility as default for now
   const facility = await prisma.facility.findFirst({ where });
+  const occupancyRate = facility && facility.capacity > 0
+    ? Math.round((facility.currentOccupancy / facility.capacity) * 100)
+    : 0;
+
+  if (!facility) {
+    return {
+      currentOccupancy: 0,
+      totalCapacity: 0,
+      availableBeds: 0,
+      pendingReferrals: 0,
+      pendingAdmissions: 0,
+      upcomingDischarges: 0,
+      placementsThisMonth: 0,
+      averageStayDays: 0,
+      occupancyRate: 0,
+    };
+  }
+
+  const placementWhere = {
+    ...(isSuperadmin(role) ? {} : { organizationId }),
+    OR: [
+      { facilityId: facility.id },
+      { selectedFacilityId: facility.id },
+      { matchedFacilities: { has: facility.id } },
+    ],
+  };
+  const monthStart = startOfMonth();
+  const [
+    pendingReferrals,
+    pendingAdmissions,
+    upcomingDischarges,
+    placementsThisMonth,
+    completedStays,
+  ] = await Promise.all([
+    prisma.placement.count({
+      where: {
+        ...placementWhere,
+        status: { in: ["matching", "pending_approval"] },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...placementWhere,
+        status: { in: ["approved", "in_progress"] },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...placementWhere,
+        status: "completed",
+        completedDate: { gte: monthStart },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...placementWhere,
+        createdAt: { gte: monthStart },
+      },
+    }),
+    prisma.placement.findMany({
+      where: {
+        ...placementWhere,
+        status: "completed",
+        startDate: { not: null },
+        completedDate: { not: null },
+      },
+      select: { startDate: true, completedDate: true },
+    }),
+  ]);
   
   return {
-    currentOccupancy: facility?.currentOccupancy ?? 0,
-    totalCapacity: facility?.capacity ?? 100,
-    availableBeds: facility ? facility.capacity - facility.currentOccupancy : 0,
-    pendingReferrals: 2,
-    pendingAdmissions: 3,
-    upcomingDischarges: 5,
-    placementsThisMonth: 18,
-    averageStayDays: 34,
-    occupancyRate: facility ? Math.round((facility.currentOccupancy / facility.capacity) * 100) : 0,
+    currentOccupancy: facility.currentOccupancy,
+    totalCapacity: facility.capacity,
+    availableBeds: Math.max(facility.capacity - facility.currentOccupancy, 0),
+    pendingReferrals,
+    pendingAdmissions,
+    upcomingDischarges,
+    placementsThisMonth,
+    averageStayDays: averageDays(completedStays, "startDate"),
+    occupancyRate,
   };
 }
 
-/**
- * Return referrals (mock for now since referrals aren't in Prisma schema yet)
- */
 export async function getReferrals(
-  _organizationId: string,
-  _role: string,
+  organizationId: string,
+  role: string,
 ): Promise<Referral[]> {
-  void _organizationId;
-  void _role;
-  // Mock referrals for now
-  return [];
+  const where = {
+    ...(isSuperadmin(role) ? {} : { organizationId }),
+    status: { in: ["matching", "pending_approval", "approved", "cancelled"] },
+  };
+  const placements = await prisma.placement.findMany({
+    where,
+    include: {
+      patient: true,
+      socialWorker: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 20,
+  } as any) as any[];
+  const hospitalIds = uniqueStrings(placements.map((placement) => placement.patient.hospitalId));
+  const hospitals = await prisma.hospital.findMany({
+    where: { id: { in: hospitalIds } },
+  });
+  const hospitalsById = new Map(hospitals.map((hospital) => [hospital.id, hospital]));
+
+  return placements.map((placement) => {
+    const hospital = hospitalsById.get(placement.patient.hospitalId);
+    const insuranceTerms = getPatientInsuranceTerms(placement.patient.insurance);
+    const status: Referral["status"] = placement.status === "approved"
+      ? "accepted"
+      : placement.status === "cancelled"
+        ? "declined"
+        : placement.status === "pending_approval"
+          ? "reviewing"
+          : "new";
+
+    return {
+      id: placement.id,
+      patientName: `${placement.patient.firstName} ${placement.patient.lastName}`,
+      patientAge: placement.patient.age,
+      careLevel: toCareLevel(placement.careLevel),
+      referringHospital: hospital?.name ?? "Unknown hospital",
+      referringHospitalId: placement.patient.hospitalId,
+      referredBy: `${placement.socialWorker.firstName} ${placement.socialWorker.lastName}`,
+      referredAt: toISO(placement.createdAt),
+      status,
+      notes: placement.assessmentNotes ?? placement.notes,
+      diagnosis: placement.patient.primaryDiagnosis,
+      insuranceInfo: insuranceTerms.length > 0 ? insuranceTerms.join(", ") : "Not specified",
+    };
+  });
 }
 
 /**
@@ -516,7 +1017,7 @@ export async function getFacilityUsers(
     email: u.email,
     firstName: u.firstName,
     lastName: u.lastName,
-    role: u.role as any,
+    role: toUserRole(u.role),
     title: u.title,
     department: u.department,
     hospitalId: u.hospitalId,
@@ -532,14 +1033,24 @@ export async function getFacilityUsers(
  * Get super admin dashboard stats
  */
 export async function getSuperAdminDashboardStats() {
+  const currentMonth = startOfMonth();
+  const monthStarts = Array.from({ length: 6 }, (_, index) =>
+    addMonths(currentMonth, index - 5),
+  );
   const [
     totalUsers,
+    totalHospitals,
     totalFacilities,
     totalPlacements,
     activePlacements,
     completedPlacements,
+    pendingApprovals,
+    facilitiesForUtilization,
+    completedPlacementDurations,
+    placementsByMonth,
   ] = await Promise.all([
     prisma.user.count(),
+    prisma.hospital.count(),
     prisma.facility.count(),
     prisma.placement.count(),
     prisma.placement.count({
@@ -552,6 +1063,31 @@ export async function getSuperAdminDashboardStats() {
     prisma.placement.count({
       where: { status: "completed" },
     }),
+    prisma.placement.count({
+      where: { status: "pending_approval" },
+    }),
+    prisma.facility.findMany({
+      select: { capacity: true, currentOccupancy: true },
+    }),
+    prisma.placement.findMany({
+      where: {
+        status: "completed",
+        completedDate: { not: null },
+      },
+      select: { createdAt: true, completedDate: true },
+    }),
+    Promise.all(
+      monthStarts.map((monthStart) =>
+        prisma.placement.count({
+          where: {
+            createdAt: {
+              gte: monthStart,
+              lt: addMonths(monthStart, 1),
+            },
+          },
+        }),
+      ),
+    ),
   ]);
 
   const usersByRole = await prisma.user.groupBy({
@@ -561,28 +1097,30 @@ export async function getSuperAdminDashboardStats() {
 
   const usersByRoleRecord: Record<string, number> = {};
   usersByRole.forEach((group) => {
-    usersByRoleRecord[group.role] = group._count.id;
+    usersByRoleRecord[toUserRole(group.role)] = group._count.id;
   });
+
+  const totalCapacity = facilitiesForUtilization.reduce((sum, facility) => sum + facility.capacity, 0);
+  const currentOccupancy = facilitiesForUtilization.reduce((sum, facility) => sum + facility.currentOccupancy, 0);
+  const facilityUtilizationRate = totalCapacity > 0
+    ? Math.round((currentOccupancy / totalCapacity) * 100)
+    : 0;
 
   return {
     totalUsers,
-    totalHospitals: 4, // Mock value for now
+    totalHospitals,
     totalFacilities,
     totalPlacements,
     activePlacements,
     completedPlacements,
     usersByRole: usersByRoleRecord,
-    placementsByMonth: [
-      { month: "Feb", count: 5 },
-      { month: "Mar", count: 8 },
-      { month: "Apr", count: 6 },
-      { month: "May", count: 10 },
-      { month: "Jun", count: 12 },
-      { month: "Jul", count: 6 },
-    ],
-    averagePlacementTimeDays: 3.5,
-    facilityUtilizationRate: 82,
-    pendingApprovals: 3,
+    placementsByMonth: monthStarts.map((monthStart, index) => ({
+      month: monthStart.toLocaleString("en-US", { month: "short" }),
+      count: placementsByMonth[index] ?? 0,
+    })),
+    averagePlacementTimeDays: averageDays(completedPlacementDurations, "createdAt"),
+    facilityUtilizationRate,
+    pendingApprovals,
   };
 }
 
@@ -604,7 +1142,7 @@ export async function getFacility(
   return {
     id: f.id,
     name: f.name,
-    type: f.type as any,
+    type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
     email: f.email,
@@ -615,7 +1153,7 @@ export async function getFacility(
     capacity: f.capacity,
     currentOccupancy: f.currentOccupancy,
     insuranceAccepted: f.insuranceAccepted,
-    careLevelsOffered: f.careLevelsOffered as any,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
     specialties: f.specialties,
     rating: f.rating,
     reviewsCount: f.reviewsCount,
@@ -666,7 +1204,7 @@ export async function createFacility(
       capacity: data.capacity,
       currentOccupancy: data.currentOccupancy,
       insuranceAccepted: data.insuranceAccepted,
-      careLevelsOffered: data.careLevelsOffered as any,
+      careLevelsOffered: toPrismaCareLevels(data.careLevelsOffered) as any,
       specialties: data.specialties,
       rating: data.rating,
       reviewsCount: data.reviewsCount,
@@ -680,7 +1218,7 @@ export async function createFacility(
   return {
     id: f.id,
     name: f.name,
-    type: f.type as any,
+    type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
     email: f.email,
@@ -691,7 +1229,7 @@ export async function createFacility(
     capacity: f.capacity,
     currentOccupancy: f.currentOccupancy,
     insuranceAccepted: f.insuranceAccepted,
-    careLevelsOffered: f.careLevelsOffered as any,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
     specialties: f.specialties,
     rating: f.rating,
     reviewsCount: f.reviewsCount,
@@ -733,7 +1271,7 @@ export async function updateFacility(
   if (data.capacity !== undefined) updateData.capacity = data.capacity;
   if (data.currentOccupancy !== undefined) updateData.currentOccupancy = data.currentOccupancy;
   if (data.insuranceAccepted !== undefined) updateData.insuranceAccepted = data.insuranceAccepted;
-  if (data.careLevelsOffered !== undefined) updateData.careLevelsOffered = data.careLevelsOffered as any;
+  if (data.careLevelsOffered !== undefined) updateData.careLevelsOffered = toPrismaCareLevels(data.careLevelsOffered) as any;
   if (data.specialties !== undefined) updateData.specialties = data.specialties;
   if (data.rating !== undefined) updateData.rating = data.rating;
   if (data.reviewsCount !== undefined) updateData.reviewsCount = data.reviewsCount;
@@ -750,7 +1288,7 @@ export async function updateFacility(
   return {
     id: f.id,
     name: f.name,
-    type: f.type as any,
+    type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
     email: f.email,
@@ -761,7 +1299,7 @@ export async function updateFacility(
     capacity: f.capacity,
     currentOccupancy: f.currentOccupancy,
     insuranceAccepted: f.insuranceAccepted,
-    careLevelsOffered: f.careLevelsOffered as any,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
     specialties: f.specialties,
     rating: f.rating,
     reviewsCount: f.reviewsCount,
@@ -792,7 +1330,12 @@ export async function deleteFacility(
   // Check for active placements
   const activePlacements = await prisma.placement.count({
     where: {
-      facilityId: id,
+      ...(isSuperadmin(role) ? {} : { organizationId }),
+      OR: [
+        { facilityId: id },
+        { selectedFacilityId: id },
+        { matchedFacilities: { has: id } },
+      ],
       NOT: { status: { in: ["completed", "cancelled"] } },
     },
   });
@@ -836,14 +1379,14 @@ export async function getPatient(
     insurance: p.insurance as any,
     primaryDiagnosis: p.primaryDiagnosis,
     secondaryDiagnoses: p.secondaryDiagnoses,
-    careLevelRequired: p.careLevelRequired as any,
+    careLevelRequired: toCareLevel(p.careLevelRequired),
     notes: p.notes,
     socialWorkerId: p.socialWorkerId,
     hospitalId: p.hospitalId,
     organizationId: p.organizationId,
     admissionDate: toISO(p.admissionDate),
     estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
-    status: p.status as any,
+    status: toPatientStatus(p.status),
     documents: p.documents?.map((d) => ({
       id: d.id,
       patientId: d.patientId,
@@ -907,14 +1450,14 @@ export async function createPatient(
     insurance: p.insurance as any,
     primaryDiagnosis: p.primaryDiagnosis,
     secondaryDiagnoses: p.secondaryDiagnoses,
-    careLevelRequired: p.careLevelRequired as any,
+    careLevelRequired: toCareLevel(p.careLevelRequired),
     notes: p.notes,
     socialWorkerId: p.socialWorkerId,
     hospitalId: p.hospitalId,
     organizationId: p.organizationId,
     admissionDate: toISO(p.admissionDate),
     estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
-    status: p.status as any,
+    status: toPatientStatus(p.status),
     createdAt: toISO(p.createdAt),
     updatedAt: toISO(p.updatedAt),
   };
@@ -973,14 +1516,14 @@ export async function updatePatient(
     insurance: p.insurance as any,
     primaryDiagnosis: p.primaryDiagnosis,
     secondaryDiagnoses: p.secondaryDiagnoses,
-    careLevelRequired: p.careLevelRequired as any,
+    careLevelRequired: toCareLevel(p.careLevelRequired),
     notes: p.notes,
     socialWorkerId: p.socialWorkerId,
     hospitalId: p.hospitalId,
     organizationId: p.organizationId,
     admissionDate: toISO(p.admissionDate),
     estimatedDischargeDate: p.estimatedDischargeDate ? toISO(p.estimatedDischargeDate) : undefined,
-    status: p.status as any,
+    status: toPatientStatus(p.status),
     createdAt: toISO(p.createdAt),
     updatedAt: toISO(p.updatedAt),
   };
@@ -1022,7 +1565,17 @@ export async function deletePatient(
 
 export async function getPatientDocuments(
   patientId: string,
+  organizationId: string,
+  role: string,
 ): Promise<PatientDocument[]> {
+  const patient = await prisma.patient.findFirst({
+    where: isSuperadmin(role) ? { id: patientId } : { id: patientId, organizationId },
+    select: { id: true },
+  });
+  if (!patient) {
+    throw new DataAccessError(404, "Patient not found");
+  }
+
   const docs = await prisma.patientDocument.findMany({
     where: { patientId },
     orderBy: { createdAt: "desc" },
@@ -1044,7 +1597,24 @@ export async function getPatientDocuments(
 
 export async function createPatientDocument(
   data: Omit<PatientDocument, "id" | "createdAt" | "updatedAt">,
+  organizationId: string,
+  role: string,
 ): Promise<PatientDocument> {
+  const [patient, uploader] = await Promise.all([
+    prisma.patient.findFirst({
+      where: isSuperadmin(role) ? { id: data.patientId } : { id: data.patientId, organizationId },
+      select: { id: true, organizationId: true },
+    }),
+    prisma.user.findFirst({
+      where: isSuperadmin(role) ? { id: data.uploadedById } : { id: data.uploadedById, organizationId },
+      select: { id: true, organizationId: true },
+    }),
+  ]);
+  if (!patient) throw new DataAccessError(404, "Patient not found");
+  if (!uploader || uploader.organizationId !== patient.organizationId) {
+    throw new DataAccessError(403, "Uploader is not authorized for this patient");
+  }
+
   const d = await prisma.patientDocument.create({
     data: {
       id: crypto.randomUUID(),
@@ -1075,7 +1645,21 @@ export async function createPatientDocument(
 
 export async function deletePatientDocument(
   id: string,
+  patientId: string,
+  organizationId: string,
+  role: string,
 ): Promise<{ success: boolean }> {
+  const doc = await prisma.patientDocument.findFirst({
+    where: {
+      id,
+      patientId,
+      patient: isSuperadmin(role) ? undefined : { organizationId },
+    },
+  });
+  if (!doc) {
+    throw new DataAccessError(404, "Document not found");
+  }
+
   await prisma.patientDocument.delete({ where: { id } });
   return { success: true };
 }

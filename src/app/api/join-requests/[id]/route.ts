@@ -1,24 +1,34 @@
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UserRole as UserRoleEnum } from '@/generated/prisma/enums';
 import { prismaRoleToAppRole } from '@/lib/organization-role';
+import { getAllowedRoles } from '@/lib/permissions';
+import { authErrorResponse, requireOrgPermission } from '@/lib/server-auth';
+
+function inviteCodeUnavailable(inviteCode: {
+  isActive: boolean;
+  expiresAt: Date | null;
+  maxUses: number | null;
+  usedCount: number;
+}) {
+  return !inviteCode.isActive
+    || (!!inviteCode.expiresAt && new Date() > inviteCode.expiresAt)
+    || (!!inviteCode.maxUses && inviteCode.usedCount >= inviteCode.maxUses);
+}
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { userId, org } = await requireOrgPermission('users:create');
 
     const { id } = await params;
     const { action, notes } = await req.json();
 
-    const joinRequest = await prisma.joinRequest.findUnique({
-      where: { id },
+    const joinRequest = await prisma.joinRequest.findFirst({
+      where: org.isSuperadmin ? { id } : { id, organizationId: org.organizationId },
       include: { inviteCode: true, organization: true },
     });
 
@@ -33,6 +43,16 @@ export async function PATCH(
     if (action === 'approve') {
       // Update user's organization and role
       const role = joinRequest.inviteCode?.role || UserRoleEnum.customer;
+      const appRole = prismaRoleToAppRole(role);
+      const allowedRoles = getAllowedRoles(org.role, org.organizationType);
+
+      if (appRole !== 'customer' && !allowedRoles.includes(appRole)) {
+        return NextResponse.json({ error: 'Requested role is not allowed' }, { status: 403 });
+      }
+
+      if (joinRequest.inviteCode && inviteCodeUnavailable(joinRequest.inviteCode)) {
+        return NextResponse.json({ error: 'Invite code is invalid or expired' }, { status: 400 });
+      }
       
       await prisma.user.update({
         where: { id: joinRequest.userId },
@@ -46,7 +66,7 @@ export async function PATCH(
         publicMetadata: {
           organizationId: joinRequest.organizationId,
           organizationType: joinRequest.organization.type,
-          role: prismaRoleToAppRole(role),
+          role: appRole,
         },
       });
 
@@ -84,6 +104,9 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
+    const authResponse = authErrorResponse(error);
+    if (authResponse) return authResponse;
+
     console.error('Error processing join request:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

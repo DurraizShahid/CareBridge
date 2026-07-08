@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getS3Client, getBucketName } from "@/lib/storage";
+import { prisma } from "@/lib/prisma";
+import { authErrorResponse, requireOrgPermission } from "@/lib/server-auth";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_MIME: readonly string[] = [
@@ -9,15 +10,19 @@ const ALLOWED_MIME: readonly string[] = [
   "image/png",
   "image/webp",
   "image/avif",
-  "image/svg+xml",
 ];
+
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .split(/[\\/]/)
+    .pop()
+    ?.replace(/[^a-zA-Z0-9._-]/g, "_")
+    .slice(0, 120) || "upload";
+}
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { org } = await requireOrgPermission("hospitals:manage");
 
     const body = await req.json();
     const { fileName, contentType, hospitalId, field } = body as {
@@ -27,6 +32,17 @@ export async function POST(req: Request) {
       field: "image" | "logo";
     };
 
+    if (
+      typeof fileName !== "string"
+      || typeof contentType !== "string"
+      || typeof hospitalId !== "string"
+      || !hospitalId
+      || hospitalId === "temp"
+      || (field !== "image" && field !== "logo")
+    ) {
+      return NextResponse.json({ error: "Invalid upload request" }, { status: 400 });
+    }
+
     if (!ALLOWED_MIME.includes(contentType)) {
       return NextResponse.json(
         { error: `Content type '${contentType}' is not allowed` },
@@ -34,7 +50,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const key = `hospitals/${hospitalId}/${field}/${crypto.randomUUID()}-${fileName}`;
+    const hospital = await prisma.hospital.findFirst({
+      where: org.isSuperadmin
+        ? { id: hospitalId }
+        : { id: hospitalId, organizationId: org.organizationId },
+      select: { id: true },
+    });
+
+    if (!hospital) {
+      return NextResponse.json({ error: "Hospital not found" }, { status: 404 });
+    }
+
+    const key = `hospitals/${hospitalId}/${field}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
     const client = getS3Client();
     const bucket = getBucketName();
 
@@ -52,6 +79,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url, fields, key });
   } catch (error: unknown) {
+    const authResponse = authErrorResponse(error);
+    if (authResponse) return authResponse;
+
     console.error("Error creating presigned upload URL:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

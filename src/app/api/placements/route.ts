@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getPlacements, createPlacement } from "@/lib/data-access";
+import { DataAccessError, getPlacements, createPlacement } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -44,6 +44,9 @@ export async function POST(req: Request) {
     const placement = await createPlacement({ ...body, organizationId: org.organizationId });
     return NextResponse.json(placement, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof DataAccessError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("Error creating placement:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

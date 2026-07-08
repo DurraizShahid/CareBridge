@@ -12,8 +12,9 @@ interface Props {
 export default async function EditFacilityPage({ params }: Props) {
   const { id } = await params;
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
-  const role = org?.role ?? "customer";
+  if (!org) redirect("/onboarding");
+  const organizationId = org.organizationId;
+  const role = org.role;
 
   if (!roleHasPermission(role, "facilities:update")) {
     redirect(`/facilities/${id}`);

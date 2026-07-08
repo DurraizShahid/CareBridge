@@ -1,8 +1,11 @@
 import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Raleway } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const raleway = Raleway({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   variable: "--font-heading",
@@ -46,15 +49,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", inter.variable, "font-sans", raleway.variable)}
       suppressHydrationWarning
     >
-      <head />
-      <Script
-        id="theme-init"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: themeScript }}
-      />
+      <head>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-heading">
         <ClerkProvider
           signInUrl="/sign-in"

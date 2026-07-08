@@ -1,19 +1,22 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerOrganization } from '@/lib/server-organization';
+import { authErrorResponse, requireOrgPermission } from '@/lib/server-auth';
+
+function inviteCodeUnavailable(inviteCode: {
+  isActive: boolean;
+  expiresAt: Date | null;
+  maxUses: number | null;
+  usedCount: number;
+}) {
+  return !inviteCode.isActive
+    || (!!inviteCode.expiresAt && new Date() > inviteCode.expiresAt)
+    || (!!inviteCode.maxUses && inviteCode.usedCount >= inviteCode.maxUses);
+}
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const org = await getServerOrganization();
-    if (!org?.organizationId) {
-      return NextResponse.json({ error: 'No organization found' }, { status: 400 });
-    }
+    const { org } = await requireOrgPermission(['users:read-org', 'users:manage-roles'], 'any');
 
     const joinRequests = await prisma.joinRequest.findMany({
       where: { organizationId: org.organizationId },
@@ -23,6 +26,9 @@ export async function GET() {
 
     return NextResponse.json(joinRequests);
   } catch (error: unknown) {
+    const authResponse = authErrorResponse(error);
+    if (authResponse) return authResponse;
+
     console.error('Error fetching join requests:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -36,17 +42,25 @@ export async function POST(req: Request) {
     }
 
     const { organizationId, inviteCodeId } = await req.json();
-    if (!organizationId) {
-      return NextResponse.json({ error: 'Organization ID is required' }, { status: 400 });
+    if (!organizationId || !inviteCodeId) {
+      return NextResponse.json({ error: 'A valid invite code is required' }, { status: 400 });
+    }
+
+    const inviteCode = await prisma.inviteCode.findUnique({
+      where: { id: inviteCodeId },
+    });
+
+    if (!inviteCode || inviteCode.organizationId !== organizationId || inviteCodeUnavailable(inviteCode)) {
+      return NextResponse.json({ error: 'Invite code is invalid or expired' }, { status: 400 });
     }
 
     // Check if user already has a pending request
-    const existingRequest = await prisma.joinRequest.findFirst({
-      where: { userId, status: 'pending' },
+    const existingRequest = await prisma.joinRequest.findUnique({
+      where: { userId },
     });
 
     if (existingRequest) {
-      return NextResponse.json({ error: 'You already have a pending join request' }, { status: 400 });
+      return NextResponse.json({ error: 'You already have a join request on file' }, { status: 400 });
     }
 
     const joinRequest = await prisma.joinRequest.create({
@@ -54,12 +68,16 @@ export async function POST(req: Request) {
         id: crypto.randomUUID(),
         userId,
         organizationId,
-        inviteCodeId: inviteCodeId || null,
+        inviteCodeId,
+        requestedRole: inviteCode.role,
       },
     });
 
     return NextResponse.json(joinRequest);
   } catch (error: unknown) {
+    const authResponse = authErrorResponse(error);
+    if (authResponse) return authResponse;
+
     console.error('Error creating join request:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

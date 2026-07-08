@@ -75,9 +75,9 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "placements:read", "placements:create", "placements:update", "placements:approve", "placements:delete",
     "facilities:read", "facilities:create", "facilities:update",
     "hospitals:manage",
-    "users:read", "users:read-org",
+    "users:read", "users:read-org", "users:create", "users:update",
     "dashboard:overview", "dashboard:staff", "dashboard:admin",
-    "settings:read",
+    "settings:read", "settings:write",
   ],
 
   // ── Social Worker ──
@@ -85,24 +85,27 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "patients:read", "patients:create", "patients:update",
     "placements:read", "placements:create", "placements:update",
     "facilities:read",
+    "users:read-org",
     "dashboard:overview", "dashboard:staff",
   ],
 
   // ── Discharge Planner ──
   "discharge-planner": [
     "patients:read", "patients:create", "patients:update",
-    "placements:read", "placements:create", "placements:update",
+    "placements:read", "placements:create", "placements:update", "placements:approve",
     "facilities:read",
+    "users:read-org",
     "dashboard:overview", "dashboard:staff",
   ],
 
   // ── Facility Coordinator ──
   "facility-coordinator": [
-    "patients:read",
-    "placements:read", "placements:update",
-    "facilities:read",
-    "users:read-org",
-    "dashboard:overview", "dashboard:facility",
+    "patients:read", "patients:create", "patients:update", "patients:delete",
+    "placements:read", "placements:create", "placements:update", "placements:approve", "placements:delete",
+    "facilities:read", "facilities:create", "facilities:update",
+    "users:read", "users:read-org", "users:create", "users:update",
+    "dashboard:overview", "dashboard:staff", "dashboard:facility",
+    "settings:read", "settings:write",
   ],
 
   // ── Customer (external / limited) ──

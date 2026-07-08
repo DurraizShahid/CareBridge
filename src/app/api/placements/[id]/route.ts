@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getPlacement, updatePlacement, deletePlacement } from "@/lib/data-access";
+import { DataAccessError, getPlacement, updatePlacement, deletePlacement } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -58,6 +58,9 @@ export async function PATCH(
     }
     return NextResponse.json(placement);
   } catch (error: unknown) {
+    if (error instanceof DataAccessError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("Error updating placement:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

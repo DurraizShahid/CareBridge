@@ -10,7 +10,9 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnFiltersState,
+  type RowSelectionState,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import {
   ArrowDown,
@@ -27,6 +29,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Settings2,
   Shield,
   UserCheck,
   UserX,
@@ -52,6 +55,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -63,6 +67,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -104,6 +109,19 @@ const ROLE_COLORS: Record<UserRole, string> = {
   "facility-coordinator": "bg-warmth/10 text-warmth",
   superadmin: "bg-destructive/10 text-destructive",
   customer: "bg-muted text-muted-foreground",
+};
+
+const COLUMN_LABELS: Record<string, string> = {
+  name: "User",
+  role: "Role",
+  title: "Title",
+  department: "Department",
+  hospitalId: "Hospital/Facility",
+  phone: "Phone",
+  accountStatus: "Account",
+  databaseStatus: "Profile",
+  lastSignInAt: "Last Sign-In",
+  updatedAt: "Profile Updated",
 };
 
 const emptyActionState: UserActionState = { status: "idle", message: "" };
@@ -158,7 +176,13 @@ function getFormValues(user: DashboardUser): UserFormValues {
   };
 }
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({
+  canCreate,
+  onAdd,
+}: {
+  canCreate: boolean;
+  onAdd: () => void;
+}) {
   return (
     <Card>
       <CardContent className="flex flex-col items-center justify-center py-16">
@@ -167,10 +191,12 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         <p className="mt-1 text-xs text-muted-foreground">
           New accounts will appear here after they are created in Clerk.
         </p>
-        <Button className="mt-4" onClick={onAdd}>
-          <Plus data-icon="inline-start" />
-          Add User
-        </Button>
+        {canCreate && (
+          <Button className="mt-4" onClick={onAdd}>
+            <Plus data-icon="inline-start" />
+            Add User
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -199,14 +225,19 @@ export function UsersTable({
   users,
   allowedRoles,
   canManage,
+  canCreate,
 }: {
   totalCount: number;
   users: DashboardUser[];
   allowedRoles: UserRole[];
   canManage: boolean;
+  canCreate: boolean;
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -225,11 +256,12 @@ export function UsersTable({
   }, [allowedRoles]);
 
   const openCreateDialog = useCallback(() => {
+    if (!canCreate) return;
     setEditingUser(null);
     setFormValues(getEmptyFormValues(allowedRoles));
     setActionState(emptyActionState);
     setDialogOpen(true);
-  }, [allowedRoles]);
+  }, [allowedRoles, canCreate]);
 
   const openEditDialog = useCallback((user: DashboardUser) => {
     setEditingUser(user);
@@ -247,6 +279,10 @@ export function UsersTable({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!editingUser && !canCreate) {
+      setActionState({ status: "error", message: "Forbidden" });
+      return;
+    }
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
@@ -269,6 +305,27 @@ export function UsersTable({
   const columns = useMemo(
     () => {
       const cols = [
+      columnHelper.display({
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            aria-label="Select all visible users"
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(checked) =>
+              table.toggleAllPageRowsSelected(checked)
+            }
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            aria-label={`Select ${getFullName(row.original)}`}
+            checked={row.getIsSelected()}
+            onCheckedChange={(checked) => row.toggleSelected(checked)}
+          />
+        ),
+        enableHiding: false,
+        enableSorting: false,
+      }),
       columnHelper.accessor("firstName", {
         id: "name",
         header: "User",
@@ -298,9 +355,9 @@ export function UsersTable({
         cell: (info) => {
           const role = info.getValue();
           return (
-            <span className={cn("inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold", ROLE_COLORS[role])}>
+            <Badge variant="secondary" className={cn(ROLE_COLORS[role])}>
               {ROLE_LABELS[role]}
-            </span>
+            </Badge>
           );
         },
         filterFn: "equalsString",
@@ -346,16 +403,17 @@ export function UsersTable({
         cell: (info) => {
           const status = info.getValue();
           return (
-            <span
+            <Badge
+              variant="secondary"
               className={cn(
-                "inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize",
+                "capitalize",
                 status === "active"
                   ? "bg-health/10 text-health"
                   : "bg-destructive/10 text-destructive",
               )}
             >
               {status}
-            </span>
+            </Badge>
           );
         },
         enableColumnFilter: false,
@@ -365,9 +423,10 @@ export function UsersTable({
         cell: (info) => {
           const status = info.getValue();
           return (
-            <span
+            <Badge
+              variant="secondary"
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold",
+                "gap-1",
                 status === "linked"
                   ? "bg-health/10 text-health"
                   : "bg-warmth/10 text-warmth",
@@ -379,7 +438,7 @@ export function UsersTable({
                 <Database className="h-3 w-3" />
               )}
               {status === "linked" ? "DB linked" : "DB missing"}
-            </span>
+            </Badge>
           );
         },
         enableColumnFilter: false,
@@ -483,8 +542,10 @@ export function UsersTable({
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
       globalFilter,
       pagination,
+      rowSelection,
     },
     globalFilterFn: (row, _columnId, value) => {
       const user = row.original;
@@ -507,8 +568,10 @@ export function UsersTable({
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -518,6 +581,7 @@ export function UsersTable({
   const roleFilter =
     (table.getColumn("role")?.getFilterValue() as string | undefined) ?? "all";
   const filteredCount = table.getFilteredRowModel().rows.length;
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length;
   const pageCount = table.getPageCount();
   const currentPage = pagination.pageIndex;
   const firstVisible =
@@ -574,10 +638,38 @@ export function UsersTable({
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={openCreateDialog}>
-          <Plus data-icon="inline-start" />
-          Add User
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" className="h-9" />
+            }
+          >
+            <Settings2 data-icon="inline-start" />
+            Columns
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {table
+              .getAllLeafColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(checked) => column.toggleVisibility(checked)}
+                >
+                  {COLUMN_LABELS[column.id] ?? column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {canCreate && (
+          <Button onClick={openCreateDialog}>
+            <Plus data-icon="inline-start" />
+            Add User
+          </Button>
+        )}
       </div>
 
       {actionState.status === "error" && !dialogOpen && (
@@ -592,8 +684,14 @@ export function UsersTable({
         </Alert>
       )}
 
+      {selectedCount > 0 && (
+        <Badge variant="outline" className="w-fit text-muted-foreground">
+          {selectedCount} selected
+        </Badge>
+      )}
+
       {users.length === 0 ? (
-        <EmptyState onAdd={openCreateDialog} />
+        <EmptyState canCreate={canCreate} onAdd={openCreateDialog} />
       ) : (
         <>
           <Card className="overflow-hidden py-0 shadow-sm">
@@ -607,6 +705,7 @@ export function UsersTable({
                           key={header.id}
                           className={cn(
                             "px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                            header.id === "select" && "w-12",
                             header.id === "actions" && "w-16 text-right",
                           )}
                         >
@@ -644,7 +743,7 @@ export function UsersTable({
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={table.getVisibleLeafColumns().length}
                       className="px-4 py-12 text-center text-sm text-muted-foreground"
                     >
                       No users match your filters.
@@ -652,7 +751,10 @@ export function UsersTable({
                   </TableRow>
                 ) : (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                    >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
                           {flexRender(

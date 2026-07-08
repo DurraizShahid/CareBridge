@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -52,8 +53,9 @@ const priorityOrder = ["emergency", "high", "medium", "low"];
 
 export default async function PlacementsPage() {
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
-  const role = org?.role ?? "customer";
+  if (!org) redirect("/onboarding");
+  const organizationId = org.organizationId;
+  const role = org.role;
   const [placements, patients, facilities] = await Promise.all([
     getPlacements(organizationId, role),
     getPatients(organizationId, role),
@@ -148,7 +150,7 @@ export default async function PlacementsPage() {
                     <span>
                       Facility:{" "}
                       <span className="font-medium text-foreground">
-                        {getFacilityName(plc.selectedFacilityId)}
+                        {getFacilityName(plc.facilityId ?? plc.selectedFacilityId)}
                       </span>
                     </span>
                     {plc.insurancePreAuthorized && (

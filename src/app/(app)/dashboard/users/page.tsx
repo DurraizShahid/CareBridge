@@ -20,6 +20,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
 
+type ClerkBackendClient = Awaited<ReturnType<typeof clerkClient>>;
+
+type LoadedClerkUsers = {
+  data: ClerkUser[];
+  totalCount: number;
+};
+
+const CLERK_PAGE_SIZE = 100;
+
 function metadataString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
@@ -50,6 +59,59 @@ function getPrimaryEmail(user: ClerkUser): string {
 
 function getDisplayNameFallback(user: ClerkUser, email: string): string {
   return user.username ?? email.split("@")[0] ?? "User";
+}
+
+function chunkIds(ids: string[], size = CLERK_PAGE_SIZE): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < ids.length; index += size) {
+    chunks.push(ids.slice(index, index + size));
+  }
+  return chunks;
+}
+
+async function getAllClerkUsers(
+  client: ClerkBackendClient,
+): Promise<LoadedClerkUsers> {
+  const users: ClerkUser[] = [];
+  let offset = 0;
+  let totalCount = 0;
+
+  while (true) {
+    const page = await client.users.getUserList({
+      limit: CLERK_PAGE_SIZE,
+      offset,
+      orderBy: "-created_at",
+    });
+
+    users.push(...page.data);
+    totalCount = page.totalCount ?? users.length;
+
+    if (page.data.length === 0 || users.length >= totalCount) break;
+    offset += CLERK_PAGE_SIZE;
+  }
+
+  return { data: users, totalCount };
+}
+
+async function getClerkUsersByIds(
+  client: ClerkBackendClient,
+  userIds: string[],
+): Promise<LoadedClerkUsers> {
+  if (userIds.length === 0) return { data: [], totalCount: 0 };
+
+  const pages = await Promise.all(
+    chunkIds(userIds).map((chunk) =>
+      client.users.getUserList({
+        userId: chunk,
+        limit: chunk.length,
+      }),
+    ),
+  );
+  const users = pages
+    .flatMap((page) => page.data)
+    .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+
+  return { data: users, totalCount: users.length };
 }
 
 function mapClerkUser(user: ClerkUser, dbUser?: DatabaseUser): DashboardUser {
@@ -115,28 +177,24 @@ export default async function UsersPage() {
   const orgType = org?.organizationType ?? "hospital";
   const allowedRoles = getAllowedRoles(signedInRole, orgType);
   const canManage = roleHasPermission(signedInRole, "users:manage-roles");
+  const canCreate = roleHasPermission(signedInRole, "users:create");
+
+  if (!organizationId) {
+    redirect("/onboarding");
+  }
 
   const client = await clerkClient();
-  const clerkUsers = await client.users.getUserList({
-    limit: isSuperadmin ? 100 : 250,
-    orderBy: "-created_at",
-  });
 
   const dbUsers = await prisma.user.findMany({
-    where: isSuperadmin
-      ? {
-          id: {
-            in: clerkUsers.data.map((user) => user.id),
-          },
-        }
-      : {
-          organizationId,
-          id: {
-            in: clerkUsers.data.map((user) => user.id),
-          },
-        },
+    where: isSuperadmin ? {} : { organizationId },
   });
   const dbUsersById = new Map(dbUsers.map((user) => [user.id, user]));
+  const clerkUsers = isSuperadmin
+    ? await getAllClerkUsers(client)
+    : await getClerkUsersByIds(
+        client,
+        dbUsers.map((user) => user.id),
+      );
 
   const users = clerkUsers.data
     .map((user) => mapClerkUser(user, dbUsersById.get(user.id)))
@@ -172,13 +230,18 @@ export default async function UsersPage() {
           users={users}
           allowedRoles={allowedRoles}
           canManage={canManage}
+          canCreate={canCreate}
         />
       </TabsContent>
       <TabsContent value="invite-codes">
-        <InviteCodesTab inviteCodes={inviteCodes} canManage={canManage} />
+        <InviteCodesTab
+          inviteCodes={inviteCodes}
+          allowedRoles={allowedRoles}
+          canCreate={canCreate}
+        />
       </TabsContent>
       <TabsContent value="join-requests">
-        <JoinRequestsTab joinRequests={joinRequests} canManage={canManage} />
+        <JoinRequestsTab joinRequests={joinRequests} canCreate={canCreate} />
       </TabsContent>
     </Tabs>
   );

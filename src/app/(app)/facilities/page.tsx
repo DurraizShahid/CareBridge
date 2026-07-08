@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Search, MapPin, Phone, Star, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,9 @@ const facilityTypeLabels: Record<string, string> = {
 
 export default async function FacilitiesPage() {
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
-  const role = org?.role ?? "customer";
+  if (!org) redirect("/onboarding");
+  const organizationId = org.organizationId;
+  const role = org.role;
   const facilities = await getFacilities(organizationId, role);
   const canCreate = roleHasPermission(role, "facilities:create");
 

@@ -74,8 +74,9 @@ export default async function PlacementDetailPage({ params }: Props) {
 
   const patient = patients.find((p) => p.id === placement.patientId);
   const patientName = patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
-  const facility = placement.selectedFacilityId
-    ? facilities.find((f) => f.id === placement.selectedFacilityId)
+  const placementFacilityId = placement.facilityId ?? placement.selectedFacilityId;
+  const facility = placementFacilityId
+    ? facilities.find((f) => f.id === placementFacilityId)
     : null;
   const socialWorker = users.find((u) => u.id === placement.socialWorkerId);
   const socialWorkerName = socialWorker

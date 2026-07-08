@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { Bell, Search, Sun, Moon } from "lucide-react";
+import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine } from "@remixicon/react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -37,7 +37,7 @@ export function DashboardHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-2" />
+        <SidebarTrigger className="-ml-2 md:hidden" />
         <Breadcrumb>
           <BreadcrumbList>
             {crumbs.map((crumb, i) => (
@@ -63,13 +63,13 @@ export function DashboardHeader() {
           onClick={toggleTheme}
           aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {theme === "dark" ? <Sun data-icon /> : <Moon data-icon />}
+          {theme === "dark" ? <RiSunLine data-icon /> : <RiMoonLine data-icon />}
         </Button>
         <Button variant="ghost" size="icon-lg" aria-label="Search">
-          <Search data-icon />
+          <RiSearchLine data-icon />
         </Button>
         <Button variant="ghost" size="icon-lg" aria-label="Notifications" className="relative">
-          <Bell data-icon />
+          <RiNotificationLine data-icon />
           <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
         </Button>
       </div>

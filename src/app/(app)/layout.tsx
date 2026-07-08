@@ -9,12 +9,13 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { OrganizationProvider } from "@/hooks/use-organization";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { GooeyLoader } from "@/components/ui/loader-10";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [hasOrg, setHasOrg] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -40,8 +41,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-health" />
+        <div className="flex flex-col items-center gap-6">
+          <GooeyLoader primaryColor="var(--health)" secondaryColor="color-mix(in oklch, var(--health), white 35%)" borderColor="color-mix(in oklch, var(--health), black 60%)" />
           <p className="text-sm text-muted-foreground">Loading your workspace...</p>
         </div>
       </div>
@@ -55,9 +56,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <OrganizationProvider>
-        <div className="flex h-full flex-1">
+        <div className="flex h-screen flex-1">
           <TooltipProvider delay={0}>
-            <SidebarProvider defaultOpen={true}>
+            <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <AppSidebar />
               <main className="flex flex-1 flex-col bg-surface dark:bg-background">
                 <DashboardHeader />

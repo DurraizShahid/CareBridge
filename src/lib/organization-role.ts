@@ -14,6 +14,15 @@ const PRISMA_ROLE_TO_APP_ROLE: Record<PrismaUserRole, UserRole> = {
   customer: "customer",
 };
 
+const APP_ROLE_TO_PRISMA_ROLE: Record<UserRole, PrismaUserRole> = {
+  "social-worker": PrismaUserRole.social_worker,
+  "discharge-planner": PrismaUserRole.discharge_planner,
+  administrator: PrismaUserRole.administrator,
+  "facility-coordinator": PrismaUserRole.facility_coordinator,
+  superadmin: PrismaUserRole.superadmin,
+  customer: PrismaUserRole.customer,
+};
+
 export function normalizeOrganizationType(
   value: unknown,
 ): OrganizationType | null {
@@ -34,4 +43,8 @@ export function getHighestRoleForOrganizationType(
 
 export function prismaRoleToAppRole(role: PrismaUserRole): UserRole {
   return PRISMA_ROLE_TO_APP_ROLE[role];
+}
+
+export function appRoleToPrismaRole(role: UserRole): PrismaUserRole {
+  return APP_ROLE_TO_PRISMA_ROLE[role];
 }

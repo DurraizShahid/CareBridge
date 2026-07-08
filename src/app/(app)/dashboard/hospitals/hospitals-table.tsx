@@ -12,7 +12,9 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnFiltersState,
+  type RowSelectionState,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import {
   ArrowDown,
@@ -27,6 +29,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Settings2,
   Trash2,
   Upload,
   X,
@@ -34,8 +37,10 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
@@ -49,6 +54,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -76,9 +82,17 @@ import {
   type HospitalActionState,
   type HospitalFormValues,
 } from "./actions";
+import { cn } from "@/lib/utils";
 import type { Hospital } from "@/types";
 
 const emptyActionState: HospitalActionState = { status: "idle", message: "" };
+
+const COLUMN_LABELS: Record<string, string> = {
+  name: "Name",
+  city: "City",
+  phone: "Phone",
+  npi: "NPI",
+};
 
 function getEmptyFormValues(): HospitalFormValues {
   return {
@@ -153,6 +167,8 @@ export function HospitalsTable({
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -226,6 +242,27 @@ export function HospitalsTable({
 
   const columns = useMemo(
     () => [
+      columnHelper.display({
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            aria-label="Select all hospitals"
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(checked) =>
+              table.toggleAllPageRowsSelected(checked)
+            }
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            aria-label={`Select ${row.original.name}`}
+            checked={row.getIsSelected()}
+            onCheckedChange={(checked) => row.toggleSelected(checked)}
+          />
+        ),
+        enableHiding: false,
+        enableSorting: false,
+      }),
       columnHelper.accessor("name", {
         header: "Name",
         cell: (info) => (
@@ -314,8 +351,10 @@ export function HospitalsTable({
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
       globalFilter,
       pagination,
+      rowSelection,
     },
     globalFilterFn: (row, _columnId, value) => {
       const h = row.original;
@@ -335,8 +374,10 @@ export function HospitalsTable({
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -344,6 +385,7 @@ export function HospitalsTable({
   });
 
   const filteredCount = table.getFilteredRowModel().rows.length;
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length;
   const pageCount = table.getPageCount();
   const currentPage = pagination.pageIndex;
   const firstVisible =
@@ -374,6 +416,32 @@ export function HospitalsTable({
             className="h-9 pl-9"
           />
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" className="h-9" />
+            }
+          >
+            <Settings2 data-icon="inline-start" />
+            Columns
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {table
+              .getAllLeafColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(checked) => column.toggleVisibility(checked)}
+                >
+                  {COLUMN_LABELS[column.id] ?? column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button onClick={openCreateDialog}>
           <Plus data-icon="inline-start" />
           Add Hospital
@@ -395,6 +463,12 @@ export function HospitalsTable({
         </Alert>
       )}
 
+      {selectedCount > 0 && (
+        <Badge variant="outline" className="w-fit text-muted-foreground">
+          {selectedCount} selected
+        </Badge>
+      )}
+
       {hospitals.length === 0 ? (
         <EmptyState onAdd={openCreateDialog} />
       ) : (
@@ -408,7 +482,11 @@ export function HospitalsTable({
                       {headerGroup.headers.map((header) => (
                         <TableHead
                           key={header.id}
-                          className="px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                          className={cn(
+                            "px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                            header.id === "select" && "w-12",
+                            header.id === "actions" && "w-16 text-right",
+                          )}
                         >
                         {header.isPlaceholder ? null : header.column.getCanSort() ? (
                           <Button
@@ -444,7 +522,7 @@ export function HospitalsTable({
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={table.getVisibleLeafColumns().length}
                       className="px-4 py-12 text-center text-sm text-muted-foreground"
                     >
                       No hospitals match your filters.
@@ -452,7 +530,10 @@ export function HospitalsTable({
                   </TableRow>
                 ) : (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                    >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
                           {flexRender(
@@ -667,29 +748,34 @@ export function HospitalsTable({
                   </FormField>
                 </div>
 
-                <Separator className="my-2" />
+                <input type="hidden" name="imageUrl" value={formValues.imageUrl ?? ""} />
+                <input type="hidden" name="logoUrl" value={formValues.logoUrl ?? ""} />
 
-                <div className="flex flex-col gap-3">
-                  <p className="text-sm font-medium">Branding</p>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <ImageUploadButton
-                      label="Hospital Image"
-                      hospitalId={formValues.id}
-                      currentUrl={formValues.imageUrl}
-                      field="image"
-                      onUploaded={(url) => updateField("imageUrl", url)}
-                    />
-                    <ImageUploadButton
-                      label="Hospital Logo"
-                      hospitalId={formValues.id}
-                      currentUrl={formValues.logoUrl}
-                      field="logo"
-                      onUploaded={(url) => updateField("logoUrl", url)}
-                    />
-                  </div>
-                  <input type="hidden" name="imageUrl" value={formValues.imageUrl ?? ""} />
-                  <input type="hidden" name="logoUrl" value={formValues.logoUrl ?? ""} />
-                </div>
+                {editingHospital && (
+                  <>
+                    <Separator className="my-2" />
+
+                    <div className="flex flex-col gap-3">
+                      <p className="text-sm font-medium">Branding</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <ImageUploadButton
+                          label="Hospital Image"
+                          hospitalId={formValues.id}
+                          currentUrl={formValues.imageUrl}
+                          field="image"
+                          onUploaded={(url) => updateField("imageUrl", url)}
+                        />
+                        <ImageUploadButton
+                          label="Hospital Logo"
+                          hospitalId={formValues.id}
+                          currentUrl={formValues.logoUrl}
+                          field="logo"
+                          onUploaded={(url) => updateField("logoUrl", url)}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </FieldGroup>
             </form>
           </ScrollArea>
@@ -763,9 +849,16 @@ function ImageUploadButton({
 }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentUrl);
+  const [error, setError] = useState("");
 
   async function handleUpload(file: File) {
+    if (!hospitalId) {
+      setError("Save the hospital before uploading branding images.");
+      return;
+    }
+
     setUploading(true);
+    setError("");
     try {
       const res = await fetch("/api/hospitals/upload", {
         method: "POST",
@@ -773,11 +866,14 @@ function ImageUploadButton({
         body: JSON.stringify({
           fileName: file.name,
           contentType: file.type || "image/jpeg",
-          hospitalId: hospitalId ?? "temp",
+          hospitalId,
           field,
         }),
       });
-      if (!res.ok) throw new Error("Failed to get upload URL");
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.error ?? "Failed to get upload URL");
+      }
 
       const { url, fields, key } = await res.json();
       const form = new FormData();
@@ -791,8 +887,12 @@ function ImageUploadButton({
       const bucketUrl = `${url.split("?")[0]}/${encodeURIComponent(key.split("/").pop()!)}`;
       setPreview(bucketUrl);
       onUploaded(bucketUrl);
-    } catch {
-      // swallow error for now
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Upload failed.",
+      );
     } finally {
       setUploading(false);
     }
@@ -801,6 +901,11 @@ function ImageUploadButton({
   return (
     <div className="flex flex-col gap-1.5">
       <p className="text-xs text-muted-foreground">{label}</p>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {preview ? (
         <div className="relative flex items-center gap-2 rounded-lg border p-2">
           <img
@@ -830,7 +935,7 @@ function ImageUploadButton({
           <input
             type="file"
             className="absolute inset-0 cursor-pointer opacity-0"
-            accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml"
+            accept="image/jpeg,image/png,image/webp,image/avif"
             disabled={uploading}
             onChange={(e) => {
               const file = e.target.files?.[0];

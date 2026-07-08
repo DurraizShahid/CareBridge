@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus, Search } from "lucide-react";
 import { roleHasPermission } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/page-header";
@@ -32,8 +33,9 @@ const statusLabels: Record<string, string> = {
 
 export default async function PatientsPage() {
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
-  const role = org?.role ?? "customer";
+  if (!org) redirect("/onboarding");
+  const organizationId = org.organizationId;
+  const role = org.role;
   const patients = await getPatients(organizationId, role);
 
   const canCreate = org ? roleHasPermission(role, "patients:create") : false;

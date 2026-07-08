@@ -24,7 +24,11 @@ export default async function HospitalsPage() {
   }
 
   const org = await getServerOrganization();
-  const organizationId = org?.organizationId ?? "org-001";
+  const organizationId = org?.organizationId;
+
+  if (!organizationId) {
+    redirect("/onboarding");
+  }
 
   const hospitals = await getHospitals(organizationId, signedInRole);
 

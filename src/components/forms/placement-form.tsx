@@ -66,6 +66,8 @@ const PRIORITIES = [
   { value: "emergency", label: "Emergency" },
 ];
 
+const NO_SELECTED_FACILITY = "none";
+
 function emptyForm(): PlacementFormData {
   return {
     patientId: "",
@@ -98,7 +100,7 @@ function placementToFormData(p: Placement): PlacementFormData {
     preferredLocationCity: p.preferredLocation?.city ?? "",
     preferredLocationState: p.preferredLocation?.state ?? "",
     preferredLocationMaxDistance: p.preferredLocation?.maxDistanceMiles ?? 50,
-    selectedFacilityId: p.selectedFacilityId ?? "",
+    selectedFacilityId: p.selectedFacilityId ?? p.facilityId ?? "",
     insurancePreAuthorized: p.insurancePreAuthorized,
     estimatedCost: p.estimatedCost?.toString() ?? "",
     startDate: p.startDate ? p.startDate.split("T")[0] : "",
@@ -144,6 +146,7 @@ export function PlacementForm({ initialData, placementId, patients, facilities, 
 
       const body: Record<string, unknown> = {
         ...form,
+        selectedFacilityId: form.selectedFacilityId || null,
         estimatedCost: form.estimatedCost ? Number(form.estimatedCost) : null,
         startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
         completedDate: form.completedDate ? new Date(form.completedDate).toISOString() : null,
@@ -294,16 +297,18 @@ export function PlacementForm({ initialData, placementId, patients, facilities, 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="selectedFacilityId">Selected Facility</Label>
+            <Label htmlFor="selectedFacilityId">Preferred Facility</Label>
             <Select
-              value={form.selectedFacilityId}
-              onValueChange={(v) => v !== null && update("selectedFacilityId", v as string)}
+              value={form.selectedFacilityId || NO_SELECTED_FACILITY}
+              onValueChange={(v) => {
+                if (v !== null) update("selectedFacilityId", v === NO_SELECTED_FACILITY ? "" : v);
+              }}
             >
               <SelectTrigger id="selectedFacilityId">
                 <SelectValue placeholder="Assign facility..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None (TBD)</SelectItem>
+                <SelectItem value={NO_SELECTED_FACILITY}>None (TBD)</SelectItem>
                 {facilities.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name}

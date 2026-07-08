@@ -1,23 +1,14 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import type { User as ClerkUser } from "@clerk/backend";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { getAllowedRoles, normalizeRole, resolveRole, roleHasAnyPermission, roleHasPermission } from "@/lib/permissions";
-import { getServerOrganization } from "@/lib/server-organization";
-import { UserRole as PrismaUserRole } from "@/generated/prisma/enums";
+import { getAllowedRoles, normalizeRole } from "@/lib/permissions";
+import { appRoleToPrismaRole } from "@/lib/organization-role";
+import { requireOrgPermission } from "@/lib/server-auth";
 import type { UserRole } from "@/types";
 import type { UserActionState, UserFormValues } from "./types";
-
-const APP_ROLE_TO_PRISMA: Record<UserRole, PrismaUserRole> = {
-  "social-worker": PrismaUserRole.social_worker,
-  "discharge-planner": PrismaUserRole.discharge_planner,
-  administrator: PrismaUserRole.administrator,
-  "facility-coordinator": PrismaUserRole.facility_coordinator,
-  superadmin: PrismaUserRole.superadmin,
-  customer: PrismaUserRole.customer,
-};
 
 function formValue(formData: FormData, key: keyof UserFormValues): string {
   const value = formData.get(key);
@@ -75,47 +66,15 @@ function getNameFallback(user: ClerkUser, email: string): string {
 }
 
 async function requireUserManager() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const [clerkUser, dbUser] = await Promise.all([
-    (await clerkClient()).users.getUser(userId),
-    prisma.user.findUnique({ where: { id: userId } }),
-  ]);
-  const role = resolveRole(dbUser?.role, clerkUser.publicMetadata.role);
-
-  if (!roleHasPermission(role, "users:manage-roles")) {
-    throw new Error("Forbidden");
-  }
-
-  return { userId };
+  return requireOrgPermission("users:manage-roles");
 }
 
-/**
- * Auth guard for org-scoped user read/create.
- * Allows users with `users:manage-roles` (superadmin) OR `users:read-org` (admin, facility-coordinator).
- * Returns the authenticated user ID, resolved role, and org context.
- */
-async function requireOrgUserReader() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const [clerkUser, dbUser] = await Promise.all([
-    (await clerkClient()).users.getUser(userId),
-    prisma.user.findUnique({ where: { id: userId } }),
-  ]);
-  const role = resolveRole(dbUser?.role, clerkUser.publicMetadata.role);
-
-  if (!roleHasAnyPermission(role, ["users:manage-roles", "users:read-org"])) {
-    throw new Error("Forbidden");
-  }
-
-  const org = await getServerOrganization();
-  if (!org) throw new Error("No organization context");
+async function requireOrgUserCreator() {
+  const { userId, org } = await requireOrgPermission("users:create");
 
   return {
     userId,
-    role,
+    role: org.role,
     organizationId: org.organizationId,
     orgType: org.organizationType,
   };
@@ -132,13 +91,37 @@ function toDbUserData(values: UserFormValues, avatarUrl: string | null | undefin
     email: values.email,
     firstName: values.firstName,
     lastName: values.lastName,
-    role: APP_ROLE_TO_PRISMA[values.role],
+    role: appRoleToPrismaRole(values.role),
     title: values.title,
     department: values.department,
     hospitalId: values.hospitalId,
     phone: values.phone,
     avatarUrl: avatarUrl ?? null,
   };
+}
+
+function userPublicMetadata(
+  values: UserFormValues,
+  organizationId: string,
+  organizationType: "hospital" | "facility",
+) {
+  return {
+    role: values.role,
+    organizationId,
+    organizationType,
+    title: values.title,
+    department: values.department,
+    hospitalId: values.hospitalId,
+    phone: values.phone,
+  };
+}
+
+function targetRoleIsAllowed(
+  values: UserFormValues,
+  currentRole: UserRole,
+  orgType: "hospital" | "facility",
+) {
+  return getAllowedRoles(currentRole, orgType).includes(values.role);
 }
 
 function clerkUserToFormValues(user: ClerkUser): UserFormValues {
@@ -163,15 +146,13 @@ export async function createUserAction(
   formData: FormData,
 ): Promise<UserActionState> {
   try {
-    const { organizationId, orgType, role: currentRole } = await requireOrgUserReader();
+    const { organizationId, orgType, role: currentRole } = await requireOrgUserCreator();
 
     const values = parseUserForm(formData);
     const error = validateUserForm(values);
     if (error) return { status: "error", message: error };
 
-    // Validate the target role is allowed for this org type
-    const allowedRoles = getAllowedRoles(currentRole, orgType);
-    if (!allowedRoles.includes(values.role)) {
+    if (!targetRoleIsAllowed(values, currentRole, orgType)) {
       return {
         status: "error",
         message: `Cannot assign role "${values.role}" to a user in a ${orgType} organization.`,
@@ -191,12 +172,17 @@ export async function createUserAction(
       emailAddress: [values.email],
       firstName: values.firstName,
       lastName: values.lastName,
-      publicMetadata: { role: values.role },
+      publicMetadata: userPublicMetadata(values, organizationId, orgType),
       skipPasswordRequirement: true,
     });
 
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { id: clerkUser.id },
+      update: {
+        ...toDbUserData(values, clerkUser.imageUrl),
+        organization: { connect: { id: organizationId } },
+      },
+      create: {
         id: clerkUser.id,
         ...toDbUserData(values, clerkUser.imageUrl),
         organization: { connect: { id: organizationId } },
@@ -218,13 +204,20 @@ export async function updateUserAction(
   formData: FormData,
 ): Promise<UserActionState> {
   try {
-    await requireUserManager();
+    const { org } = await requireUserManager();
 
     const values = parseUserForm(formData);
     if (!values.id) return { status: "error", message: "User ID is missing." };
 
     const error = validateUserForm(values);
     if (error) return { status: "error", message: error };
+
+    if (!targetRoleIsAllowed(values, org.role, org.organizationType)) {
+      return {
+        status: "error",
+        message: `Cannot assign role "${values.role}" to a user in a ${org.organizationType} organization.`,
+      };
+    }
 
     const existingDbEmail = await findConflictingDbEmail(
       values.email,
@@ -240,6 +233,19 @@ export async function updateUserAction(
     const client = await clerkClient();
     const clerkUser = await client.users.getUser(values.id);
     const primaryEmail = clerkUser.primaryEmailAddress?.emailAddress ?? "";
+    const existingDbUser = await prisma.user.findUnique({
+      where: { id: values.id },
+    });
+
+    if (
+      !org.isSuperadmin &&
+      existingDbUser?.organizationId &&
+      existingDbUser.organizationId !== org.organizationId
+    ) {
+      return { status: "error", message: "Forbidden" };
+    }
+
+    const organizationId = existingDbUser?.organizationId ?? org.organizationId;
 
     await Promise.all([
       client.users.updateUser(values.id, {
@@ -247,7 +253,11 @@ export async function updateUserAction(
         lastName: values.lastName,
       }),
       client.users.updateUserMetadata(values.id, {
-        publicMetadata: { role: values.role },
+        publicMetadata: userPublicMetadata(
+          values,
+          organizationId,
+          org.organizationType,
+        ),
       }),
       primaryEmail && primaryEmail.toLowerCase() !== values.email
         ? client.users.replaceUserEmailAddress(values.id, {
@@ -255,9 +265,6 @@ export async function updateUserAction(
           })
         : Promise.resolve(null),
     ]);
-
-    const org = await getServerOrganization();
-    const organizationId = org?.organizationId ?? "org-001";
 
     await prisma.user.upsert({
       where: { id: values.id },
@@ -284,15 +291,32 @@ export async function syncUserProfileAction(
   userId: string,
 ): Promise<UserActionState> {
   try {
-    await requireUserManager();
+    const { org } = await requireUserManager();
     if (!userId) return { status: "error", message: "User ID is missing." };
 
     const client = await clerkClient();
     const clerkUser = await client.users.getUser(userId);
     const values = clerkUserToFormValues(clerkUser);
+    const existingDbUser = await prisma.user.findUnique({ where: { id: userId } });
+    const metadataOrgId = readMetadataString(clerkUser, "organizationId");
 
-    const org = await getServerOrganization();
-    const organizationId = org?.organizationId ?? "org-001";
+    if (
+      !org.isSuperadmin &&
+      existingDbUser?.organizationId !== org.organizationId &&
+      metadataOrgId !== org.organizationId
+    ) {
+      return { status: "error", message: "Forbidden" };
+    }
+
+    if (!targetRoleIsAllowed(values, org.role, org.organizationType)) {
+      return {
+        status: "error",
+        message: `Cannot assign role "${values.role}" to a user in a ${org.organizationType} organization.`,
+      };
+    }
+
+    const organizationId =
+      existingDbUser?.organizationId ?? (metadataOrgId || org.organizationId);
 
     await prisma.user.upsert({
       where: { id: userId },
@@ -327,6 +351,13 @@ export async function setUserAccessAction(
         status: "error",
         message: "You cannot change your own sign-in access here.",
       };
+    }
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (
+      !manager.org.isSuperadmin &&
+      targetUser?.organizationId !== manager.org.organizationId
+    ) {
+      return { status: "error", message: "Forbidden" };
     }
 
     const client = await clerkClient();

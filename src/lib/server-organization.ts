@@ -5,13 +5,14 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { resolveRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import type { UserRole } from "@/types";
 
 export type OrgType = "hospital" | "facility";
 
 /**
  * Derive the organization type from the user's role.
  */
-function orgTypeFromRole(role: string): OrgType {
+function orgTypeFromRole(role: UserRole): OrgType {
   if (role === "facility-coordinator") return "facility";
   return "hospital"; // social-worker, discharge-planner, administrator, superadmin, customer
 }
@@ -19,8 +20,9 @@ function orgTypeFromRole(role: string): OrgType {
 export interface ServerOrganization {
   organizationId: string;
   organizationType: OrgType;
-  role: string;
+  role: UserRole;
   isSuperadmin: boolean;
+  userId: string;
 }
 
 /**
@@ -37,7 +39,7 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
 
   // Try DB first, then Clerk metadata, then mock fallback
   let organizationId = "";
-  let role = "";
+  let roleCandidate: unknown = "";
 
   // Check DB
   try {
@@ -46,7 +48,7 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
     });
     if (dbUser) {
       organizationId = dbUser.organizationId ?? "";
-      role = dbUser.role;
+      roleCandidate = dbUser.role;
     }
   } catch {
     // DB may not be available
@@ -57,10 +59,7 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
     organizationId = clerkUser.publicMetadata.organizationId as string;
   }
 
-  // Resolve role
-  if (!role) {
-    role = resolveRole(clerkUser?.publicMetadata?.role, null);
-  }
+  const role = resolveRole(roleCandidate, clerkUser?.publicMetadata?.role, null);
 
   // Derive org type from role
   let organizationType: OrgType = orgTypeFromRole(role);
@@ -73,12 +72,16 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
     }
   }
 
-  // Final fallback for development
-  if (!organizationId) {
+  // Final fallback for development only. Production should not silently scope
+  // an authenticated user into seed data.
+  if (!organizationId && process.env.NODE_ENV === "development") {
     organizationId = "org-001";
   }
 
+  if (!organizationId) return null;
+
   return {
+    userId: sessionAuth.userId,
     organizationId,
     organizationType,
     role,
