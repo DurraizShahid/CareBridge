@@ -1,11 +1,12 @@
+import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Lato, Open_Sans } from "next/font/google";
+import { Montserrat, Open_Sans } from "next/font/google";
 import "./globals.css";
 
-const lato = Lato({
+const montserrat = Montserrat({
   variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["300", "400", "700", "900"],
+  subsets: ["latin", "cyrillic"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 const openSans = Open_Sans({
@@ -38,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${lato.variable} ${openSans.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${openSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-heading">
+        <ClerkProvider>
+          {children}
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

@@ -4,6 +4,9 @@ import type {
   Facility,
   Placement,
   DashboardStats,
+  FacilityDashboardStats,
+  SuperAdminDashboardStats,
+  Referral,
   ActivityEvent,
 } from "@/types";
 
@@ -509,6 +512,286 @@ export const dashboardStats: DashboardStats = {
   placementsThisMonth: 12,
   averagePlacementTimeDays: 3.5,
 };
+
+// ── Activity Feed ──
+
+// ── Facility Users ──
+
+export const facilityUsers: User[] = [
+  {
+    id: "usr-fac-001",
+    email: "pmoore@willametterehab.org",
+    firstName: "Patricia",
+    lastName: "Moore",
+    role: "facility-coordinator",
+    title: "Admissions Director",
+    department: "Admissions",
+    hospitalId: "fac-001",
+    phone: "(503) 555-1001",
+    createdAt: "2024-01-15T00:00:00Z",
+    updatedAt: "2026-07-01T00:00:00Z",
+  },
+  {
+    id: "usr-fac-002",
+    email: "mchen@stfranciscare.org",
+    firstName: "Michael",
+    lastName: "Chen",
+    role: "facility-coordinator",
+    title: "Executive Director",
+    department: "Administration",
+    hospitalId: "fac-002",
+    phone: "(503) 555-2001",
+    createdAt: "2023-06-01T00:00:00Z",
+    updatedAt: "2026-06-28T00:00:00Z",
+  },
+];
+
+// ── Referrals (for Facility Operators) ──
+
+export const referrals: Referral[] = [
+  {
+    id: "ref-001",
+    patientName: "Eleanor Roosevelt",
+    patientAge: 84,
+    careLevel: "skilled-nursing",
+    referringHospital: "Mercy Hospital Portland",
+    referringHospitalId: "hosp-001",
+    referredBy: "Sarah Johnson",
+    referredAt: "2026-07-06T10:00:00Z",
+    status: "reviewing",
+    notes: "Post-surgical hip replacement. Needs 24/7 nursing care for wound management. Estimated 6-8 week stay.",
+    diagnosis: "Hip fracture (post-surgical)",
+    insuranceInfo: "Medicare Part A & B",
+  },
+  {
+    id: "ref-002",
+    patientName: "George Washington",
+    patientAge: 87,
+    careLevel: "rehabilitation",
+    referringHospital: "Mercy Hospital Portland",
+    referringHospitalId: "hosp-001",
+    referredBy: "Sarah Johnson",
+    referredAt: "2026-07-05T14:00:00Z",
+    status: "new",
+    notes: "Stroke patient with right-sided weakness. Needs intensive PT/OT. Good rehab potential.",
+    diagnosis: "Cerebrovascular accident (CVA) - Ischemic stroke",
+    insuranceInfo: "Medicare Advantage, Aetna Supplemental",
+  },
+  {
+    id: "ref-003",
+    patientName: "Robert Frost",
+    patientAge: 77,
+    careLevel: "long-term-care",
+    referringHospital: "Mercy Hospital Portland",
+    referringHospitalId: "hosp-001",
+    referredBy: "Sarah Johnson",
+    referredAt: "2026-07-05T16:00:00Z",
+    status: "new",
+    notes: "Advanced Alzheimer's patient. Wandering risk. Requires 24/7 supervised memory care.",
+    diagnosis: "Alzheimer's disease (advanced)",
+    insuranceInfo: "Medicare Part A",
+  },
+  {
+    id: "ref-004",
+    patientName: "Maria Garcia",
+    patientAge: 70,
+    careLevel: "home-health",
+    referringHospital: "Mercy Hospital Portland",
+    referringHospitalId: "hosp-001",
+    referredBy: "Sarah Johnson",
+    referredAt: "2026-07-04T09:00:00Z",
+    status: "accepted",
+    notes: "COPD patient stable for home with supportive services. Needs daily nursing visits and oxygen management.",
+    diagnosis: "COPD exacerbation",
+    insuranceInfo: "Blue Cross Blue Shield",
+  },
+  {
+    id: "ref-005",
+    patientName: "Yuki Tanaka",
+    patientAge: 63,
+    careLevel: "rehabilitation",
+    referringHospital: "Mercy Hospital Portland",
+    referringHospitalId: "hosp-001",
+    referredBy: "Sarah Johnson",
+    referredAt: "2026-07-03T11:00:00Z",
+    status: "declined",
+    notes: "Spinal cord injury patient. Full-time wheelchair user. Facility not equipped for extended neuro-rehab.",
+    diagnosis: "Spinal cord injury - L1 fracture",
+    insuranceInfo: "Providence Health Plan",
+  },
+];
+
+// ── Facility Dashboard Stats ──
+
+export const facilityDashboardStats: FacilityDashboardStats = {
+  currentOccupancy: 98,
+  totalCapacity: 120,
+  availableBeds: 22,
+  pendingReferrals: referrals.filter((r) => r.status === "new" || r.status === "reviewing").length,
+  pendingAdmissions: 3,
+  upcomingDischarges: 5,
+  placementsThisMonth: 18,
+  averageStayDays: 34,
+  occupancyRate: Math.round((98 / 120) * 100),
+};
+
+// ── All Users (for Super Admin) ──
+
+export const allUsers: User[] = [
+  {
+    id: "usr-001",
+    email: "sjohnson@mercyhospital.org",
+    firstName: "Sarah",
+    lastName: "Johnson",
+    role: "social-worker",
+    title: "Senior Social Worker",
+    department: "Discharge Planning",
+    hospitalId: "hosp-001",
+    phone: "(555) 234-5678",
+    createdAt: "2024-09-01T08:00:00Z",
+    updatedAt: "2026-07-01T12:00:00Z",
+  },
+  {
+    id: "usr-002",
+    email: "jdoe@mercyhospital.org",
+    firstName: "James",
+    lastName: "Doe",
+    role: "discharge-planner",
+    title: "Discharge Planner",
+    department: "Discharge Planning",
+    hospitalId: "hosp-001",
+    phone: "(555) 234-5679",
+    createdAt: "2024-10-15T08:00:00Z",
+    updatedAt: "2026-06-15T12:00:00Z",
+  },
+  {
+    id: "usr-003",
+    email: "asmith@mercyhospital.org",
+    firstName: "Amanda",
+    lastName: "Smith",
+    role: "administrator",
+    title: "Department Administrator",
+    department: "Discharge Planning",
+    hospitalId: "hosp-001",
+    phone: "(555) 234-5680",
+    createdAt: "2023-03-01T08:00:00Z",
+    updatedAt: "2026-07-05T12:00:00Z",
+  },
+  {
+    id: "usr-fac-001",
+    email: "pmoore@willametterehab.org",
+    firstName: "Patricia",
+    lastName: "Moore",
+    role: "facility-coordinator",
+    title: "Admissions Director",
+    department: "Admissions",
+    hospitalId: "fac-001",
+    phone: "(503) 555-1001",
+    createdAt: "2024-01-15T00:00:00Z",
+    updatedAt: "2026-07-01T00:00:00Z",
+  },
+  {
+    id: "usr-fac-002",
+    email: "mchen@stfranciscare.org",
+    firstName: "Michael",
+    lastName: "Chen",
+    role: "facility-coordinator",
+    title: "Executive Director",
+    department: "Administration",
+    hospitalId: "fac-002",
+    phone: "(503) 555-2001",
+    createdAt: "2023-06-01T00:00:00Z",
+    updatedAt: "2026-06-28T00:00:00Z",
+  },
+  {
+    id: "usr-admin-001",
+    email: "admin@carebridgehealth.com",
+    firstName: "Admin",
+    lastName: "User",
+    role: "superadmin",
+    title: "System Administrator",
+    department: "Operations",
+    hospitalId: "hosp-001",
+    phone: "(555) 000-0001",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2026-07-08T12:00:00Z",
+  },
+];
+
+// ── All Hospitals (for Super Admin) ──
+
+export const allHospitals = [
+  { id: "hosp-001", name: "Mercy Hospital Portland", city: "Portland", state: "OR", phone: "(503) 555-0100", npi: "1234567890" },
+  { id: "hosp-002", name: "Providence St. Vincent Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0200", npi: "1234567891" },
+  { id: "hosp-003", name: "Oregon Health & Science University", city: "Portland", state: "OR", phone: "(503) 555-0300", npi: "1234567892" },
+  { id: "hosp-004", name: "Legacy Emanuel Medical Center", city: "Portland", state: "OR", phone: "(503) 555-0400", npi: "1234567893" },
+];
+
+// ── Super Admin Dashboard Stats ──
+
+export const superAdminDashboardStats: SuperAdminDashboardStats = {
+  totalUsers: allUsers.length,
+  totalHospitals: allHospitals.length,
+  totalFacilities: facilities.length,
+  totalPlacements: 47,
+  activePlacements: placements.length,
+  completedPlacements: 38,
+  usersByRole: {
+    "social-worker": 1,
+    "discharge-planner": 1,
+    "administrator": 1,
+    "facility-coordinator": 2,
+    "superadmin": 1,
+  },
+  placementsByMonth: [
+    { month: "Feb", count: 5 },
+    { month: "Mar", count: 8 },
+    { month: "Apr", count: 6 },
+    { month: "May", count: 10 },
+    { month: "Jun", count: 12 },
+    { month: "Jul", count: 6 },
+  ],
+  averagePlacementTimeDays: 3.5,
+  facilityUtilizationRate: 82,
+  pendingApprovals: 3,
+};
+
+// ── Placements History (for Super Admin) ──
+
+export const allPlacements: Placement[] = [
+  ...placements,
+  {
+    id: "plc-004",
+    patientId: "pat-004",
+    facilityId: "fac-002",
+    socialWorkerId: "usr-001",
+    status: "completed",
+    careLevel: "long-term-care",
+    priority: "high",
+    matchedFacilities: ["fac-002", "fac-005"],
+    selectedFacilityId: "fac-002",
+    insurancePreAuthorized: true,
+    notes: "Patient placed at St. Francis Memory Care unit.",
+    createdAt: "2026-06-01T10:00:00Z",
+    updatedAt: "2026-06-15T14:00:00Z",
+    completedDate: "2026-06-15T14:00:00Z",
+  },
+  {
+    id: "plc-005",
+    patientId: "pat-005",
+    socialWorkerId: "usr-001",
+    status: "in-progress",
+    careLevel: "rehabilitation",
+    priority: "medium",
+    matchedFacilities: ["fac-001"],
+    selectedFacilityId: "fac-001",
+    insurancePreAuthorized: true,
+    notes: "Ongoing intensive rehab at Willamette Valley Rehab. Progressing well.",
+    createdAt: "2026-06-20T09:00:00Z",
+    updatedAt: "2026-07-05T14:00:00Z",
+    startDate: "2026-06-22T00:00:00Z",
+  },
+];
 
 // ── Activity Feed ──
 

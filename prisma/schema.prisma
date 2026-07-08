@@ -1,0 +1,220 @@
+// ─── CareBridge Prisma Schema ───
+// Maps to CareBridge domain types from src/types/index.ts
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ──
+
+enum InsuranceType {
+  medicare
+  medicaid
+  private
+  va
+  self_pay
+}
+
+enum InsuranceStatus {
+  active
+  pending
+  expired
+  verified
+}
+
+enum CareLevel {
+  independent_living
+  assisted_living
+  skilled_nursing
+  long_term_care
+  rehabilitation
+  home_health
+  hospice
+  memory_care
+}
+
+enum PatientStatus {
+  admitted
+  assessment_in_progress
+  ready_for_discharge
+  placed
+  discharged
+}
+
+enum PlacementStatus {
+  assessment
+  searching
+  matching
+  pending_approval
+  approved
+  in_progress
+  completed
+  cancelled
+}
+
+enum UserRole {
+  social_worker
+  discharge_planner
+  administrator
+  facility_coordinator
+  superadmin
+  customer
+}
+
+enum FacilityType {
+  skilled_nursing_facility
+  rehabilitation_center
+  assisted_living
+  long_term_care
+  home_health_agency
+  hospice
+}
+
+enum ActivityType {
+  placement
+  assessment
+  admission
+  discharge
+  note
+  milestone
+}
+
+enum Priority {
+  low
+  medium
+  high
+  emergency
+}
+
+// ── Models ──
+
+model User {
+  id         String    @id
+  email      String    @unique
+  firstName  String
+  lastName   String
+  role       UserRole
+  title      String
+  department String
+  hospitalId String
+  avatarUrl  String?
+  phone      String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  patients   Patient[]
+  placements Placement[]
+  activities ActivityEvent[]
+}
+
+model Patient {
+  id                    String        @id
+  mrn                   String        @unique
+  firstName             String
+  lastName              String
+  dateOfBirth           DateTime
+  age                   Int
+  gender                String
+  address               Json
+  phone                 String
+  emergencyContact      Json
+  insurance             Json
+  primaryDiagnosis      String
+  secondaryDiagnoses    String[]
+  careLevelRequired     CareLevel
+  notes                 String
+  socialWorkerId        String
+  hospitalId            String
+  admissionDate         DateTime
+  estimatedDischargeDate DateTime?
+  status                PatientStatus  @default(admitted)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  socialWorker          User           @relation(fields: [socialWorkerId], references: [id])
+  placements            Placement[]
+  activityEvents        ActivityEvent[]
+}
+
+model Facility {
+  id                 String       @id
+  name               String
+  type               FacilityType
+  address            Json
+  phone              String
+  email              String
+  website            String?
+  contacts           Json
+  licensure          String[]
+  accreditations     String[]
+  capacity           Int
+  currentOccupancy   Int
+  insuranceAccepted  String[]
+  careLevelsOffered  CareLevel[]
+  specialties        String[]
+  rating             Float
+  reviewsCount       Int
+  hasAvailability    Boolean      @default(true)
+  waitlistDays       Int?
+  acceptsMedicare    Boolean      @default(true)
+  acceptsMedicaid    Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  placements         Placement[]
+}
+
+model Placement {
+  id                   String          @id
+  patientId            String
+  facilityId           String?
+  socialWorkerId       String
+  status               PlacementStatus @default(assessment)
+  careLevel            CareLevel
+  priority             Priority        @default(medium)
+  assessmentNotes      String?
+  preferredLocation    Json?
+  matchedFacilities    String[]
+  selectedFacilityId   String?
+  insurancePreAuthorized Boolean      @default(false)
+  estimatedCost        Float?
+  approvedBy           String?
+  approvalDate         DateTime?
+  startDate            DateTime?
+  completedDate        DateTime?
+  cancellationReason   String?
+  notes                String
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  patient              Patient         @relation(fields: [patientId], references: [id])
+  facility             Facility?       @relation(fields: [facilityId], references: [id])
+  socialWorker         User            @relation(fields: [socialWorkerId], references: [id])
+}
+
+model ActivityEvent {
+  id          String       @id
+  type        ActivityType
+  title       String
+  description String
+  patientName String
+  patientId   String
+  timestamp   DateTime     @default(now())
+  userId      String
+
+  patient     Patient      @relation(fields: [patientId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+}
+
+model Hospital {
+  id      String @id
+  name    String
+  address Json
+  phone   String
+  npi     String
+}

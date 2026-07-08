@@ -9,11 +9,24 @@ import {
   ClipboardList,
   Heart,
   ChevronLeft,
+  Stethoscope,
+  Warehouse,
+  Shield,
 } from "lucide-react";
+import { UserButton, Show } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+const mainNavItems = [
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+] as const;
+
+const dashboardNavItems = [
+  { href: "/dashboard/staff", label: "Staff Dashboard", icon: Stethoscope },
+  { href: "/dashboard/facility", label: "Facility Dashboard", icon: Warehouse },
+  { href: "/dashboard/admin", label: "Admin Dashboard", icon: Shield },
+] as const;
+
+const featureNavItems = [
   { href: "/patients", label: "Patients", icon: Users },
   { href: "/facilities", label: "Facilities", icon: Building2 },
   { href: "/placements", label: "Placements", icon: ClipboardList },
@@ -48,7 +61,62 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-2 py-4">
-        {navItems.map((item) => {
+        {/* Main */}
+        {mainNavItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-health/10 text-health"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
+          );
+        })}
+
+        {/* Dashboards Section */}
+        {!collapsed && (
+          <div className="pt-3 pb-1">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Dashboards
+            </p>
+          </div>
+        )}
+        {dashboardNavItems.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-health/10 text-health"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
+          );
+        })}
+
+        {/* Features Section */}
+        {!collapsed && (
+          <div className="pt-3 pb-1">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Features
+            </p>
+          </div>
+        )}
+        {featureNavItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
@@ -86,23 +154,31 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </nav>
 
       {/* User info */}
-      {!collapsed && (
+      <Show when="signed-in">
         <div className="border-t border-border px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-              SJ
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">
-                Sarah Johnson
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                Senior Social Worker
-              </p>
-            </div>
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "h-8 w-8",
+                  userButtonTrigger:
+                    "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
+                },
+              }}
+            />
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-sidebar-foreground">
+                  Signed in
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  CareBridge Health
+                </p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </Show>
     </aside>
   );
 }

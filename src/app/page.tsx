@@ -1,4 +1,17 @@
-import { Heart, HomeIcon, Users, Shield, ArrowRight } from "lucide-react";
+import {
+  Heart,
+  HomeIcon,
+  Users,
+  Shield,
+  ArrowRight,
+  Search,
+  MapPin,
+  Building2,
+  Stethoscope,
+} from "lucide-react";
+import { Footer } from "@/components/layout/footer";
+import { AuthControls } from "@/components/auth-controls";
+import { Navbar } from "@/components/layout/navbar";
 
 const features = [
   {
@@ -30,82 +43,98 @@ const features = [
 export default function Page() {
   return (
     <div className="flex flex-col flex-1">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Heart className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-heading text-xl font-bold text-primary">
-              CareBridge
-            </span>
-          </div>
-          <div className="hidden items-center gap-8 sm:flex">
-            <a
-              href="#features"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Features
-            </a>
-            <a
-              href="#about"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              About
-            </a>
-            <button
-              type="button"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-            >
-              Get Started
-            </button>
-          </div>
-        </nav>
-      </header>
-
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/95">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(78,216,199,0.15),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,126,107,0.1),transparent_50%)]" />
-          <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-teal-400/10 px-4 py-1.5">
-                <span className="h-2 w-2 rounded-full bg-health" />
-                <span className="text-sm font-medium text-health">
-                  Bridging Hospital to Home
-                </span>
-              </div>
+        {/* Hero Section - Inspired by consulting partner layout */}
+        <section className="relative mx-4 mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F1A2E] via-[#1a2d45] to-primary sm:mx-6 sm:mt-6 lg:mx-8 lg:mt-8">
+          {/* Background image overlay */}
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80&auto=format"
+              alt=""
+              className="h-full w-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0F1A2E]/95 via-[#0F1A2E]/80 to-transparent" />
+          </div>
+
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 opacity-[0.03]">
+            <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="hero-grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r="1" fill="white" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#hero-grid)" />
+            </svg>
+          </div>
+
+          {/* Gradient glows */}
+          <div className="absolute -left-32 top-0 h-[500px] w-[500px] rounded-full bg-health/8 blur-[100px]" />
+          <div className="absolute -right-32 bottom-0 h-[400px] w-[400px] rounded-full bg-warmth/5 blur-[80px]" />
+
+          {/* Navbar inside hero */}
+          <Navbar />
+
+          {/* Content */}
+          <div className="relative px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pt-14">
+            <div className="max-w-2xl">
+              {/* Headline */}
               <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Every patient deserves{" "}
-                <span className="text-health">the right care</span> beyond the
-                hospital
+                Your Trusted{" "}
+                <span className="bg-gradient-to-r from-health to-teal-300 bg-clip-text text-transparent">
+                  Healthcare
+                </span>{" "}
+                Partner
               </h1>
-              <p className="mt-6 text-lg leading-8 text-blue-100/90 sm:text-xl">
-                CareBridge Health empowers hospital social workers and discharge
-                planners to find and place patients into appropriate care
-                settings when returning home is not an option.
-              </p>
-              <div className="mt-10 flex items-center justify-center gap-4">
+            </div>
+          </div>
+        </section>
+
+        {/* Facility Search Bar */}
+        <section className="relative z-10 -mt-8 mx-auto max-w-4xl px-6 pb-12 sm:-mt-10 lg:px-8">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-1 shadow-xl backdrop-blur-md">
+            <div className="rounded-xl border border-white/5 bg-white/[0.05] p-5 sm:p-6">
+              <div className="flex flex-col items-center gap-4 sm:flex-row">
+                {/* Location input */}
+                <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
+                  <MapPin className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="City, state, or ZIP code"
+                    className="w-full bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
+                  />
+                </div>
+
+                {/* Care level select */}
+                <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-health/50 focus-within:ring-2 focus-within:ring-health/20 sm:w-auto sm:flex-1">
+                  <Stethoscope className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <select
+                    defaultValue=""
+                    className="w-full appearance-none bg-transparent text-sm text-foreground outline-none"
+                  >
+                    <option value="" disabled className="text-muted-foreground">
+                      Care level needed
+                    </option>
+                    <option value="skilled-nursing">Skilled Nursing</option>
+                    <option value="rehab">Rehabilitation</option>
+                    <option value="assisted-living">Assisted Living</option>
+                    <option value="home-health">Home Health</option>
+                    <option value="memory-care">Memory Care</option>
+                    <option value="ltc">Long-Term Care</option>
+                  </select>
+                </div>
+
+                {/* Search button */}
                 <button
                   type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-health px-6 text-sm font-semibold text-primary shadow-sm transition-all hover:bg-health/90 active:translate-y-px"
+                  className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-health px-6 text-sm font-semibold text-primary shadow-lg shadow-health/25 transition-all hover:bg-health/90 hover:shadow-xl hover:shadow-health/30 active:translate-y-px sm:w-auto"
                 >
-                  Start Free Assessment
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 active:translate-y-px"
-                >
-                  Learn More
+                  <Search className="h-4 w-4" />
+                  <span>Find Facilities</span>
                 </button>
               </div>
             </div>
           </div>
-          {/* Wave divider */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
         </section>
 
         {/* Features Section */}
@@ -232,14 +261,14 @@ export default function Page() {
               <div className="mt-10 flex items-center justify-center gap-4">
                 <button
                   type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-health px-6 text-sm font-semibold text-primary shadow-sm transition-all hover:bg-health/90 active:translate-y-px"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-health px-6 text-sm font-semibold text-primary shadow-sm transition-all hover:bg-health/90 active:translate-y-px"
                 >
                   Request Demo
                   <ArrowRight className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  className="inline-flex h-12 items-center justify-center rounded-lg border border-white/20 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 active:translate-y-px"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 active:translate-y-px"
                 >
                   Contact Sales
                 </button>
@@ -249,22 +278,7 @@ export default function Page() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-background">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
-              <Heart className="h-3 w-3 text-white" />
-            </div>
-            <span className="font-heading text-sm font-bold text-primary">
-              CareBridge Health
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} CareBridge Health. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

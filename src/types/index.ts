@@ -48,7 +48,7 @@ export type PlacementStatus =
   | "completed"
   | "cancelled";
 
-export type UserRole = "social-worker" | "discharge-planner" | "administrator" | "facility-coordinator";
+export type UserRole = "social-worker" | "discharge-planner" | "administrator" | "facility-coordinator" | "superadmin" | "customer";
 
 // ── Entities ──
 
@@ -173,6 +173,47 @@ export interface DashboardStats {
   facilitiesAvailable: number;
   placementsThisMonth: number;
   averagePlacementTimeDays: number;
+}
+
+export interface FacilityDashboardStats {
+  currentOccupancy: number;
+  totalCapacity: number;
+  availableBeds: number;
+  pendingReferrals: number;
+  pendingAdmissions: number;
+  upcomingDischarges: number;
+  placementsThisMonth: number;
+  averageStayDays: number;
+  occupancyRate: number;
+}
+
+export interface SuperAdminDashboardStats {
+  totalUsers: number;
+  totalHospitals: number;
+  totalFacilities: number;
+  totalPlacements: number;
+  activePlacements: number;
+  completedPlacements: number;
+  usersByRole: Record<string, number>;
+  placementsByMonth: { month: string; count: number }[];
+  averagePlacementTimeDays: number;
+  facilityUtilizationRate: number;
+  pendingApprovals: number;
+}
+
+export interface Referral {
+  id: string;
+  patientName: string;
+  patientAge: number;
+  careLevel: CareLevel;
+  referringHospital: string;
+  referringHospitalId: string;
+  referredBy: string;
+  referredAt: string;
+  status: "new" | "reviewing" | "accepted" | "declined";
+  notes: string;
+  diagnosis: string;
+  insuranceInfo: string;
 }
 
 export interface ActivityEvent {

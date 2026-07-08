@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Footer } from "@/components/layout/footer";
 
 export default function AppLayout({
   children,
@@ -20,6 +21,7 @@ export default function AppLayout({
         <div className="mx-auto w-full max-w-7xl flex-1 px-6 py-8">
           {children}
         </div>
+        <Footer compact />
       </main>
     </div>
   );
