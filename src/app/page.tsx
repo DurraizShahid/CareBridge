@@ -135,6 +135,9 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
+
         {/* Trust Bar - Company logos */}
         <section className="border-y border-gray-200 bg-gray-100 py-12">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -153,6 +156,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
 
         {/* Feature Showcase - 4 cards in one row */}
         <section id="features" className="bg-gradient-to-br from-[#134675] via-[#1a5c8f] to-[#44BEAF] py-24 sm:py-32">
@@ -361,6 +367,9 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
+
         {/* Resources Section - Okta style: content cards */}
         <section id="resources" className="bg-[#134675] py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -434,6 +443,9 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
+
         {/* CTA Section - Okta style: three cards */}
         <section id="contact" className="bg-muted/30 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -500,6 +512,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="h-1 bg-[#44BEAF]" />
       </main>
 
       <Footer />
