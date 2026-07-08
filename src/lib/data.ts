@@ -18,16 +18,19 @@ export const organizations: Organization[] = [
     id: "org-001",
     name: "Mercy Hospital Portland",
     slug: "mercy-hospital-portland",
+    type: "hospital",
   },
   {
     id: "org-002",
     name: "Providence Health System",
     slug: "providence-health",
+    type: "hospital",
   },
   {
     id: "org-003",
     name: "OHSU Health",
     slug: "ohsu-health",
+    type: "hospital",
   },
 ];
 

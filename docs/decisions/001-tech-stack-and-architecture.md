@@ -1,7 +1,7 @@
 # ADR-001: Tech Stack & Application Architecture
 
-**Status:** Accepted
-**Date:** 2026-07-08
+**Status:** Accepted  
+**Date:** 2026-07-08  
 **Decision-makers:** Engineering Team
 
 ## Context
@@ -37,7 +37,7 @@ PostgreSQL is our primary database with Prisma ORM for type-safe database access
 Clerk is our authentication and user management platform.
 
 - **Secure authentication** — built-in support for sign-in, sign-up, and user profiles
-- **Organization support** — multi-tenant isolation via Clerk Organizations
+- **Organization support** — multi-tenant isolation
 - **Webhooks** — sync user data to our database
 
 ### Authorization: Custom RBAC System
@@ -85,6 +85,7 @@ Page Component
 
 ```
 /                          → Public landing page
+/(onboarding)              → Onboarding flow (no sidebar)
 /(app)                     → Authenticated app shell (sidebar layout)
   /dashboard                 → Overview dashboard
     /admin                    → Admin dashboard
@@ -97,6 +98,11 @@ Page Component
   /admin                     → Admin-only pages
 /api/                       → API routes
   /me                        → Current user info
+  /onboarding/create-org     → Create new organization
+  /invite-codes              → Manage invite codes
+  /invite-codes/validate     → Validate invite code
+  /join-requests             → Manage join requests
+  /join-requests/[id]        → Approve/deny join request
   /webhooks                  → Clerk webhooks
 /sign-in/, /sign-up/         → Clerk authentication pages
 ```

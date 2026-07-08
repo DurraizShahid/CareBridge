@@ -12,7 +12,10 @@ import { prisma } from "@/lib/prisma";
 import type { UserModel as DatabaseUser } from "@/generated/prisma/models/User";
 import { getServerOrganization } from "@/lib/server-organization";
 import { UsersTable } from "./users-table";
+import { InviteCodesTab } from "./invite-codes-tab";
+import { JoinRequestsTab } from "./join-requests-tab";
 import type { DashboardUser } from "./types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -138,12 +141,44 @@ export default async function UsersPage() {
     .map((user) => mapClerkUser(user, dbUsersById.get(user.id)))
     .filter((u) => isSuperadmin || allowedRoles.includes(u.role));
 
+  // Fetch invite codes and join requests
+  const inviteCodes = organizationId
+    ? await prisma.inviteCode.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: "desc" },
+        include: { createdBy: true },
+      })
+    : [];
+
+  const joinRequests = organizationId
+    ? await prisma.joinRequest.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: "desc" },
+        include: { user: true, inviteCode: true, reviewedBy: true },
+      })
+    : [];
+
   return (
-    <UsersTable
-      totalCount={clerkUsers.totalCount ?? clerkUsers.data.length}
-      users={users}
-      allowedRoles={allowedRoles}
-      canManage={canManage}
-    />
+    <Tabs defaultValue="users" className="w-full">
+      <TabsList>
+        <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsTrigger value="invite-codes">Invite Codes</TabsTrigger>
+        <TabsTrigger value="join-requests">Join Requests</TabsTrigger>
+      </TabsList>
+      <TabsContent value="users">
+        <UsersTable
+          totalCount={clerkUsers.totalCount ?? clerkUsers.data.length}
+          users={users}
+          allowedRoles={allowedRoles}
+          canManage={canManage}
+        />
+      </TabsContent>
+      <TabsContent value="invite-codes">
+        <InviteCodesTab inviteCodes={inviteCodes} canManage={canManage} />
+      </TabsContent>
+      <TabsContent value="join-requests">
+        <JoinRequestsTab joinRequests={joinRequests} canManage={canManage} />
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -63,22 +63,35 @@ Dark mode is fully supported via the `.dark` class variant with an adjusted deep
 ```
 carebridge/
 ├── docs/                          # Documentation and ADRs
-│   └── adr-001-tech-stack-and-architecture.md
+│   └── decisions/                 # Architecture Decision Records (ADRs)
+│       ├── 001-tech-stack-and-architecture.md
+│       ├── 002-database-and-orm.md
+│       ├── 003-authentication.md
+│       ├── 004-authorization-and-rbac.md
+│       └── 005-organization-onboarding-flow.md
 ├── prisma/                        # Prisma ORM schema and migrations
 │   ├── schema.prisma
 │   └── seed.ts
 ├── public/                        # Static assets
 ├── src/
 │   ├── app/                       # Next.js App Router
+│   │   ├── (onboarding)/          # Onboarding flow (no sidebar)
+│   │   │   ├── onboarding/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
 │   │   ├── (app)/                 # Authenticated app routes
 │   │   │   ├── admin/
 │   │   │   ├── dashboard/         # Dashboard pages (admin, staff, facility)
+│   │   │   │   └── users/         # User management, invite codes, join requests
 │   │   │   ├── facilities/        # Facility management
 │   │   │   ├── patients/          # Patient management
 │   │   │   ├── placements/        # Placement workflow
 │   │   │   └── layout.tsx         # Authenticated app layout with sidebar
 │   │   ├── api/                   # API routes
 │   │   │   ├── me/
+│   │   │   ├── onboarding/
+│   │   │   ├── invite-codes/
+│   │   │   ├── join-requests/
 │   │   │   └── webhooks/
 │   │   ├── sign-in/
 │   │   ├── sign-up/
@@ -91,7 +104,7 @@ carebridge/
 │   │   └── ui/                    # shadcn/ui components
 │   ├── hooks/                     # Custom React hooks
 │   ├── lib/                       # Utility modules
-│   │   ├── data-access.ts
+│   │   ├── data-access.ts         # Data access layer (Prisma + org-scoped queries)
 │   │   ├── data.ts
 │   │   ├── permissions.ts         # RBAC permission system
 │   │   ├── prisma.ts
@@ -153,11 +166,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 - **Authentication & Authorization** — Clerk for secure authentication, role-based access control (RBAC) with permissions system
 - **Multi-Organization Support** — Isolated data for hospitals and care facilities
+- **Onboarding Flow** — New users choose organization type, create org, or join existing via invite code
+- **Invite Code System** — Generate reusable invite codes with optional role assignment
+- **Join Request Workflow** — Users request to join orgs, admins approve/deny requests
 - **Social Worker Portal** — Streamlined case management for assessments, matching, and placement
 - **Care Setting Discovery** — Facility directory with real-time availability
 - **Placement Coordination** — End-to-end workflow with secure stakeholder communication
 - **Patient-Centered Matching** — Intelligent algorithms considering medical, insurance, location, and facility data
-- **User Management** — Admin panel for managing users and roles
+- **User Management** — Admin panel for managing users, invite codes, and join requests
 - **Responsive Design** — Works on desktop and mobile devices
 
 ## User Roles & Permissions
@@ -187,13 +203,15 @@ See `src/lib/permissions.ts` for detailed permission mappings.
 
 The database schema includes the following core entities:
 
-- **Organization** — Hospital or care facility organization
+- **Organization** — Hospital or care facility organization with `type` (hospital/facility)
 - **User** — Platform user with role and organization association
 - **Patient** — Patient record with medical and demographic information
 - **Facility** — Care facility with capacity and specialty information
 - **Placement** — Patient placement workflow and status
 - **Hospital** — Hospital organization details
 - **ActivityEvent** — Audit trail of system activities
+- **InviteCode** — Generated invite codes for joining organizations
+- **JoinRequest** — User requests to join organizations
 
 See `prisma/schema.prisma` for the complete schema.
 
@@ -209,8 +227,9 @@ npm run start
 
 ## Architecture Decision Records (ADRs)
 
-Key architectural decisions are documented in the `docs/` directory:
-- [ADR-001: Tech Stack & Application Architecture](docs/adr-001-tech-stack-and-architecture.md)
-- [ADR-002: Database & ORM Selection](docs/adr-002-database-and-orm.md)
-- [ADR-003: Authentication Provider Selection (Clerk)](docs/adr-003-authentication.md)
-- [ADR-004: Authorization & RBAC System](docs/adr-004-authorization-and-rbac.md)
+Key architectural decisions are documented in `docs/decisions/`:
+- [ADR-001: Tech Stack & Application Architecture](docs/decisions/001-tech-stack-and-architecture.md)
+- [ADR-002: Database & ORM Selection](docs/decisions/002-database-and-orm.md)
+- [ADR-003: Authentication Provider Selection (Clerk)](docs/decisions/003-authentication.md)
+- [ADR-004: Authorization & RBAC System](docs/decisions/004-authorization-and-rbac.md)
+- [ADR-005: Organization Onboarding & Invite System](docs/decisions/005-organization-onboarding-flow.md)

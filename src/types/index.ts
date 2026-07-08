@@ -49,6 +49,8 @@ export type PlacementStatus =
   | "cancelled";
 
 export type UserRole = "social-worker" | "discharge-planner" | "administrator" | "facility-coordinator" | "superadmin" | "customer";
+export type OrganizationType = "hospital" | "facility";
+export type JoinRequestStatus = "pending" | "approved" | "denied";
 
 // ── Entities ──
 
@@ -56,6 +58,35 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  type: OrganizationType;
+}
+
+export interface InviteCode {
+  id: string;
+  code: string;
+  organizationId: string;
+  role?: UserRole;
+  createdById: string;
+  expiresAt?: string;
+  maxUses?: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JoinRequest {
+  id: string;
+  userId: string;
+  organizationId: string;
+  inviteCodeId?: string;
+  status: JoinRequestStatus;
+  requestedRole?: UserRole;
+  reviewedById?: string;
+  reviewedAt?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {

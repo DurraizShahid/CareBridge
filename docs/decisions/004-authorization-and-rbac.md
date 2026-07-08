@@ -1,7 +1,7 @@
 # ADR-004: Authorization & RBAC System
 
-**Status:** Accepted
-**Date:** 2026-07-08
+**Status:** Accepted  
+**Date:** 2026-07-08  
 **Decision-makers:** Engineering Team
 
 ## Context
@@ -48,7 +48,7 @@ Format: `<resource>:<action>`, e.g.:
 - Clear separation of concerns
 
 ### Trade-offs
-- Custom code instead of off-the-shelf solution (but simple enough
+- Custom code instead of off-the-shelf solution (but simple enough for our needs)
 - Need to keep permissions in sync as app grows
 
 ## Alternatives Considered

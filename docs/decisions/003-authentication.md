@@ -1,7 +1,7 @@
 # ADR-003: Authentication Provider Selection (Clerk)
 
-**Status:** Accepted
-**Date:** 2026-07-08
+**Status:** Accepted  
+**Date:** 2026-07-08  
 **Decision-makers:** Engineering Team
 
 ## Context
@@ -19,15 +19,14 @@ Use **Clerk** for authentication.
 
 ## Why Clerk?
 - Native Next.js 16 App Router support
-- Built-in Organizations feature perfect for multi-tenant
 - Beautiful, accessible UI components
 - Webhook support for syncing data
-- SOC2 compliant (good for healthcare
+- SOC2 compliant (good for healthcare)
 - Excellent developer experience
 
 ## Integration approach:
-1. `@clerk/nextjs SDK
-2. Clerk Organizations for multi-tenancy
+1. `@clerk/nextjs SDK`
+2. Custom organization management in PostgreSQL (instead of Clerk Organizations)
 3. Webhook to sync user/org data to PostgreSQL via Prisma
 4. Custom role stored in metadata
 
@@ -36,7 +35,6 @@ Use **Clerk** for authentication.
 ### Positive
 - No need to build auth from scratch
 - Secure, maintained auth provider
-- Easy multi-org support out of the box
 - Webhooks keep our database in sync
 
 ### Trade-offs

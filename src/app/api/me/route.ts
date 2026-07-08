@@ -33,13 +33,14 @@ export async function GET() {
     const role = resolveRole(clerkUser?.publicMetadata?.role, dbUser?.role);
 
     return NextResponse.json({
-      id: authObj.userId,
-      role,
-      firstName: dbUser?.firstName ?? clerkUser?.firstName ?? "",
-      lastName: dbUser?.lastName ?? clerkUser?.lastName ?? "",
-      email: dbUser?.email ?? clerkUser?.emailAddresses?.[0]?.emailAddress ?? "",
-      imageUrl: clerkUser?.imageUrl ?? null,
-    });
+    id: authObj.userId,
+    role,
+    organizationId: dbUser?.organizationId ?? null,
+    firstName: dbUser?.firstName ?? clerkUser?.firstName ?? "",
+    lastName: dbUser?.lastName ?? clerkUser?.lastName ?? "",
+    email: dbUser?.email ?? clerkUser?.emailAddresses?.[0]?.emailAddress ?? "",
+    imageUrl: clerkUser?.imageUrl ?? null,
+  });
   } catch {
     // If Clerk is not configured, return null
     return NextResponse.json(null);

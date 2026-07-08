@@ -1,7 +1,7 @@
 # ADR-002: Database & ORM Selection
 
-**Status:** Accepted
-**Date:** 2026-07-08
+**Status:** Accepted  
+**Date:** 2026-07-08  
 **Decision-makers:** Engineering Team
 
 ## Context
@@ -17,15 +17,15 @@ CareBridge needs a reliable, scalable database solution for:
 We will use **PostgreSQL** with **Prisma ORM**.
 
 ### Database: PostgreSQL
-- **Relational database with strong ACID guarantees
+- Relational database with strong ACID guarantees
 - Supports complex queries and relationships
 - Mature ecosystem and wide adoption in healthcare
 - Supports JSON columns for flexible data
 - Managed hosting options (Supabase, Neon, AWS RDS, etc.)
 
 ### ORM: Prisma
-- **Type-safe database client generated from schema
-- **Declarative schema definition
+- Type-safe database client generated from schema
+- Declarative schema definition
 - Automatic migrations
 - Built-in query builder
 - Support for multiple databases
@@ -37,13 +37,15 @@ We will use **PostgreSQL** with **Prisma ORM**.
 
 ## Schema structure:
 ```
-Organization (id, name, slug, timestamps)
+Organization (id, name, slug, type, timestamps)
   ├─ User (id, email, role, organizationId)
   ├─ Patient (id, mrn, socialWorkerId, organizationId)
   ├─ Facility (id, name, type, organizationId)
   ├─ Hospital (id, name, organizationId)
   ├─ Placement (id, patientId, facilityId, organizationId)
-  └─ ActivityEvent (id, type, organizationId)
+  ├─ ActivityEvent (id, type, organizationId)
+  ├─ InviteCode (id, code, role, expiresAt, maxUses, usedCount, isActive)
+  └─ JoinRequest (id, userId, organizationId, inviteCodeId, status, requestedRole, reviewedById, reviewedAt)
 ```
 
 ## Consequences
@@ -56,7 +58,7 @@ Organization (id, name, slug, timestamps)
 
 ### Trade-offs
 - Learning curve for Prisma if team new to it
-- Prisma generates client adds some overhead (acceptable for our use case
+- Prisma generates client adds some overhead (acceptable for our use case)
 
 ## Alternatives Considered
 

@@ -24,6 +24,7 @@ async function main() {
       id: "org-001",
       name: "Mercy Hospital Portland",
       slug: "mercy-hospital-portland",
+      type: "hospital",
     },
   });
   console.log("    ✔ org-001 — Mercy Hospital Portland");
@@ -35,6 +36,7 @@ async function main() {
       id: "org-002",
       name: "Providence Health System",
       slug: "providence-health",
+      type: "hospital",
     },
   });
   console.log("    ✔ org-002 — Providence Health System");
@@ -46,6 +48,7 @@ async function main() {
       id: "org-003",
       name: "OHSU Health",
       slug: "ohsu-health",
+      type: "hospital",
     },
   });
   console.log("    ✔ org-003 — OHSU Health");

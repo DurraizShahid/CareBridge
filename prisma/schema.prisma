@@ -91,42 +91,96 @@ enum Priority {
   emergency
 }
 
+enum OrganizationType {
+  hospital
+  facility
+}
+
+enum JoinRequestStatus {
+  pending
+  approved
+  denied
+}
+
 // ── Models ──
 
 model Organization {
-  id        String   @id
+  id        String           @id
   name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug      String           @unique
+  type      OrganizationType
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
-  users      User[]
-  patients   Patient[]
-  facilities Facility[]
-  hospitals  Hospital[]
-  placements Placement[]
-  activities ActivityEvent[]
+  users         User[]
+  patients      Patient[]
+  facilities    Facility[]
+  hospitals     Hospital[]
+  placements    Placement[]
+  activities    ActivityEvent[]
+  inviteCodes   InviteCode[]
+  joinRequests  JoinRequest[]
+}
+
+model InviteCode {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  organizationId String
+  role           UserRole?
+  createdById    String
+  expiresAt      DateTime?
+  maxUses        Int?
+  usedCount      Int           @default(0)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdBy      User          @relation("InviteCodeCreator", fields: [createdById], references: [id])
+  joinRequests   JoinRequest[]
+}
+
+model JoinRequest {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  organizationId String
+  inviteCodeId   String?
+  status         JoinRequestStatus @default(pending)
+  requestedRole  UserRole?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  user           User             @relation("JoinRequestUser", fields: [userId], references: [id])
+  inviteCode     InviteCode?      @relation(fields: [inviteCodeId], references: [id])
+  reviewedBy     User?            @relation("JoinRequestReviewedBy", fields: [reviewedById], references: [id])
 }
 
 model User {
-  id             String       @id
-  email          String       @unique
-  firstName      String
-  lastName       String
-  role           UserRole
-  title          String
-  department     String
-  hospitalId     String
-  avatarUrl      String?
-  phone          String
-  organizationId String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                     String           @id
+  email                  String           @unique
+  firstName              String
+  lastName               String
+  role                   UserRole
+  title                  String
+  department             String
+  hospitalId             String
+  avatarUrl              String?
+  phone                  String
+  organizationId         String
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  patients     Patient[]
-  placements   Placement[]
-  activities   ActivityEvent[]
+  organization           Organization     @relation(fields: [organizationId], references: [id])
+  patients               Patient[]
+  placements             Placement[]
+  activities             ActivityEvent[]
+  createdInviteCodes     InviteCode[]     @relation("InviteCodeCreator")
+  reviewedJoinRequests   JoinRequest[]    @relation("JoinRequestReviewedBy")
+  joinRequest            JoinRequest?     @relation("JoinRequestUser")
 }
 
 model Patient {

@@ -23,11 +23,11 @@ function resolveRole(metadata: Record<string, unknown> | undefined): UserRole {
   return UserRoleEnum.customer;
 }
 
-function resolveOrganizationId(metadata: Record<string, unknown> | undefined): string {
+function resolveOrganizationId(metadata: Record<string, unknown> | undefined): string | null {
   if (metadata?.organizationId && typeof metadata.organizationId === "string") {
     return metadata.organizationId;
   }
-  return "org-001";
+  return null; // Don't auto-assign org for new users - let them go through onboarding
 }
 
 type ClerkUserData = {
@@ -64,6 +64,22 @@ export async function POST(req: NextRequest) {
       const role = resolveRole(public_metadata);
       const orgId = resolveOrganizationId(public_metadata);
       try {
+        const userData: any = {
+          id,
+          email,
+          firstName: first_name ?? "",
+          lastName: last_name ?? "",
+          role,
+          title: "",
+          department: "",
+          hospitalId: "",
+          phone: "",
+          avatarUrl: image_url,
+        };
+        if (orgId) {
+          userData.organization = { connect: { id: orgId } };
+        }
+
         await prisma.user.upsert({
           where: { id },
           update: {
@@ -73,19 +89,7 @@ export async function POST(req: NextRequest) {
             role,
             avatarUrl: image_url,
           },
-          create: {
-            id,
-            email,
-            firstName: first_name ?? "",
-            lastName: last_name ?? "",
-            role,
-            title: "",
-            department: "",
-            hospitalId: "",
-            phone: "",
-            avatarUrl: image_url,
-            organization: { connect: { id: orgId } },
-          },
+          create: userData,
         });
           console.log(`✅ Webhook: user.created — ${email} (${role})`);
       } catch (err) {
@@ -101,6 +105,22 @@ export async function POST(req: NextRequest) {
       const role = resolveRole(public_metadata);
       const orgId = resolveOrganizationId(public_metadata);
       try {
+        const userData: any = {
+          id,
+          email,
+          firstName: first_name ?? "",
+          lastName: last_name ?? "",
+          role,
+          title: "",
+          department: "",
+          hospitalId: "",
+          phone: "",
+          avatarUrl: image_url,
+        };
+        if (orgId) {
+          userData.organization = { connect: { id: orgId } };
+        }
+
         await prisma.user.upsert({
           where: { id },
           update: {
@@ -110,19 +130,7 @@ export async function POST(req: NextRequest) {
             role,
             avatarUrl: image_url,
           },
-          create: {
-            id,
-            email,
-            firstName: first_name ?? "",
-            lastName: last_name ?? "",
-            role,
-            title: "",
-            department: "",
-            hospitalId: "",
-            phone: "",
-            avatarUrl: image_url,
-            organization: { connect: { id: orgId } },
-          },
+          create: userData,
         });
           console.log(`✅ Webhook: user.updated — ${email} (${role})`);
       } catch (err) {
@@ -147,12 +155,14 @@ export async function POST(req: NextRequest) {
     // ── Organization Events ──
     case "organization.created": {
       const data = evt.data as ClerkOrganizationData;
-      const { id, name, slug } = data;
+      const { id, name, slug, public_metadata } = data;
+      // Default to hospital if type not provided
+      const orgType = (public_metadata?.type as string) || "hospital";
       try {
         await prisma.organization.upsert({
           where: { id },
           update: { name, slug },
-          create: { id, name, slug },
+          create: { id, name, slug, type: orgType as any },
         });
         console.log(`✅ Webhook: organization.created — ${name}`);
       } catch (err) {
@@ -168,7 +178,8 @@ export async function POST(req: NextRequest) {
         await prisma.organization.upsert({
           where: { id },
           update: { name, slug },
-          create: { id, name, slug },
+          // If org doesn't exist yet, default type to hospital
+          create: { id, name, slug, type: "hospital" },
         });
         console.log(`✅ Webhook: organization.updated — ${name}`);
       } catch (err) {

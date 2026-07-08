@@ -11,6 +11,11 @@ import type {
   Referral,
   ActivityEvent,
   User,
+  Organization,
+  OrganizationType,
+  InviteCode,
+  JoinRequest,
+  JoinRequestStatus,
 } from "@/types";
 import { prisma } from "@/lib/prisma";
 
@@ -23,6 +28,21 @@ function isSuperadmin(role: string): boolean {
 // Convert Prisma dates to ISO strings
 function toISO(date: Date | null | undefined): string {
   return date ? date.toISOString() : new Date().toISOString();
+}
+
+// Convert Prisma snake_case enums to UI kebab-case
+function snakeToKebab(str: string): string {
+  return str.replace(/_/g, "-");
+}
+
+// Convert UI kebab-case enums to Prisma snake_case
+function kebabToSnake(str: string): string {
+  return str.replace(/-/g, "_");
+}
+
+// Generate random invite code
+function generateInviteCode(): string {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
 // ── Scoped Data Functions ──
@@ -366,4 +386,243 @@ export async function getSuperAdminDashboardStats() {
     facilityUtilizationRate: 82,
     pendingApprovals: 3,
   };
+}
+
+// ── Organization Functions ──
+
+export async function getOrganizationById(organizationId: string): Promise<Organization | null> {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+  });
+  if (!org) return null;
+  return {
+    id: org.id,
+    name: org.name,
+    slug: org.slug,
+    type: snakeToKebab(org.type) as OrganizationType,
+  };
+}
+
+export async function createOrganization(
+  name: string,
+  slug: string,
+  type: OrganizationType,
+): Promise<Organization> {
+  const prismaOrg = await prisma.organization.create({
+    data: {
+      id: crypto.randomUUID(),
+      name,
+      slug,
+      type: kebabToSnake(type) as any,
+    },
+  });
+  return {
+    id: prismaOrg.id,
+    name: prismaOrg.name,
+    slug: prismaOrg.slug,
+    type: snakeToKebab(prismaOrg.type) as OrganizationType,
+  };
+}
+
+// ── Invite Code Functions ──
+
+export async function getInviteCodes(
+  organizationId: string,
+  role: string,
+): Promise<InviteCode[]> {
+  const where = isSuperadmin(role) ? {} : { organizationId };
+  const prismaInviteCodes = await prisma.inviteCode.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+  });
+  return prismaInviteCodes.map((ic) => ({
+    id: ic.id,
+    code: ic.code,
+    organizationId: ic.organizationId,
+    role: ic.role ? (snakeToKebab(ic.role) as any) : undefined,
+    createdById: ic.createdById,
+    expiresAt: ic.expiresAt ? toISO(ic.expiresAt) : undefined,
+    maxUses: ic.maxUses ?? undefined,
+    usedCount: ic.usedCount,
+    isActive: ic.isActive,
+    createdAt: toISO(ic.createdAt),
+    updatedAt: toISO(ic.updatedAt),
+  }));
+}
+
+export async function createInviteCode(
+  organizationId: string,
+  createdById: string,
+  role?: string,
+  expiresAt?: Date,
+  maxUses?: number,
+): Promise<InviteCode> {
+  const prismaInviteCode = await prisma.inviteCode.create({
+    data: {
+      id: crypto.randomUUID(),
+      code: generateInviteCode(),
+      organizationId,
+      createdById,
+      role: role ? (kebabToSnake(role) as any) : null,
+      expiresAt,
+      maxUses,
+    },
+  });
+  return {
+    id: prismaInviteCode.id,
+    code: prismaInviteCode.code,
+    organizationId: prismaInviteCode.organizationId,
+    role: prismaInviteCode.role ? (snakeToKebab(prismaInviteCode.role) as any) : undefined,
+    createdById: prismaInviteCode.createdById,
+    expiresAt: prismaInviteCode.expiresAt ? toISO(prismaInviteCode.expiresAt) : undefined,
+    maxUses: prismaInviteCode.maxUses ?? undefined,
+    usedCount: prismaInviteCode.usedCount,
+    isActive: prismaInviteCode.isActive,
+    createdAt: toISO(prismaInviteCode.createdAt),
+    updatedAt: toISO(prismaInviteCode.updatedAt),
+  };
+}
+
+export async function validateInviteCode(code: string) {
+  const inviteCode = await prisma.inviteCode.findUnique({
+    where: { code },
+    include: { organization: true },
+  });
+
+  if (!inviteCode) return { valid: false, reason: "Invalid invite code" };
+  if (!inviteCode.isActive) return { valid: false, reason: "Invite code is inactive" };
+  if (inviteCode.expiresAt && new Date() > inviteCode.expiresAt) {
+    return { valid: false, reason: "Invite code has expired" };
+  }
+  if (inviteCode.maxUses && inviteCode.usedCount >= inviteCode.maxUses) {
+    return { valid: false, reason: "Invite code has reached max uses" };
+  }
+
+  return {
+    valid: true,
+    inviteCode,
+    organization: {
+      id: inviteCode.organization.id,
+      name: inviteCode.organization.name,
+      slug: inviteCode.organization.slug,
+      type: snakeToKebab(inviteCode.organization.type) as OrganizationType,
+    },
+  };
+}
+
+// ── Join Request Functions ──
+
+export async function getJoinRequests(
+  organizationId: string,
+  role: string,
+): Promise<JoinRequest[]> {
+  const where = isSuperadmin(role) ? {} : { organizationId };
+  const prismaJoinRequests = await prisma.joinRequest.findMany({
+    where,
+    include: { user: true, inviteCode: true, reviewedBy: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return prismaJoinRequests.map((jr) => ({
+    id: jr.id,
+    userId: jr.userId,
+    organizationId: jr.organizationId,
+    inviteCodeId: jr.inviteCodeId ?? undefined,
+    status: snakeToKebab(jr.status) as JoinRequestStatus,
+    requestedRole: jr.requestedRole ? (snakeToKebab(jr.requestedRole) as any) : undefined,
+    reviewedById: jr.reviewedById ?? undefined,
+    reviewedAt: jr.reviewedAt ? toISO(jr.reviewedAt) : undefined,
+    notes: jr.notes ?? undefined,
+    createdAt: toISO(jr.createdAt),
+    updatedAt: toISO(jr.updatedAt),
+  }));
+}
+
+export async function createJoinRequest(
+  userId: string,
+  organizationId: string,
+  inviteCodeId?: string,
+  requestedRole?: string,
+  notes?: string,
+): Promise<JoinRequest> {
+  const prismaJoinRequest = await prisma.joinRequest.create({
+    data: {
+      id: crypto.randomUUID(),
+      userId,
+      organizationId,
+      inviteCodeId,
+      requestedRole: requestedRole ? (kebabToSnake(requestedRole) as any) : null,
+      notes,
+    },
+  });
+  return {
+    id: prismaJoinRequest.id,
+    userId: prismaJoinRequest.userId,
+    organizationId: prismaJoinRequest.organizationId,
+    inviteCodeId: prismaJoinRequest.inviteCodeId ?? undefined,
+    status: snakeToKebab(prismaJoinRequest.status) as JoinRequestStatus,
+    requestedRole: prismaJoinRequest.requestedRole ? (snakeToKebab(prismaJoinRequest.requestedRole) as any) : undefined,
+    reviewedById: prismaJoinRequest.reviewedById ?? undefined,
+    reviewedAt: prismaJoinRequest.reviewedAt ? toISO(prismaJoinRequest.reviewedAt) : undefined,
+    notes: prismaJoinRequest.notes ?? undefined,
+    createdAt: toISO(prismaJoinRequest.createdAt),
+    updatedAt: toISO(prismaJoinRequest.updatedAt),
+  };
+}
+
+export async function approveJoinRequest(
+  joinRequestId: string,
+  reviewedById: string,
+) {
+  const joinRequest = await prisma.joinRequest.findUniqueOrThrow({
+    where: { id: joinRequestId },
+    include: { inviteCode: true },
+  });
+
+  const newRole = joinRequest.inviteCode?.role || "customer";
+
+  // Update the user's organization and role
+  await prisma.user.update({
+    where: { id: joinRequest.userId },
+    data: {
+      organizationId: joinRequest.organizationId,
+      role: newRole as any,
+    },
+  });
+
+  // Update join request
+  const updatedJoinRequest = await prisma.joinRequest.update({
+    where: { id: joinRequestId },
+    data: {
+      status: "approved",
+      reviewedById,
+      reviewedAt: new Date(),
+    },
+  });
+
+  // Increment invite code used count if applicable
+  if (joinRequest.inviteCodeId) {
+    await prisma.inviteCode.update({
+      where: { id: joinRequest.inviteCodeId },
+      data: { usedCount: { increment: 1 } },
+    });
+  }
+
+  return { success: true };
+}
+
+export async function denyJoinRequest(
+  joinRequestId: string,
+  reviewedById: string,
+  notes?: string,
+) {
+  await prisma.joinRequest.update({
+    where: { id: joinRequestId },
+    data: {
+      status: "denied",
+      reviewedById,
+      reviewedAt: new Date(),
+      notes,
+    },
+  });
+  return { success: true };
 }
