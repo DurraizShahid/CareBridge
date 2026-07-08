@@ -136,16 +136,16 @@ export default function Page() {
         </section>
 
         {/* Trust Bar - Company logos */}
-        <section className="border-y border-border bg-muted/30 py-8">
+        <section className="border-y border-gray-200 bg-gray-100 py-8">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <p className="text-center text-sm font-medium text-foreground/60">
+            <p className="text-center text-sm font-medium text-gray-700">
               Trusted by leading healthcare organizations
             </p>
             <div className="mt-6 flex items-center justify-center gap-8 sm:gap-12 lg:gap-16">
               {customerLogos.map((logo) => (
                 <span
                   key={logo}
-                  className="text-sm font-semibold text-foreground/40 sm:text-base"
+                  className="text-sm font-semibold text-gray-600 sm:text-base"
                 >
                   {logo}
                 </span>
@@ -155,7 +155,7 @@ export default function Page() {
         </section>
 
         {/* Feature Showcase - Okta style: two-column cards */}
-        <section id="features" className="bg-[#44BEAF] py-24 sm:py-32">
+        <section id="features" className="bg-gradient-to-br from-[#134675] via-[#1a5c8f] to-[#44BEAF] py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
