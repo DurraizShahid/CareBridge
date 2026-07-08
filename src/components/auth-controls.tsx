@@ -2,6 +2,7 @@
 
 import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function AuthControls() {
   return (
@@ -16,12 +17,14 @@ export function AuthControls() {
               Sign In
             </button>
           </SignInButton>
-          <Link
-            href="/sign-up"
-            className="rounded-full bg-[#44BEAF] px-5 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
+          <Button
+            variant="default"
+            size="lg"
+            nativeButton={false}
+            render={<Link href="/sign-up" />}
           >
             Get Started
-          </Link>
+          </Button>
         </div>
       </Show>
       <Show when="signed-in">

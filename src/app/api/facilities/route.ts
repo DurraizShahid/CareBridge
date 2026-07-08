@@ -45,6 +45,7 @@ export async function POST(req: Request) {
 
     const facility = await createFacility({
       name: body.name,
+      description: body.description ?? null,
       type: body.type as FacilityType,
       address: body.address,
       phone: body.phone,

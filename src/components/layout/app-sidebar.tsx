@@ -10,6 +10,7 @@ import {
   RiClipboardLine,
   RiShieldCheckLine,
   RiHospitalLine,
+  RiMapPinLine,
 } from "@remixicon/react";
 import { useEffect, useState } from "react";
 import { UserButton, Show, useUser } from "@clerk/nextjs";
@@ -52,6 +53,7 @@ const mainNavItems: NavItem[] = [
 
 const featureNavItems: NavItem[] = [
   { href: "/patients", label: "Patients", icon: RiGroupLine, requiredPermission: "patients:read" },
+  { href: "/dashboard/facility-network", label: "Facility Network", icon: RiMapPinLine, requiredPermission: "placements:read" },
   { href: "/facilities", label: "Facilities", icon: RiBuildingLine, requiredPermission: "facilities:read" },
   { href: "/placements", label: "Placements", icon: RiClipboardLine, requiredPermission: "placements:read" },
 ];
@@ -60,6 +62,12 @@ const adminNavItems: NavItem[] = [
   { href: "/dashboard/users", label: "Users", icon: RiGroupLine, requiredPermission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, requiredPermission: "hospitals:manage" },
   { href: "/admin/permissions", label: "Permissions", icon: RiShieldCheckLine, requiredPermission: "users:manage-roles" },
+];
+
+const allNavItems: NavItem[] = [
+  ...mainNavItems,
+  ...featureNavItems,
+  ...adminNavItems,
 ];
 
 const roleBadgeConfig: Record<UserRole, { label: string; className: string }> = {
@@ -128,7 +136,7 @@ function UserInfo({ user, effectiveRole }: { user: ReturnType<typeof useUser>["u
   );
 }
 
-function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
+function NavSection({ items, label, allItems }: { items: NavItem[]; label?: string; allItems: NavItem[] }) {
   const pathname = usePathname();
   const { can, isLoaded } = usePermissions();
 
@@ -152,6 +160,9 @@ function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
   const visible = items.filter(
     (item) => !item.requiredPermission || can(item.requiredPermission),
   );
+  const allVisible = allItems.filter(
+    (item) => !item.requiredPermission || can(item.requiredPermission),
+  );
 
   if (visible.length === 0) return null;
 
@@ -163,7 +174,12 @@ function NavSection({ items, label }: { items: NavItem[]; label?: string }) {
           {visible.map((item) => {
             const isActive =
               pathname === item.href ||
-              pathname.startsWith(item.href + "/");
+              (pathname.startsWith(item.href + "/") &&
+                !allVisible.some(
+                  (other) =>
+                    other.href !== item.href &&
+                    pathname.startsWith(other.href),
+                ));
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
@@ -221,9 +237,9 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <NavSection items={mainNavItems} />
-        <NavSection items={featureNavItems} label="Features" />
-        <NavSection items={adminNavItems} label="Management" />
+        <NavSection items={mainNavItems} allItems={allNavItems} />
+        <NavSection items={featureNavItems} label="Features" allItems={allNavItems} />
+        <NavSection items={adminNavItems} label="Management" allItems={allNavItems} />
       </SidebarContent>
       <SidebarFooter>
         <Show when="signed-in">

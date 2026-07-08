@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import type {
 
 interface FacilityFormData {
   name: string;
+  description: string;
   type: FacilityType;
   address: Address;
   phone: string;
@@ -76,6 +77,7 @@ const CARE_LEVELS: { value: CareLevel; label: string }[] = [
 function emptyForm(): FacilityFormData {
   return {
     name: "",
+    description: "",
     type: "skilled-nursing-facility",
     address: { street: "", city: "", state: "", zipCode: "" },
     phone: "",
@@ -101,6 +103,7 @@ function emptyForm(): FacilityFormData {
 function facilityToFormData(facility: Facility): FacilityFormData {
   return {
     name: facility.name,
+    description: facility.description ?? "",
     type: facility.type,
     address: facility.address,
     phone: facility.phone,
@@ -136,8 +139,46 @@ export function FacilityForm({ initialData, facilityId }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [tagInput, setTagInput] = useState<Record<string, string>>({});
+  const [createdFacilityId, setCreatedFacilityId] = useState<string | null>(null);
 
   const isEditing = !!facilityId;
+
+  const effectiveFacilityId = facilityId ?? createdFacilityId;
+
+  // Persist form draft across refreshes on the create page
+  const STORAGE_KEY = "facility-form-draft";
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (isEditing) return;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as FacilityFormData;
+        setForm(parsed);
+      }
+    } catch {
+      // Ignore corrupt data
+    }
+    setLoaded(true);
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (!loaded || isEditing) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+    } catch {
+      // Storage full or unavailable
+    }
+  }, [form, loaded, isEditing]);
+
+  function clearDraft() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+  }
 
   function update<K extends keyof FacilityFormData>(
     key: K,
@@ -192,8 +233,13 @@ export function FacilityForm({ initialData, facilityId }: Props) {
         return;
       }
 
-      router.push(`/facilities/${data.id}`);
-      router.refresh();
+      if (isEditing) {
+        router.push(`/facilities/${data.id}`);
+        router.refresh();
+      } else {
+        clearDraft();
+        setCreatedFacilityId(data.id);
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -243,6 +289,18 @@ export function FacilityForm({ initialData, facilityId }: Props) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <textarea
+              id="description"
+              rows={3}
+              value={form.description}
+              onChange={(e) => update("description", e.target.value)}
+              placeholder="Brief description of the facility and its services..."
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
+            />
           </div>
 
           <Separator />
@@ -554,22 +612,45 @@ export function FacilityForm({ initialData, facilityId }: Props) {
         </CardContent>
       </Card>
 
-      {facilityId && (
-        <FacilityMediaUpload facilityId={facilityId} initialMedia={initialData?.media} />
+      {createdFacilityId && (
+        <div className="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
+          Facility created successfully! You can now add photos, 3D tours, and videos below.
+        </div>
+      )}
+
+      {effectiveFacilityId && (
+        <FacilityMediaUpload facilityId={effectiveFacilityId} initialMedia={initialData?.media} />
       )}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={saving}>
-          {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Facility"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/facilities")}
-          disabled={saving}
-        >
-          Cancel
-        </Button>
+        {createdFacilityId ? (
+          <>
+            <Button type="button" onClick={() => router.push(`/facilities/${createdFacilityId}`)}>
+              View Facility
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/facilities")}
+            >
+              Back to Facilities
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Facility"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/facilities")}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+          </>
+        )}
       </div>
     </form>
   );

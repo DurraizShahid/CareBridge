@@ -27,6 +27,7 @@ export default async function FacilitiesPage() {
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
+  if (!roleHasPermission(role, "facilities:read")) redirect("/dashboard");
   const facilities = await getFacilities(organizationId, role);
   const canCreate = roleHasPermission(role, "facilities:create");
 

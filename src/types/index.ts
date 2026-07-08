@@ -162,6 +162,7 @@ export interface PatientDocument {
 export interface Facility {
   id: string;
   name: string;
+  description?: string;
   type: FacilityType;
   address: Address;
   phone: string;

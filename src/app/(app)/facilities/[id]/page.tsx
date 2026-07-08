@@ -133,6 +133,11 @@ export default async function FacilityDetailPage({ params }: Props) {
               <CardTitle>Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {facility.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {facility.description}
+                </p>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">

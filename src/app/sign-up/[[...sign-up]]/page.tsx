@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSignUp, useAuth, useClerk } from '@clerk/nextjs';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
@@ -21,6 +22,7 @@ export default function SignUpPage() {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (isSignedIn) {
     router.push('/onboarding');
@@ -37,15 +39,31 @@ export default function SignUpPage() {
 
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp.create({
-      firstName,
-      lastName,
-      emailAddress,
-      password,
-    });
-    if (signUp.status === 'missing_requirements' && signUp.unverifiedFields.includes('email_address')) {
-      await signUp.verifications.sendEmailCode();
-      setStep('verify');
+    setErrorMessage(null);
+    try {
+      await signUp.create({
+        firstName,
+        lastName,
+        emailAddress,
+        password,
+      });
+      if (signUp.status === 'missing_requirements' && signUp.unverifiedFields.includes('email_address')) {
+        await signUp.verifications.sendEmailCode();
+        setStep('verify');
+      }
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        const clerkErr = err.errors[0];
+        if (clerkErr?.code === 'form_identifier_exists') {
+          setErrorMessage(
+            'An account with this email already exists. Please sign in instead.'
+          );
+        } else {
+          setErrorMessage(clerkErr?.message ?? 'Something went wrong. Please try again.');
+        }
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
     }
   };
 
@@ -178,6 +196,22 @@ export default function SignUpPage() {
                   or
                 </span>
               </div>
+
+              {errorMessage && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+                  {errorMessage.includes('sign in') ? (
+                    <>
+                      {errorMessage.split('sign in')[0]}
+                      <Link href="/sign-in" className="font-medium underline underline-offset-2">
+                        sign in
+                      </Link>
+                      {errorMessage.split('sign in')[1] ?? '.'}
+                    </>
+                  ) : (
+                    errorMessage
+                  )}
+                </div>
+              )}
 
               <form onSubmit={handleInfoSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">

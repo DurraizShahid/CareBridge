@@ -435,46 +435,47 @@ export async function getFacilities(
     include: { media: { orderBy: { displayOrder: "asc" } } },
   });
   return prismaFacilities.map((f) => ({
-    id: f.id,
-    name: f.name,
-    type: toFacilityType(f.type),
-    address: f.address as any,
-    phone: f.phone,
-    email: f.email,
-    website: f.website ?? undefined,
-    contacts: f.contacts as any,
-    licensure: f.licensure,
-    accreditations: f.accreditations,
-    capacity: f.capacity,
-    currentOccupancy: f.currentOccupancy,
-    insuranceAccepted: f.insuranceAccepted,
-    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
-    specialties: f.specialties,
-    rating: f.rating,
-    reviewsCount: f.reviewsCount,
-    hasAvailability: f.hasAvailability,
-    waitlistDays: f.waitlistDays ?? undefined,
-    acceptsMedicare: f.acceptsMedicare,
-    acceptsMedicaid: f.acceptsMedicaid,
-    organizationId: f.organizationId,
-    media: f.media?.map((m) => ({
-      id: m.id,
-      facilityId: m.facilityId,
-      type: m.type as any,
-      key: m.key,
-      url: m.url,
-      thumbnailUrl: m.thumbnailUrl ?? undefined,
-      fileSize: m.fileSize ?? undefined,
-      mimeType: m.mimeType ?? undefined,
-      width: m.width ?? undefined,
-      height: m.height ?? undefined,
-      displayOrder: m.displayOrder,
-      createdAt: toISO(m.createdAt),
-      updatedAt: toISO(m.updatedAt),
-    })),
-    createdAt: toISO(f.createdAt),
-    updatedAt: toISO(f.updatedAt),
-  }));
+      id: f.id,
+      name: f.name,
+      description: f.description ?? undefined,
+      type: toFacilityType(f.type),
+      address: f.address as any,
+      phone: f.phone,
+      email: f.email,
+      website: f.website ?? undefined,
+      contacts: f.contacts as any,
+      licensure: f.licensure,
+      accreditations: f.accreditations,
+      capacity: f.capacity,
+      currentOccupancy: f.currentOccupancy,
+      insuranceAccepted: f.insuranceAccepted,
+      careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
+      specialties: f.specialties,
+      rating: f.rating,
+      reviewsCount: f.reviewsCount,
+      hasAvailability: f.hasAvailability,
+      waitlistDays: f.waitlistDays ?? undefined,
+      acceptsMedicare: f.acceptsMedicare,
+      acceptsMedicaid: f.acceptsMedicaid,
+      organizationId: f.organizationId,
+      media: f.media?.map((m) => ({
+        id: m.id,
+        facilityId: m.facilityId,
+        type: m.type as any,
+        key: m.key,
+        url: m.url,
+        thumbnailUrl: m.thumbnailUrl ?? undefined,
+        fileSize: m.fileSize ?? undefined,
+        mimeType: m.mimeType ?? undefined,
+        width: m.width ?? undefined,
+        height: m.height ?? undefined,
+        displayOrder: m.displayOrder,
+        createdAt: toISO(m.createdAt),
+        updatedAt: toISO(m.updatedAt),
+      })),
+      createdAt: toISO(f.createdAt),
+      updatedAt: toISO(f.updatedAt),
+    }));
 }
 
 /**
@@ -1142,6 +1143,160 @@ export async function getFacility(
   return {
     id: f.id,
     name: f.name,
+    description: f.description ?? undefined,
+    type: toFacilityType(f.type),
+    address: f.address as any,
+    phone: f.phone,
+    email: f.email,
+    website: f.website ?? undefined,
+    contacts: f.contacts as any,
+    licensure: f.licensure,
+    accreditations: f.accreditations,
+    capacity: f.capacity,
+    currentOccupancy: f.currentOccupancy,
+    insuranceAccepted: f.insuranceAccepted,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
+    specialties: f.specialties,
+    rating: f.rating,
+    reviewsCount: f.reviewsCount,
+    hasAvailability: f.hasAvailability,
+    waitlistDays: f.waitlistDays ?? undefined,
+    acceptsMedicare: f.acceptsMedicare,
+    acceptsMedicaid: f.acceptsMedicaid,
+    organizationId: f.organizationId,
+    media: f.media?.map((m) => ({
+      id: m.id,
+      facilityId: m.facilityId,
+      type: m.type as any,
+      key: m.key,
+      url: m.url,
+      thumbnailUrl: m.thumbnailUrl ?? undefined,
+      fileSize: m.fileSize ?? undefined,
+      mimeType: m.mimeType ?? undefined,
+      width: m.width ?? undefined,
+      height: m.height ?? undefined,
+      displayOrder: m.displayOrder,
+      createdAt: toISO(m.createdAt),
+      updatedAt: toISO(m.updatedAt),
+    })),
+    createdAt: toISO(f.createdAt),
+    updatedAt: toISO(f.updatedAt),
+  };
+}
+
+/**
+ * Search facilities across all organizations (for facility network browsing).
+ * Hospital-side users search for facilities from any organization.
+ */
+export async function searchFacilities(params: {
+  location?: string;
+  insuranceAccepted?: string[];
+  careLevelsOffered?: CareLevel[];
+  hasAvailability?: boolean;
+  facilityTypes?: FacilityType[];
+  specialties?: string[];
+}): Promise<Facility[]> {
+  const where: Record<string, unknown> = {};
+
+  if (params.location) {
+    const loc = params.location.toLowerCase();
+    where.OR = [
+      { address: { path: ["city"], string_contains: loc } },
+      { address: { path: ["state"], string_contains: loc } },
+      { address: { path: ["zipCode"], string_contains: loc } },
+      { address: { path: ["county"], string_contains: loc } },
+    ];
+  }
+
+  if (params.insuranceAccepted?.length) {
+    where.insuranceAccepted = { hasSome: params.insuranceAccepted };
+  }
+
+  if (params.careLevelsOffered?.length) {
+    where.careLevelsOffered = {
+      hasSome: params.careLevelsOffered.map(kebabToSnake),
+    };
+  }
+
+  if (params.hasAvailability !== undefined) {
+    where.hasAvailability = params.hasAvailability;
+  }
+
+  if (params.facilityTypes?.length) {
+    where.type = { in: params.facilityTypes.map(kebabToSnake) };
+  }
+
+  if (params.specialties?.length) {
+    where.specialties = { hasSome: params.specialties };
+  }
+
+  const facilities = await prisma.facility.findMany({
+    where,
+    orderBy: [{ rating: "desc" }, { name: "asc" }],
+    include: { media: { orderBy: { displayOrder: "asc" } } },
+    take: 50,
+  });
+
+  return facilities.map((f) => ({
+    id: f.id,
+    name: f.name,
+    description: f.description ?? undefined,
+    type: toFacilityType(f.type),
+    address: f.address as any,
+    phone: f.phone,
+    email: f.email,
+    website: f.website ?? undefined,
+    contacts: f.contacts as any,
+    licensure: f.licensure,
+    accreditations: f.accreditations,
+    capacity: f.capacity,
+    currentOccupancy: f.currentOccupancy,
+    insuranceAccepted: f.insuranceAccepted,
+    careLevelsOffered: f.careLevelsOffered.map(toCareLevel),
+    specialties: f.specialties,
+    rating: f.rating,
+    reviewsCount: f.reviewsCount,
+    hasAvailability: f.hasAvailability,
+    waitlistDays: f.waitlistDays ?? undefined,
+    acceptsMedicare: f.acceptsMedicare,
+    acceptsMedicaid: f.acceptsMedicaid,
+    organizationId: f.organizationId,
+    media: f.media?.map((m) => ({
+      id: m.id,
+      facilityId: m.facilityId,
+      type: m.type as any,
+      key: m.key,
+      url: m.url,
+      thumbnailUrl: m.thumbnailUrl ?? undefined,
+      fileSize: m.fileSize ?? undefined,
+      mimeType: m.mimeType ?? undefined,
+      width: m.width ?? undefined,
+      height: m.height ?? undefined,
+      displayOrder: m.displayOrder,
+      createdAt: toISO(m.createdAt),
+      updatedAt: toISO(m.updatedAt),
+    })),
+    createdAt: toISO(f.createdAt),
+    updatedAt: toISO(f.updatedAt),
+  }));
+}
+
+/**
+ * Get a single facility by ID without org scoping.
+ * Used by the facility network detail page where hospital users browse cross-org facilities.
+ */
+export async function getFacilityById(id: string): Promise<Facility | null> {
+  const f = await prisma.facility.findFirst({
+    where: { id },
+    include: { media: { orderBy: { displayOrder: "asc" } } },
+  });
+
+  if (!f) return null;
+
+  return {
+    id: f.id,
+    name: f.name,
+    description: f.description ?? undefined,
     type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
@@ -1193,6 +1348,7 @@ export async function createFacility(
     data: {
       id: crypto.randomUUID(),
       name: data.name,
+      description: data.description ?? null,
       type: kebabToSnake(data.type) as any,
       address: data.address as any,
       phone: data.phone,
@@ -1218,6 +1374,7 @@ export async function createFacility(
   return {
     id: f.id,
     name: f.name,
+    description: f.description ?? undefined,
     type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,
@@ -1260,6 +1417,7 @@ export async function updateFacility(
 
   const updateData: Record<string, any> = {};
   if (data.name !== undefined) updateData.name = data.name;
+  if (data.description !== undefined) updateData.description = data.description ?? null;
   if (data.type !== undefined) updateData.type = kebabToSnake(data.type) as any;
   if (data.address !== undefined) updateData.address = data.address as any;
   if (data.phone !== undefined) updateData.phone = data.phone;
@@ -1288,6 +1446,7 @@ export async function updateFacility(
   return {
     id: f.id,
     name: f.name,
+    description: f.description ?? undefined,
     type: toFacilityType(f.type),
     address: f.address as any,
     phone: f.phone,

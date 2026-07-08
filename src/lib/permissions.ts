@@ -73,7 +73,6 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   administrator: [
     "patients:read", "patients:create", "patients:update", "patients:delete",
     "placements:read", "placements:create", "placements:update", "placements:approve", "placements:delete",
-    "facilities:read", "facilities:create", "facilities:update",
     "hospitals:manage",
     "users:read", "users:read-org", "users:create", "users:update",
     "dashboard:overview", "dashboard:staff", "dashboard:admin",
@@ -84,7 +83,6 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   "social-worker": [
     "patients:read", "patients:create", "patients:update",
     "placements:read", "placements:create", "placements:update",
-    "facilities:read",
     "users:read-org",
     "dashboard:overview", "dashboard:staff",
   ],
@@ -93,7 +91,6 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   "discharge-planner": [
     "patients:read", "patients:create", "patients:update",
     "placements:read", "placements:create", "placements:update", "placements:approve",
-    "facilities:read",
     "users:read-org",
     "dashboard:overview", "dashboard:staff",
   ],
