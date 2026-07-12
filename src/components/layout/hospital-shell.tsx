@@ -15,7 +15,11 @@ export function HospitalShell({
     <ThemeProvider>
       <OrganizationProvider>
         <div className="flex h-screen flex-col bg-surface dark:bg-background">
-          <DashboardHeader />
+          <DashboardHeader
+            sidebarLocked={false}
+            onToggleSidebarLock={() => {}}
+            hideSidebarControls
+          />
           <ScrollArea className="flex-1 min-h-0">
             <div className="mx-auto w-full max-w-7xl px-6 py-8 pb-24">
               {children}

@@ -214,18 +214,18 @@ select option {
 
 .dashboard-gradient {
   background:
-    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.95 0.015 180) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.96 0.025 200) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.96 0.015 190) 0%, transparent 70%),
-    linear-gradient(90deg, oklch(0.95 0.015 180) 0%, oklch(0.96 0.025 200) 50%, oklch(0.95 0.015 180) 100%);
+    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.91 0.03 280) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.93 0.03 200) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.96 0.015 240) 0%, transparent 70%),
+    linear-gradient(90deg, oklch(0.91 0.03 280) 0%, oklch(0.95 0.025 200) 50%, oklch(0.91 0.03 280) 100%);
 }
 
 .dark .dashboard-gradient {
   background:
-    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.07 0.012 180) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.06 0.02 200) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.05 0.015 190) 0%, transparent 70%),
-    linear-gradient(90deg, oklch(0.07 0.012 180) 0%, oklch(0.06 0.02 200) 50%, oklch(0.07 0.012 180) 100%);
+    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.08 0.025 280) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.09 0.02 200) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.05 0.015 250) 0%, transparent 70%),
+    linear-gradient(90deg, oklch(0.06 0.025 280) 0%, oklch(0.05 0.02 200) 50%, oklch(0.06 0.025 280) 100%);
 }
 
 .sidebar-transparent {
