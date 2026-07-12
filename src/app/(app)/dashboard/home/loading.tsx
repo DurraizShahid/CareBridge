@@ -2,19 +2,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomeLoading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)]">
-      <div className="flex flex-col items-center gap-2 mb-8">
-        <Skeleton className="size-12 rounded-xl" />
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-52" />
+    <div className="flex flex-col items-center justify-center h-screen px-4 overflow-hidden">
+      <Skeleton className="size-16 rounded-full mb-3" />
+      <div className="flex flex-col items-center gap-1 mb-6">
+        <Skeleton className="h-8 w-72" />
+        <Skeleton className="h-8 w-80" />
       </div>
-      <div className="w-full max-w-2xl">
-        <Skeleton className="h-14 w-full rounded-2xl" />
+      <div className="w-full max-w-[680px]">
+        <Skeleton className="h-32 w-full rounded-2xl" />
       </div>
-      <div className="mt-6 flex gap-2">
-        <Skeleton className="h-8 w-44 rounded-full" />
-        <Skeleton className="h-8 w-36 rounded-full" />
-        <Skeleton className="h-8 w-40 rounded-full" />
+      <div className="w-full max-w-[680px] mt-6">
+        <Skeleton className="h-3 w-48 mx-auto mb-3" />
+        <div className="grid grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
       </div>
     </div>
   );
