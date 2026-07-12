@@ -82,7 +82,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <main className="dashboard-gradient flex flex-1 flex-col">
                 <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="mx-auto w-full max-w-7xl px-6 py-8">
+                  <div className="w-full px-6 py-8">
                     {children}
                   </div>
                 </ScrollArea>

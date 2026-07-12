@@ -121,44 +121,38 @@ async function AdminStatsGrid() {
       </div>
 
       <div className="flex items-start gap-10 shrink-0 self-start">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex flex-col gap-1">
+          <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalUsers}</span>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-          </div>
-          <div>
-            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalUsers}</span>
-            <p className="text-[10px] text-muted-foreground mt-1">Employees</p>
+            <p className="text-[10px] text-muted-foreground">Employees</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex flex-col gap-1">
+          <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.activePlacements}</span>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <line x1="19" y1="8" x2="19" y2="14" />
               <line x1="22" y1="11" x2="16" y2="11" />
             </svg>
-          </div>
-          <div>
-            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.activePlacements}</span>
-            <p className="text-[10px] text-muted-foreground mt-1">Active Placements</p>
+            <p className="text-[10px] text-muted-foreground">Active Placements</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex flex-col gap-1">
+          <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalFacilities}</span>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9,22 9,12 15,12 15,22" />
             </svg>
-          </div>
-          <div>
-            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalFacilities}</span>
-            <p className="text-[10px] text-muted-foreground mt-1">Facilities</p>
+            <p className="text-[10px] text-muted-foreground">Facilities</p>
           </div>
         </div>
       </div>
