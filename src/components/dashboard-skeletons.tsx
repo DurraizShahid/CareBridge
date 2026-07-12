@@ -726,3 +726,38 @@ export function DashboardPageSkeleton() {
   );
 }
 
+export function AIHomePageSkeleton() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)]">
+      <div className="flex flex-col items-center gap-2 mb-8">
+        <Skeleton className="size-12 rounded-xl" />
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-52" />
+      </div>
+      <div className="w-full max-w-2xl">
+        <Skeleton className="h-14 w-full rounded-2xl" />
+      </div>
+      <div className="mt-6 flex gap-2">
+        <Skeleton className="h-8 w-44 rounded-full" />
+        <Skeleton className="h-8 w-36 rounded-full" />
+        <Skeleton className="h-8 w-40 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+export function HospitalDockSkeleton() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center border-t border-border bg-background/95 px-2">
+      <div className="flex w-full items-center max-w-lg mx-auto gap-4 px-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex flex-1 flex-col items-center gap-0.5">
+            <Skeleton className="size-5 rounded" />
+            <Skeleton className="h-2.5 w-8" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+

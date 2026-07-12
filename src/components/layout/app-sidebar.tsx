@@ -73,27 +73,27 @@ const allNavItems: NavItem[] = [
 const roleBadgeConfig: Record<UserRole, { label: string; className: string }> = {
   superadmin: {
     label: "Super Admin",
-    className: "bg-destructive/10 text-destructive",
+    className: "bg-destructive/8 text-destructive ring-1 ring-destructive/10",
   },
   administrator: {
     label: "Admin",
-    className: "bg-warmth/10 text-warmth",
+    className: "bg-warmth/10 text-warmth ring-1 ring-warmth/10",
   },
   "social-worker": {
     label: "Social Worker",
-    className: "bg-health/10 text-health",
+    className: "bg-health/10 text-health ring-1 ring-health/10",
   },
   "discharge-planner": {
     label: "Discharge Planner",
-    className: "bg-health/10 text-health",
+    className: "bg-health/10 text-health ring-1 ring-health/10",
   },
   "facility-coordinator": {
     label: "Facility Coordinator",
-    className: "bg-warmth/10 text-warmth",
+    className: "bg-warmth/10 text-warmth ring-1 ring-warmth/10",
   },
   customer: {
     label: "Customer",
-    className: "bg-muted text-muted-foreground",
+    className: "bg-sidebar-accent text-sidebar-foreground/60 ring-1 ring-sidebar-border",
   },
 };
 
@@ -110,11 +110,11 @@ function formatRole(role: string): { label: string; className: string } {
 function UserInfo({ user, effectiveRole }: { user: ReturnType<typeof useUser>["user"]; effectiveRole: string | null }) {
   return (
     <div className="min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
-      <p className="truncate text-sm font-medium text-sidebar-foreground">
+      <p className="truncate text-[13px] font-semibold text-sidebar-foreground leading-tight">
         {user?.firstName ?? "Signed in"}
       </p>
-      <div className="mt-0.5 flex items-center gap-1.5">
-        <p className="truncate text-xs text-sidebar-foreground/70">
+      <div className="mt-1 flex items-center gap-1.5">
+        <p className="truncate text-[11px] text-sidebar-foreground/50 leading-tight">
           {user?.emailAddresses?.[0]?.emailAddress ?? ""}
         </p>
         {effectiveRole &&
@@ -123,7 +123,7 @@ function UserInfo({ user, effectiveRole }: { user: ReturnType<typeof useUser>["u
             return (
               <span
                 className={cn(
-                  "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none",
+                  "inline-flex shrink-0 items-center rounded-md px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider leading-none",
                   badge.className,
                 )}
               >
@@ -186,8 +186,12 @@ function NavSection({ items, label, allItems }: { items: NavItem[]; label?: stri
                   render={<Link href={item.href} />}
                   isActive={isActive}
                   tooltip={item.label}
+                  className={cn(
+                    "relative",
+                    isActive && "before:absolute before:inset-y-1.5 before:-left-0 before:w-[3px] before:rounded-full before:bg-health before:sidebar-indicator-enter group-data-[collapsible=icon]:before:inset-y-2 group-data-[collapsible=icon]:before:-left-0 group-data-[collapsible=icon]:before:w-[2.5px]",
+                  )}
                 >
-                  <item.icon />
+                  <item.icon className={cn("transition-colors duration-200", isActive && "text-health")} />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -199,7 +203,7 @@ function NavSection({ items, label, allItems }: { items: NavItem[]; label?: stri
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ locked }: { locked: boolean }) {
   const { user } = useUser();
   const { role: permissionsRole } = usePermissions();
   const { setOpen } = useSidebar();
@@ -217,24 +221,26 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      className="sidebar-transparent"
+      onMouseEnter={() => { if (!locked) setOpen(true); }}
+      onMouseLeave={() => { if (!locked) setOpen(false); }}
     >
       <SidebarHeader>
-        <Link href="/dashboard" className="group/logo flex items-center gap-3 px-1 h-14 shrink-0 transition-all duration-200 hover:opacity-80 group-data-[collapsible=icon]:justify-center">
-          <div className="flex size-8 shrink-0 items-center justify-center group-data-[collapsible=icon]:p-2 transition-transform duration-200 group-hover/logo:scale-110 group-hover/logo:drop-shadow-[0_0_8px_rgba(0,200,200,0.3)]">
+        <Link href="/dashboard" className="group/logo flex items-center gap-3 px-3 h-14 shrink-0 transition-all duration-300 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="relative flex size-8 shrink-0 items-center justify-center rounded-lg bg-health/10 transition-all duration-300 group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:rounded-md group-hover/logo:bg-health/20 group-hover/logo:shadow-[0_0_12px_rgba(0,180,180,0.15)]">
             <Image
               src="/carebridge.svg"
               alt="CareBridge"
               width={32}
               height={32}
-              className="size-8 group-data-[collapsible=icon]:size-4"
+              className="size-5 transition-transform duration-300 group-hover/logo:scale-110 group-data-[collapsible=icon]:size-3.5"
             />
           </div>
-          <span className="text-sm font-semibold text-sidebar-foreground transition-all duration-200 group-data-[collapsible=icon]:hidden group-hover/logo:tracking-wide">
+          <span className="text-[15px] font-semibold tracking-[-0.01em] text-sidebar-foreground transition-all duration-300 group-data-[collapsible=icon]:hidden">
             CareBridge
           </span>
         </Link>
+        <div className="mx-3 h-px bg-gradient-to-r from-health/20 via-sidebar-border to-transparent group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:from-health/20" />
       </SidebarHeader>
       <SidebarContent>
         <NavSection items={mainNavItems} allItems={allNavItems} />
@@ -250,12 +256,13 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <Show when="signed-in">
-          <div className="group/user flex items-center gap-3 px-1 py-2 border-t border-sidebar-border pt-4 transition-colors duration-200 hover:bg-sidebar-accent/50 rounded-xl cursor-pointer group-data-[collapsible=icon]:justify-center">
-            <div className="flex items-center justify-center group-data-[collapsible=icon]:p-2 transition-transform duration-200 group-hover/user:scale-110">
+          <div className="mx-3 mb-1 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent group-data-[collapsible=icon]:mx-2" />
+          <div className="group/user flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/60 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <div className="flex items-center justify-center transition-transform duration-200 group-hover/user:scale-105">
               <UserButton
                 appearance={{
                   elements: {
-                    userButtonAvatarBox: "size-8 group-data-[collapsible=icon]:size-4 transition-shadow duration-200 group-hover/user:shadow-[0_0_0_2px_rgba(0,200,200,0.3)]",
+                    userButtonAvatarBox: "size-8 group-data-[collapsible=icon]:size-5 transition-all duration-200 group-hover/user:shadow-[0_0_0_2px_rgba(0,180,180,0.2)]",
                     userButtonTrigger:
                       "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
                   },

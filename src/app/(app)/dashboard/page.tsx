@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getServerOrganization } from "@/lib/server-organization";
+import { HOSPITAL_ROLES } from "@/lib/permissions";
 import DashboardHeader from "./_sections/dashboard-header";
 import StatsGrid from "./_sections/stats-grid";
 import MainOverview from "./_sections/main-overview";
@@ -34,6 +36,11 @@ export default async function DashboardPage() {
   const organizationId = org?.organizationId ?? "";
   const userId = org?.userId ?? "";
   const role = getRole(org);
+
+  // Hospital roles see the AI home page instead of the dashboard
+  if (HOSPITAL_ROLES.includes(role as any)) {
+    redirect("/dashboard/home");
+  }
 
   const isStaff = role === "social-worker";
   const isFacility = role === "facility-coordinator";

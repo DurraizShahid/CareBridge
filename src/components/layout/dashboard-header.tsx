@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine } from "@remixicon/react";
+import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from "@remixicon/react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -29,17 +29,31 @@ function breadcrumbFromPath(pathname: string): { label: string; href: string }[]
   return crumbs;
 }
 
-export function DashboardHeader() {
+export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSidebarControls }: { sidebarLocked: boolean; onToggleSidebarLock: () => void; hideSidebarControls?: boolean }) {
   const pathname = usePathname();
   const crumbs = breadcrumbFromPath(pathname);
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-sm">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/50 bg-transparent px-6">
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-2 md:hidden" />
+        {!hideSidebarControls && <SidebarTrigger className="-ml-2 md:hidden" />}
         <Breadcrumb>
           <BreadcrumbList>
+            {!hideSidebarControls && (
+              <BreadcrumbItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleSidebarLock}
+                  aria-label={sidebarLocked ? "Auto-collapse sidebar" : "Keep sidebar expanded"}
+                  className="hidden md:inline-flex text-muted-foreground hover:text-foreground"
+                >
+                  {sidebarLocked ? <RiSidebarFoldLine data-icon className="size-4" /> : <RiSidebarUnfoldLine data-icon className="size-4" />}
+                </Button>
+              </BreadcrumbItem>
+            )}
+            {!hideSidebarControls && <BreadcrumbSeparator />}
             {crumbs.map((crumb, i) => (
               <Fragment key={crumb.href}>
                 {i > 0 && <BreadcrumbSeparator />}

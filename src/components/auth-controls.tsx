@@ -22,8 +22,6 @@ export function AuthControls() {
             size="lg"
             nativeButton={false}
             render={<Link href="/sign-up" />}
-            style={{ backgroundColor: '#44BEAF' }}
-            className="hover:opacity-90"
           >
             Get Started
           </Button>

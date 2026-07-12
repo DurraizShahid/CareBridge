@@ -33,7 +33,7 @@ const themeScript = `
 (function() {
   try {
     var p = window.location.pathname;
-    if (p.startsWith("/dashboard") || p.startsWith("/patients") || p.startsWith("/facilities") || p.startsWith("/placements") || p.startsWith("/admin")) {
+    if (p.startsWith("/dashboard") || p.startsWith("/patients") || p.startsWith("/facilities") || p.startsWith("/placements") || p.startsWith("/admin") || p.startsWith("/hospital")) {
       var t = localStorage.getItem("dashboard-theme");
       document.documentElement.classList.toggle("dark", t === "dark");
     }
