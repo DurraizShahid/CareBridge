@@ -1,8 +1,6 @@
 'use client';
 
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppSidebar } from "@/components/layout/app-sidebar";
 import { HospitalShell } from "@/components/layout/hospital-shell";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,8 +17,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasOrg, setHasOrg] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarLocked, setSidebarLocked] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -63,10 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isHospitalRole) {
     return (
-      <HospitalShell
-        sidebarLocked={sidebarLocked}
-        onToggle={() => setSidebarLocked((l) => !l)}
-      >
+      <HospitalShell>
         {children}
       </HospitalShell>
     );
@@ -75,21 +68,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <OrganizationProvider>
-        <div className="flex h-screen flex-1">
-          <TooltipProvider delay={0}>
-            <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
-              <AppSidebar locked={sidebarLocked} />
-              <main className="dashboard-gradient flex flex-1 flex-col">
-                <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
-                <ScrollArea className="flex-1 min-h-0">
-                  <div className="mx-auto w-full max-w-7xl px-6 py-8">
-                    {children}
-                  </div>
-                </ScrollArea>
-              </main>
-            </SidebarProvider>
-          </TooltipProvider>
-        </div>
+        <TooltipProvider delay={0}>
+          <div className="flex h-screen flex-1 flex-col">
+            <DashboardHeader />
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="w-full px-6 py-6">
+                {children}
+              </div>
+            </ScrollArea>
+          </div>
+        </TooltipProvider>
       </OrganizationProvider>
     </ThemeProvider>
   );

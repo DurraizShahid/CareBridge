@@ -44,6 +44,8 @@
   --color-warmth: var(--warmth);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
+  --color-card-glass: var(--card-glass);
+  --color-card-glass-border: var(--card-glass-border);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -54,22 +56,22 @@
 }
 
 :root {
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.25);
+  --card: oklch(0.975 0.008 240);
+  --card-foreground: oklch(0.147 0.004 250);
+  --popover: oklch(0.975 0.008 240);
+  --popover-foreground: oklch(0.147 0.004 250);
   --primary: oklch(0.387 0.096 250.5);
   --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.96 0.005 260);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.96 0.005 260);
-  --accent-foreground: oklch(0.2 0.01 260);
+  --secondary: oklch(0.95 0.008 240);
+  --secondary-foreground: oklch(0.21 0.006 250);
+  --muted: oklch(0.955 0.008 240);
+  --muted-foreground: oklch(0.5 0.02 250);
+  --accent: oklch(0.955 0.008 240);
+  --accent-foreground: oklch(0.2 0.01 250);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.97 0 0);
-  --border: oklch(0.9 0.005 260);
-  --input: oklch(0.9 0.005 260);
+  --border: oklch(0.88 0.008 240);
+  --input: oklch(0.88 0.008 240);
   --ring: oklch(0.387 0.096 250.5);
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
@@ -77,58 +79,62 @@
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
   --radius: 0.875rem;
-  --sidebar: oklch(0.98 0.003 250);
-  --sidebar-foreground: oklch(0.22 0.012 260);
+  --sidebar: oklch(0.975 0.006 240);
+  --sidebar-foreground: oklch(0.22 0.012 250);
   --sidebar-primary: oklch(0.55 0.15 215);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.935 0.01 240);
-  --sidebar-accent-foreground: oklch(0.18 0.015 260);
-  --sidebar-border: oklch(0.91 0.008 250);
+  --sidebar-accent: oklch(0.93 0.008 240);
+  --sidebar-accent-foreground: oklch(0.18 0.015 250);
+  --sidebar-border: oklch(0.9 0.008 240);
   --sidebar-ring: oklch(0.55 0.15 215);
   --health: oklch(0.55 0.15 215);
-  --warmth: oklch(0.65 0.16 40);
-  --surface: oklch(0.97 0.005 260);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.147 0.004 49.25);
+  --warmth: oklch(0.6 0.15 280);
+  --surface: oklch(0.96 0.008 240);
+  --background: oklch(0.965 0.01 240);
+  --foreground: oklch(0.147 0.004 250);
+  --card-glass: oklch(0.94 0.035 240);
+  --card-glass-border: oklch(0.84 0.035 240 / 0.4);
 }
 
 .dark {
-  --background: oklch(0.05 0.01 260);
+  --background: oklch(0.045 0.012 250);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.08 0.01 260);
+  --card: oklch(0.07 0.012 250);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.08 0.01 260);
+  --popover: oklch(0.07 0.012 250);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.387 0.096 250.5);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.1 0.01 260);
+  --secondary: oklch(0.09 0.012 250);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.12 0.01 260);
-  --muted-foreground: oklch(0.65 0.01 260);
-  --accent: oklch(0.12 0.01 260);
+  --muted: oklch(0.11 0.012 250);
+  --muted-foreground: oklch(0.65 0.01 250);
+  --accent: oklch(0.11 0.012 250);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 6%);
+  --input: oklch(1 0 0 / 8%);
   --ring: oklch(0.387 0.096 250.5);
   --chart-1: oklch(0.7 0.15 260);
   --chart-2: oklch(0.6 0.2 260);
   --chart-3: oklch(0.5 0.22 260);
   --chart-4: oklch(0.6 0.2 260);
   --chart-5: oklch(0.45 0.18 260);
-  --sidebar: oklch(0.065 0.012 255);
-  --sidebar-foreground: oklch(0.93 0.005 260);
+  --sidebar: oklch(0.06 0.014 250);
+  --sidebar-foreground: oklch(0.93 0.005 250);
   --sidebar-primary: oklch(0.7 0.15 215);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.1 0.015 250);
-  --sidebar-accent-foreground: oklch(0.96 0.005 260);
-  --sidebar-border: oklch(1 0 0 / 7%);
+  --sidebar-accent: oklch(0.09 0.015 250);
+  --sidebar-accent-foreground: oklch(0.96 0.005 250);
+  --sidebar-border: oklch(1 0 0 / 5%);
   --sidebar-ring: oklch(0.7 0.15 215);
   --radius: 0.625rem;
   --health: oklch(0.7 0.15 215);
-  --warmth: oklch(0.75 0.16 50);
-  --surface: oklch(0.07 0.01 260);
+  --warmth: oklch(0.7 0.15 280);
+  --surface: oklch(0.06 0.012 250);
+  --card-glass: oklch(0.1 0.015 250 / 0.5);
+  --card-glass-border: oklch(0.2 0.02 250 / 0.3);
 }
 
 @layer base {
@@ -178,6 +184,14 @@
   .sidebar-item-in {
     animation: sidebar-item-subtle-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+  .card-glass {
+    background-color: var(--card-glass);
+    border: 1px solid var(--card-glass-border);
+    height: 100%;
+  }
+  .grid-auto-flow-dense {
+    grid-auto-flow: dense;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -200,24 +214,60 @@ select option {
 
 .dashboard-gradient {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.94 0.04 255) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 20%, oklch(0.93 0.035 245) 0%, transparent 60%),
-    linear-gradient(180deg, oklch(0.96 0.02 255) 0%, oklch(0.985 0.005 250) 100%);
+    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.95 0.015 180) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.96 0.025 200) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.96 0.015 190) 0%, transparent 70%),
+    linear-gradient(90deg, oklch(0.95 0.015 180) 0%, oklch(0.96 0.025 200) 50%, oklch(0.95 0.015 180) 100%);
 }
 
 .dark .dashboard-gradient {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.15 0.03 255) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 20%, oklch(0.13 0.025 245) 0%, transparent 60%),
-    linear-gradient(180deg, oklch(0.11 0.02 255) 0%, oklch(0.07 0.01 250) 100%);
+    radial-gradient(ellipse 70% 60% at 30% 90%, oklch(0.07 0.012 180) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 15%, oklch(0.06 0.02 200) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.05 0.015 190) 0%, transparent 70%),
+    linear-gradient(90deg, oklch(0.07 0.012 180) 0%, oklch(0.06 0.02 200) 50%, oklch(0.07 0.012 180) 100%);
 }
 
 .sidebar-transparent {
-  --sidebar: transparent !important;
-  --sidebar-accent: transparent !important;
-  --sidebar-border: transparent !important;
+  background-color: white !important;
+  --sidebar: white !important;
+  --sidebar-accent: oklch(0.96 0.005 250) !important;
+  --sidebar-border: oklch(0.92 0.005 250) !important;
+  --sidebar-foreground: oklch(0.18 0.015 260) !important;
 }
 
 .sidebar-transparent [data-slot="sidebar-inner"] {
-  background-color: transparent !important;
+  background-color: white !important;
+}
+
+.dark .sidebar-transparent {
+  background-color: oklch(0.13 0.02 255) !important;
+  --sidebar: oklch(0.13 0.02 255) !important;
+  --sidebar-accent: oklch(0.18 0.025 255) !important;
+  --sidebar-border: oklch(0.22 0.025 255) !important;
+  --sidebar-foreground: oklch(0.93 0.005 260) !important;
+}
+
+.dark .sidebar-transparent [data-slot="sidebar-inner"] {
+  background-color: oklch(0.13 0.02 255) !important;
+}
+
+@keyframes card-enter {
+  0% { opacity: 0; transform: translateY(12px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@layer utilities {
+  .card-enter {
+    animation: card-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .card-enter-1 { animation-delay: 0ms; }
+  .card-enter-2 { animation-delay: 60ms; }
+  .card-enter-3 { animation-delay: 120ms; }
+  .card-enter-4 { animation-delay: 180ms; }
+  .card-enter-5 { animation-delay: 240ms; }
+  .card-enter-6 { animation-delay: 300ms; }
+  .card-enter-7 { animation-delay: 360ms; }
+  .card-enter-8 { animation-delay: 420ms; }
 }

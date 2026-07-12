@@ -110,11 +110,11 @@ function formatRole(role: string): { label: string; className: string } {
 function UserInfo({ user, effectiveRole }: { user: ReturnType<typeof useUser>["user"]; effectiveRole: string | null }) {
   return (
     <div className="min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
-      <p className="truncate text-[13px] font-semibold text-sidebar-foreground leading-tight">
+      <p className="truncate text-[13px] font-semibold text-foreground leading-tight">
         {user?.firstName ?? "Signed in"}
       </p>
       <div className="mt-1 flex items-center gap-1.5">
-        <p className="truncate text-[11px] text-sidebar-foreground/50 leading-tight">
+        <p className="truncate text-[11px] text-muted-foreground leading-tight">
           {user?.emailAddresses?.[0]?.emailAddress ?? ""}
         </p>
         {effectiveRole &&
@@ -187,7 +187,7 @@ function NavSection({ items, label, allItems }: { items: NavItem[]; label?: stri
                   isActive={isActive}
                   tooltip={item.label}
                   className={cn(
-                    "relative",
+                    "relative text-foreground hover:text-foreground",
                     isActive && "before:absolute before:inset-y-1.5 before:-left-0 before:w-[3px] before:rounded-full before:bg-health before:sidebar-indicator-enter group-data-[collapsible=icon]:before:inset-y-2 group-data-[collapsible=icon]:before:-left-0 group-data-[collapsible=icon]:before:w-[2.5px]",
                   )}
                 >
@@ -236,13 +236,13 @@ export function AppSidebar({ locked }: { locked: boolean }) {
               className="size-5 transition-transform duration-300 group-hover/logo:scale-110 group-data-[collapsible=icon]:size-3.5"
             />
           </div>
-          <span className="text-[15px] font-semibold tracking-[-0.01em] text-sidebar-foreground transition-all duration-300 group-data-[collapsible=icon]:hidden">
+          <span className="text-[15px] font-semibold tracking-[-0.01em] text-foreground transition-all duration-300 group-data-[collapsible=icon]:hidden">
             CareBridge
           </span>
         </Link>
-        <div className="mx-3 h-px bg-gradient-to-r from-health/20 via-sidebar-border to-transparent group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:from-health/20" />
+        <div className="mx-3 h-px bg-gradient-to-r from-health/20 via-border to-transparent group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:from-health/20" />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="justify-center">
         <NavSection items={mainNavItems} allItems={allNavItems} />
         <NavSection
           items={featureNavItems.filter(
@@ -256,8 +256,8 @@ export function AppSidebar({ locked }: { locked: boolean }) {
       </SidebarContent>
       <SidebarFooter>
         <Show when="signed-in">
-          <div className="mx-3 mb-1 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent group-data-[collapsible=icon]:mx-2" />
-          <div className="group/user flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/60 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="mx-3 mb-1 h-px bg-gradient-to-r from-transparent via-border to-transparent group-data-[collapsible=icon]:mx-2" />
+          <div className="group/user flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg transition-all duration-200 hover:bg-muted/50 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
             <div className="flex items-center justify-center transition-transform duration-200 group-hover/user:scale-105">
               <UserButton
                 appearance={{

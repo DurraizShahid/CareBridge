@@ -95,7 +95,7 @@ export default async function FacilityOverview({ organizationId, role, userId }:
               My Facility
             </h2>
             <Card className="border-l-2 border-l-health/60 shadow-sm">
-              <CardContent className="p-5">
+              <CardContent className="p-[18px]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-heading text-base font-bold text-card-foreground">{operatorFacility.name}</h3>

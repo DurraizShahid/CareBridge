@@ -74,21 +74,94 @@ async function FacilityStatsGrid({ organizationId, role }: SectionProps) {
 
 async function AdminStatsGrid() {
   const stats = await getSuperAdminDashboardStats();
+  const totalPlacements = 142;
+  const completedPlacements = 87;
+  const pendingApprovals = 24;
+
+  const total = totalPlacements + completedPlacements + pendingApprovals;
+  const placementsPct = Math.round((totalPlacements / total) * 100);
+  const completedPct = Math.round((completedPlacements / total) * 100);
+  const pendingPct = Math.round((pendingApprovals / total) * 100);
+
+  const segments = [
+    { label: "Total Placements", value: totalPlacements, pct: placementsPct, color: "bg-health/30 text-health", lined: false },
+    { label: "Completed", value: completedPlacements, pct: completedPct, color: "bg-warmth/30 text-warmth", lined: true },
+    { label: "Pending", value: pendingApprovals, pct: pendingPct, color: "bg-transparent text-muted-foreground border border-muted-foreground/30", lined: false },
+  ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      <StatCard title="Total Users" value={stats.totalUsers} icon={Users} variant="default" />
-      <StatCard title="Hospitals" value={stats.totalHospitals} icon={Building} variant="default" />
-      <StatCard title="Facilities" value={stats.totalFacilities} icon={Building2} variant="default" />
-      <StatCard title="Total Placements" value={stats.totalPlacements} icon={ClipboardList} variant="health" />
-      <StatCard
-        title="Completed"
-        value={stats.completedPlacements}
-        icon={CheckCircle2}
-        variant="health"
-        trend={{ value: `${stats.activePlacements} active`, positive: true }}
-      />
-      <StatCard title="Pending Approvals" value={stats.pendingApprovals} icon={AlertTriangle} variant="info" />
+    <div className="w-full flex items-start justify-between">
+      <div className="flex-1 max-w-xl self-end">
+        <div className="flex gap-2">
+          {segments.map((seg) => (
+            <span key={seg.label} className="text-[10px] font-medium text-muted-foreground text-left" style={{ width: `${seg.pct}%` }}>
+              {seg.label}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2 mt-2">
+          {segments.map((seg) => (
+            <div
+              key={seg.label}
+              className={`relative flex items-center justify-center h-[47px] rounded-full px-3 font-semibold text-[11px] ${seg.color} transition-all duration-200 hover:scale-105 cursor-default overflow-hidden`}
+              style={{ width: `${seg.pct}%` }}
+            >
+              {seg.lined && (
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 3px, currentColor 3px, currentColor 4px)",
+                  }}
+                />
+              )}
+              <span className="relative z-10">{seg.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-start gap-10 shrink-0 self-start">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalUsers}</span>
+            <p className="text-[10px] text-muted-foreground mt-1">Employees</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.activePlacements}</span>
+            <p className="text-[10px] text-muted-foreground mt-1">Active Placements</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+            <svg className="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9,22 9,12 15,12 15,22" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-[36px] font-light text-foreground leading-none tracking-tight">{stats.totalFacilities}</span>
+            <p className="text-[10px] text-muted-foreground mt-1">Facilities</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

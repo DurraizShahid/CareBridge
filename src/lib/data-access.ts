@@ -1049,6 +1049,7 @@ export async function getSuperAdminDashboardStats() {
     facilitiesForUtilization,
     completedPlacementDurations,
     placementsByMonth,
+    placementsByStatus,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.hospital.count(),
@@ -1089,6 +1090,10 @@ export async function getSuperAdminDashboardStats() {
         }),
       ),
     ),
+    prisma.placement.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    }),
   ]);
 
   const usersByRole = await prisma.user.groupBy({
@@ -1107,6 +1112,11 @@ export async function getSuperAdminDashboardStats() {
     ? Math.round((currentOccupancy / totalCapacity) * 100)
     : 0;
 
+  const statusCounts: Record<string, number> = {};
+  placementsByStatus.forEach((group) => {
+    statusCounts[toPlacementStatus(group.status)] = group._count.id;
+  });
+
   return {
     totalUsers,
     totalHospitals,
@@ -1122,6 +1132,7 @@ export async function getSuperAdminDashboardStats() {
     averagePlacementTimeDays: averageDays(completedPlacementDurations, "createdAt"),
     facilityUtilizationRate,
     pendingApprovals,
+    placementsByStatus: statusCounts,
   };
 }
 
