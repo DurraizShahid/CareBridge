@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { Permission } from "@/types/permissions";
 import type { UserRole } from "@/types";
@@ -58,11 +59,16 @@ export function AppSidebar({ locked }: { locked: boolean }) {
   const pathname = usePathname();
   const { user } = useUser();
   const { setOpen, open } = useSidebar();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <Sidebar
       collapsible="icon"
-      className="bg-white border-r border-gray-100"
+      className={cn(
+        "border-r",
+        isDark ? "bg-[#1a1a2e] border-gray-800" : "bg-white border-gray-100"
+      )}
       onMouseEnter={() => { if (!locked) setOpen(true); }}
       onMouseLeave={() => { if (!locked) setOpen(false); }}
     >
@@ -70,26 +76,36 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         {/* Logo and Company Name */}
         <div className="flex items-center justify-start px-4 py-4">
           <Link href="/dashboard" className="flex items-center gap-3">
+            <div className={cn(
+              "hidden group-data-[collapsible=icon]:flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm",
+              isDark ? "bg-gray-800" : "bg-white"
+            )}>
+              <Image
+                src="/Images/Careblogo.png"
+                alt="CareBridge Logo"
+                width={36}
+                height={36}
+                className="size-9 object-contain"
+              />
+            </div>
             <Image
-              src="/Images/Careblogo.png"
+              src={isDark ? "/Images/Carebridgelogo.png" : "/Images/Logo.png"}
               alt="CareBridge Logo"
-              width={40}
-              height={40}
-              className="size-10 shrink-0 object-contain hidden group-data-[collapsible=icon]:block"
-            />
-            <Image
-              src="/Images/Carebridgelogo.png"
-              alt="CareBridge Logo"
-              width={200}
-              height={50}
-              className="h-12 w-auto shrink-0 object-contain block group-data-[collapsible=icon]:hidden"
+              width={250}
+              height={63}
+              className="h-15 w-auto shrink-0 object-contain block group-data-[collapsible=icon]:hidden"
             />
           </Link>
         </div>
         {/* Collapse button - positioned on the right edge */}
         <button
           onClick={() => setOpen(!open)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 flex size-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition-all hover:bg-gray-50 hover:text-gray-700 hover:shadow-lg group-data-[collapsible=icon]:hidden"
+          className={cn(
+            "absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 flex size-8 items-center justify-center rounded-full border shadow-md transition-all hover:shadow-lg group-data-[collapsible=icon]:hidden",
+            isDark 
+              ? "border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" 
+              : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+          )}
         >
           {open ? (
             <RiArrowLeftSLine className="size-4" />
@@ -111,15 +127,20 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                   isActive={isActive}
                   tooltip={item.label}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800",
-                    isActive && "bg-[#EEF0FF] text-[#5B5FC7] font-medium",
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+                    isDark 
+                      ? "text-gray-400 hover:bg-gray-800 hover:text-white" 
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-800",
+                    isActive && (isDark 
+                      ? "bg-[#2d2d44] text-[#8b8bff] font-medium" 
+                      : "bg-[#EEF0FF] text-[#5B5FC7] font-medium"),
                     "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
                   )}
                 >
                   <div className="relative">
                     <item.icon className={cn(
                       "size-5 transition-colors",
-                      isActive ? "text-[#5B5FC7]" : "text-gray-500"
+                      isActive ? (isDark ? "text-[#8b8bff]" : "text-[#5B5FC7]") : (isDark ? "text-gray-500" : "text-gray-500")
                     )} />
                     {item.hasDot && (
                       <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
@@ -133,7 +154,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         </div>
 
         {/* Separator */}
-        <div className="my-4 h-px bg-gray-100" />
+        <div className={cn("my-4 h-px", isDark ? "bg-gray-800" : "bg-gray-100")} />
 
         {/* Bottom Navigation */}
         <div className="space-y-1">
@@ -142,10 +163,15 @@ export function AppSidebar({ locked }: { locked: boolean }) {
               <SidebarMenuButton
                 render={<Link href={item.href} />}
                 tooltip={item.label}
-                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
+                className={cn(
+                  "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
+                  isDark 
+                    ? "text-gray-400 hover:bg-gray-800 hover:text-white" 
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                )}
               >
                 <div className="relative">
-                  <item.icon className="size-5 text-gray-500" />
+                  <item.icon className={cn("size-5", isDark ? "text-gray-500" : "text-gray-500")} />
                   {item.hasDot && (
                     <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
                   )}
