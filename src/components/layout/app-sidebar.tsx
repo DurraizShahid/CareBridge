@@ -269,7 +269,6 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 }}
               />
             </div>
-            <UserInfo user={user} effectiveRole={effectiveRole} />
           </div>
         </Show>
       </SidebarFooter>

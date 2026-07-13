@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { UserButton } from "@clerk/nextjs";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -86,6 +87,14 @@ export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSideba
           <RiNotificationLine data-icon />
           <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
         </Button>
+        <UserButton
+          appearance={{
+            elements: {
+              userButtonAvatarBox: "size-8",
+              userButtonTrigger: "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
+            },
+          }}
+        />
       </div>
     </header>
   );
