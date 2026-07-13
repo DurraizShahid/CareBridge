@@ -16,7 +16,7 @@ import {
   RiArrowLeftSLine,
 } from "@remixicon/react";
 import { useEffect, useState } from "react";
-import { UserButton, Show, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { Permission } from "@/types/permissions";
@@ -80,13 +80,10 @@ export function AppSidebar({ locked }: { locked: boolean }) {
             <Image
               src="/Images/Carebridgelogo.png"
               alt="CareBridge Logo"
-              width={40}
+              width={150}
               height={40}
-              className="size-10 shrink-0 rounded-xl object-contain block group-data-[collapsible=icon]:hidden"
+              className="h-10 w-auto shrink-0 rounded-xl object-contain block group-data-[collapsible=icon]:hidden"
             />
-            <span className="text-lg font-bold text-gray-800 group-data-[collapsible=icon]:hidden">
-              ABC Solutions
-            </span>
           </Link>
           <button
             onClick={() => setOpen(!open)}
@@ -158,21 +155,6 @@ export function AppSidebar({ locked }: { locked: boolean }) {
           ))}
         </div>
       </SidebarContent>
-
-      <SidebarFooter className="border-t border-gray-100 p-3">
-        <Show when="signed-in">
-          <div className="flex items-center justify-center rounded-xl px-3 py-2.5 transition-all hover:bg-gray-50 cursor-pointer">
-            <UserButton
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: "size-10 ring-2 ring-orange-200",
-                  userButtonTrigger: "focus-visible:ring-2 focus-visible:ring-[#5B5FC7] outline-none rounded-full",
-                },
-              }}
-            />
-          </div>
-        </Show>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
