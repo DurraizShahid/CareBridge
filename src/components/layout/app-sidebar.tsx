@@ -70,11 +70,20 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         {/* Logo and Company Name */}
         <div className="flex items-center justify-between px-4 py-4">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#5B5FC7] to-[#7B68EE] shadow-lg shadow-purple-500/20">
-              <svg viewBox="0 0 24 24" className="size-6 text-white" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-              </svg>
-            </div>
+            <Image
+              src="/Images/Careblogo.png"
+              alt="CareBridge Logo"
+              width={40}
+              height={40}
+              className="size-10 shrink-0 rounded-xl object-contain hidden group-data-[collapsible=icon]:block"
+            />
+            <Image
+              src="/Images/Carebridgelogo.png"
+              alt="CareBridge Logo"
+              width={40}
+              height={40}
+              className="size-10 shrink-0 rounded-xl object-contain block group-data-[collapsible=icon]:hidden"
+            />
             <span className="text-lg font-bold text-gray-800 group-data-[collapsible=icon]:hidden">
               ABC Solutions
             </span>
@@ -152,7 +161,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
 
       <SidebarFooter className="border-t border-gray-100 p-3">
         <Show when="signed-in">
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-gray-50 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="flex items-center justify-center rounded-xl px-3 py-2.5 transition-all hover:bg-gray-50 cursor-pointer">
             <UserButton
               appearance={{
                 elements: {
@@ -161,13 +170,6 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 },
               }}
             />
-            <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-              <p className="text-sm text-gray-500">Welcome back 👋</p>
-              <p className="text-sm font-semibold text-gray-800 truncate">
-                {user?.firstName ?? "User"}
-              </p>
-            </div>
-            <RiArrowRightSLine className="size-4 text-gray-400 group-data-[collapsible=icon]:hidden" />
           </div>
         </Show>
       </SidebarFooter>
