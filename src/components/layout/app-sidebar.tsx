@@ -66,36 +66,37 @@ export function AppSidebar({ locked }: { locked: boolean }) {
       onMouseEnter={() => { if (!locked) setOpen(true); }}
       onMouseLeave={() => { if (!locked) setOpen(false); }}
     >
-      <SidebarHeader className="pb-2">
+      <SidebarHeader className="pb-2 relative">
         {/* Logo and Company Name */}
-        <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center justify-start px-4 py-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Image
               src="/Images/Careblogo.png"
               alt="CareBridge Logo"
               width={40}
               height={40}
-              className="size-10 shrink-0 rounded-xl object-contain hidden group-data-[collapsible=icon]:block"
+              className="size-10 shrink-0 object-contain hidden group-data-[collapsible=icon]:block"
             />
             <Image
               src="/Images/Carebridgelogo.png"
               alt="CareBridge Logo"
-              width={150}
-              height={40}
-              className="h-10 w-auto shrink-0 rounded-xl object-contain block group-data-[collapsible=icon]:hidden"
+              width={200}
+              height={50}
+              className="h-12 w-auto shrink-0 object-contain block group-data-[collapsible=icon]:hidden"
             />
           </Link>
-          <button
-            onClick={() => setOpen(!open)}
-            className="flex size-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-all hover:bg-gray-50 hover:text-gray-700 group-data-[collapsible=icon]:hidden"
-          >
-            {open ? (
-              <RiArrowLeftSLine className="size-4" />
-            ) : (
-              <RiArrowRightSLine className="size-4" />
-            )}
-          </button>
         </div>
+        {/* Collapse button - positioned on the right edge */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 flex size-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition-all hover:bg-gray-50 hover:text-gray-700 hover:shadow-lg group-data-[collapsible=icon]:hidden"
+        >
+          {open ? (
+            <RiArrowLeftSLine className="size-4" />
+          ) : (
+            <RiArrowRightSLine className="size-4" />
+          )}
+        </button>
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-2">
