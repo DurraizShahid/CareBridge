@@ -5,12 +5,15 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   RiDashboardLine,
-  RiGroupLine,
-  RiBuildingLine,
-  RiClipboardLine,
-  RiShieldCheckLine,
-  RiHospitalLine,
-  RiMapPinLine,
+  RiMailLine,
+  RiCalendarLine,
+  RiTruckLine,
+  RiBarChartLine,
+  RiNotificationLine,
+  RiSettingsLine,
+  RiInformationLine,
+  RiArrowRightSLine,
+  RiArrowLeftSLine,
 } from "@remixicon/react";
 import { useEffect, useState } from "react";
 import { UserButton, Show, useUser } from "@clerk/nextjs";
@@ -22,9 +25,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
@@ -37,149 +37,66 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  requiredPermission?: Permission;
+  hasDot?: boolean;
 }
 
 const mainNavItems: NavItem[] = [
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: RiDashboardLine,
-    requiredPermission: "dashboard:overview",
-  },
+  { href: "/dashboard", label: "Dashboard", icon: RiDashboardLine },
+  { href: "/patients", label: "Products", icon: RiMailLine },
+  { href: "/facilities", label: "Calendar", icon: RiCalendarLine, hasDot: true },
+  { href: "/placements", label: "Suppliers", icon: RiTruckLine },
+  { href: "/dashboard/facility-network", label: "Reports", icon: RiBarChartLine },
 ];
 
-
-
-const featureNavItems: NavItem[] = [
-  { href: "/patients", label: "Patients", icon: RiGroupLine, requiredPermission: "patients:read" },
-  { href: "/dashboard/facility-network", label: "Facility Network", icon: RiMapPinLine, requiredPermission: "placements:read" },
-  { href: "/facilities", label: "Facilities", icon: RiBuildingLine, requiredPermission: "facilities:read" },
-  { href: "/placements", label: "Placements", icon: RiClipboardLine, requiredPermission: "placements:read" },
+const bottomNavItems: NavItem[] = [
+  { href: "/notifications", label: "Notifications", icon: RiNotificationLine, hasDot: true },
+  { href: "/settings", label: "Settings", icon: RiSettingsLine },
+  { href: "/support", label: "Support", icon: RiInformationLine },
 ];
 
-const adminNavItems: NavItem[] = [
-  { href: "/dashboard/users", label: "Users", icon: RiGroupLine, requiredPermission: "users:read-org" },
-  { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, requiredPermission: "hospitals:manage" },
-  { href: "/admin/permissions", label: "Permissions", icon: RiShieldCheckLine, requiredPermission: "users:manage-roles" },
-];
-
-const allNavItems: NavItem[] = [
-  ...mainNavItems,
-  ...featureNavItems,
-  ...adminNavItems,
-];
-
-const roleBadgeConfig: Record<UserRole, { label: string; className: string }> = {
-  superadmin: {
-    label: "Super Admin",
-    className: "bg-destructive/8 text-destructive ring-1 ring-destructive/10",
-  },
-  administrator: {
-    label: "Admin",
-    className: "bg-warmth/10 text-warmth ring-1 ring-warmth/10",
-  },
-  "social-worker": {
-    label: "Social Worker",
-    className: "bg-health/10 text-health ring-1 ring-health/10",
-  },
-  "discharge-planner": {
-    label: "Discharge Planner",
-    className: "bg-health/10 text-health ring-1 ring-health/10",
-  },
-  "facility-coordinator": {
-    label: "Facility Coordinator",
-    className: "bg-warmth/10 text-warmth ring-1 ring-warmth/10",
-  },
-  customer: {
-    label: "Customer",
-    className: "bg-sidebar-accent text-sidebar-foreground/60 ring-1 ring-sidebar-border",
-  },
-};
-
-function formatRole(role: string): { label: string; className: string } {
-  const key = role as UserRole;
-  return (
-    roleBadgeConfig[key] ?? {
-      label: role.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-      className: "bg-muted text-muted-foreground",
-    }
-  );
-}
-
-function UserInfo({ user, effectiveRole }: { user: ReturnType<typeof useUser>["user"]; effectiveRole: string | null }) {
-  return (
-    <div className="min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
-      <p className="truncate text-[13px] font-semibold text-foreground leading-tight">
-        {user?.firstName ?? "Signed in"}
-      </p>
-      <div className="mt-1 flex items-center gap-1.5">
-        <p className="truncate text-[11px] text-muted-foreground leading-tight">
-          {user?.emailAddresses?.[0]?.emailAddress ?? ""}
-        </p>
-        {effectiveRole &&
-          (() => {
-            const badge = formatRole(effectiveRole);
-            return (
-              <span
-                className={cn(
-                  "inline-flex shrink-0 items-center rounded-md px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider leading-none",
-                  badge.className,
-                )}
-              >
-                {badge.label}
-              </span>
-            );
-          })()}
-      </div>
-    </div>
-  );
-}
-
-function NavSection({ items, label, allItems }: { items: NavItem[]; label?: string; allItems: NavItem[] }) {
+export function AppSidebar({ locked }: { locked: boolean }) {
   const pathname = usePathname();
-  const { can, isLoaded } = usePermissions();
-
-  if (!isLoaded) {
-    return (
-      <SidebarGroup>
-        {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {[1, 2].map((i) => (
-              <SidebarMenuItem key={i}>
-                <SidebarMenuButton disabled />
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    );
-  }
-
-  const visible = items.filter(
-    (item) => !item.requiredPermission || can(item.requiredPermission),
-  );
-  const allVisible = allItems.filter(
-    (item) => !item.requiredPermission || can(item.requiredPermission),
-  );
-
-  if (visible.length === 0) return null;
+  const { user } = useUser();
+  const { setOpen, open } = useSidebar();
 
   return (
-    <SidebarGroup>
-      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {visible.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (pathname.startsWith(item.href + "/") &&
-                !allVisible.some(
-                  (other) =>
-                    other.href !== item.href &&
-                    pathname.startsWith(other.href),
-                ));
+    <Sidebar
+      collapsible="icon"
+      className="bg-white border-r border-gray-100"
+      onMouseEnter={() => { if (!locked) setOpen(true); }}
+      onMouseLeave={() => { if (!locked) setOpen(false); }}
+    >
+      <SidebarHeader className="pb-2">
+        {/* Logo and Company Name */}
+        <div className="flex items-center justify-between px-4 py-4">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#5B5FC7] to-[#7B68EE] shadow-lg shadow-purple-500/20">
+              <svg viewBox="0 0 24 24" className="size-6 text-white" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+            </div>
+            <span className="text-lg font-bold text-gray-800 group-data-[collapsible=icon]:hidden">
+              ABC Solutions
+            </span>
+          </Link>
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex size-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-all hover:bg-gray-50 hover:text-gray-700 group-data-[collapsible=icon]:hidden"
+          >
+            {open ? (
+              <RiArrowLeftSLine className="size-4" />
+            ) : (
+              <RiArrowRightSLine className="size-4" />
+            )}
+          </button>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent className="px-3 py-2">
+        {/* Main Navigation */}
+        <div className="space-y-1">
+          {mainNavItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
@@ -187,88 +104,70 @@ function NavSection({ items, label, allItems }: { items: NavItem[]; label?: stri
                   isActive={isActive}
                   tooltip={item.label}
                   className={cn(
-                    "relative text-foreground hover:text-foreground",
-                    isActive && "before:absolute before:inset-y-1.5 before:-left-0 before:w-[3px] before:rounded-full before:bg-health before:sidebar-indicator-enter group-data-[collapsible=icon]:before:inset-y-2 group-data-[collapsible=icon]:before:-left-0 group-data-[collapsible=icon]:before:w-[2.5px]",
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800",
+                    isActive && "bg-[#EEF0FF] text-[#5B5FC7] font-medium",
+                    "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
                   )}
                 >
-                  <item.icon className={cn("transition-colors duration-200", isActive && "text-health")} />
-                  <span>{item.label}</span>
+                  <div className="relative">
+                    <item.icon className={cn(
+                      "size-5 transition-colors",
+                      isActive ? "text-[#5B5FC7]" : "text-gray-500"
+                    )} />
+                    {item.hasDot && (
+                      <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
+                    )}
+                  </div>
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
           })}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-}
+        </div>
 
-export function AppSidebar({ locked }: { locked: boolean }) {
-  const { user } = useUser();
-  const { role: permissionsRole } = usePermissions();
-  const { setOpen } = useSidebar();
-  const [serverRole, setServerRole] = useState<UserRole | null>(null);
+        {/* Separator */}
+        <div className="my-4 h-px bg-gray-100" />
 
-  useEffect(() => {
-    fetch("/api/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (data?.role) setServerRole(data.role); })
-      .catch(() => {});
-  }, []);
-
-  const effectiveRole = serverRole ?? permissionsRole;
-
-  return (
-    <Sidebar
-      collapsible="icon"
-      className="sidebar-transparent"
-      onMouseEnter={() => { if (!locked) setOpen(true); }}
-      onMouseLeave={() => { if (!locked) setOpen(false); }}
-    >
-      <SidebarHeader>
-        <Link href="/dashboard" className="group/logo flex items-center gap-3 px-3 h-14 shrink-0 transition-all duration-300 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <div className="relative flex size-8 shrink-0 items-center justify-center rounded-lg bg-health/10 transition-all duration-300 group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:rounded-md group-hover/logo:bg-health/20 group-hover/logo:shadow-[0_0_12px_rgba(0,180,180,0.15)]">
-            <Image
-              src="/carebridge.svg"
-              alt="CareBridge"
-              width={32}
-              height={32}
-              className="size-5 transition-transform duration-300 group-hover/logo:scale-110 group-data-[collapsible=icon]:size-3.5"
-            />
-          </div>
-          <span className="text-[15px] font-semibold tracking-[-0.01em] text-foreground transition-all duration-300 group-data-[collapsible=icon]:hidden">
-            CareBridge
-          </span>
-        </Link>
-        <div className="mx-3 h-px bg-gradient-to-r from-health/20 via-border to-transparent group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:from-health/20" />
-      </SidebarHeader>
-      <SidebarContent className="justify-center">
-        <NavSection items={mainNavItems} allItems={allNavItems} />
-        <NavSection
-          items={featureNavItems.filter(
-            (item) =>
-              !(item.href === "/dashboard/facility-network" && effectiveRole === "facility-coordinator"),
-          )}
-          label="Features"
-          allItems={allNavItems}
-        />
-        <NavSection items={adminNavItems} label="Management" allItems={allNavItems} />
+        {/* Bottom Navigation */}
+        <div className="space-y-1">
+          {bottomNavItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                render={<Link href={item.href} />}
+                tooltip={item.label}
+                className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-800 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
+              >
+                <div className="relative">
+                  <item.icon className="size-5 text-gray-500" />
+                  {item.hasDot && (
+                    <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
+                  )}
+                </div>
+                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </div>
       </SidebarContent>
-      <SidebarFooter>
+
+      <SidebarFooter className="border-t border-gray-100 p-3">
         <Show when="signed-in">
-          <div className="mx-3 mb-1 h-px bg-gradient-to-r from-transparent via-border to-transparent group-data-[collapsible=icon]:mx-2" />
-          <div className="group/user flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg transition-all duration-200 hover:bg-muted/50 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-            <div className="flex items-center justify-center transition-transform duration-200 group-hover/user:scale-105">
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "size-8 group-data-[collapsible=icon]:size-5 transition-all duration-200 group-hover/user:shadow-[0_0_0_2px_rgba(0,180,180,0.2)]",
-                    userButtonTrigger:
-                      "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
-                  },
-                }}
-              />
+          <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-gray-50 cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "size-10 ring-2 ring-orange-200",
+                  userButtonTrigger: "focus-visible:ring-2 focus-visible:ring-[#5B5FC7] outline-none rounded-full",
+                },
+              }}
+            />
+            <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+              <p className="text-sm text-gray-500">Welcome back 👋</p>
+              <p className="text-sm font-semibold text-gray-800 truncate">
+                {user?.firstName ?? "User"}
+              </p>
             </div>
+            <RiArrowRightSLine className="size-4 text-gray-400 group-data-[collapsible=icon]:hidden" />
           </div>
         </Show>
       </SidebarFooter>
