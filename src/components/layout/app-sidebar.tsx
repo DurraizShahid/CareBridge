@@ -67,7 +67,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
       collapsible="icon"
       className={cn(
         "border-r",
-        isDark ? "bg-[#1a1a2e] border-gray-800" : "bg-white border-gray-100"
+        isDark ? "bg-[#1E1E1E] border-[#2D2D2D]" : "bg-white border-gray-100"
       )}
       onMouseEnter={() => { if (!locked) setOpen(true); }}
       onMouseLeave={() => { if (!locked) setOpen(false); }}
@@ -78,7 +78,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className={cn(
               "hidden group-data-[collapsible=icon]:flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm",
-              isDark ? "bg-gray-800" : "bg-white"
+              isDark ? "bg-[#2D2D2D]" : "bg-white"
             )}>
               <Image
                 src="/Images/Careblogo.png"
@@ -103,7 +103,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
           className={cn(
             "absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 flex size-8 items-center justify-center rounded-full border shadow-md transition-all hover:shadow-lg group-data-[collapsible=icon]:hidden",
             isDark 
-              ? "border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" 
+              ? "border-[#3D3D3D] bg-[#2D2D2D] text-[#A3A7AC] hover:bg-[#3D3D3D] hover:text-white" 
               : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
           )}
         >
@@ -129,10 +129,10 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                   className={cn(
                     "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
                     isDark 
-                      ? "text-gray-400 hover:bg-gray-800 hover:text-white" 
+                      ? "text-[#A3A7AC] hover:bg-[#2D2D2D] hover:text-white" 
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-800",
                     isActive && (isDark 
-                      ? "bg-[#2d2d44] text-[#8b8bff] font-medium" 
+                      ? "bg-[#2D2D2D] text-white font-medium" 
                       : "bg-[#EEF0FF] text-[#5B5FC7] font-medium"),
                     "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
                   )}
@@ -140,7 +140,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                   <div className="relative">
                     <item.icon className={cn(
                       "size-5 transition-colors",
-                      isActive ? (isDark ? "text-[#8b8bff]" : "text-[#5B5FC7]") : (isDark ? "text-gray-500" : "text-gray-500")
+                      isActive ? (isDark ? "text-white" : "text-[#5B5FC7]") : (isDark ? "text-[#A3A7AC]" : "text-gray-500")
                     )} />
                     {item.hasDot && (
                       <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
@@ -154,7 +154,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         </div>
 
         {/* Separator */}
-        <div className={cn("my-4 h-px", isDark ? "bg-gray-800" : "bg-gray-100")} />
+        <div className={cn("my-4 h-px", isDark ? "bg-[#2D2D2D]" : "bg-gray-100")} />
 
         {/* Bottom Navigation */}
         <div className="space-y-1">
@@ -166,12 +166,12 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 className={cn(
                   "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
                   isDark 
-                    ? "text-gray-400 hover:bg-gray-800 hover:text-white" 
+                    ? "text-[#A3A7AC] hover:bg-[#2D2D2D] hover:text-white" 
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                 )}
               >
                 <div className="relative">
-                  <item.icon className={cn("size-5", isDark ? "text-gray-500" : "text-gray-500")} />
+                  <item.icon className={cn("size-5", isDark ? "text-[#A3A7AC]" : "text-gray-500")} />
                   {item.hasDot && (
                     <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
                   )}
