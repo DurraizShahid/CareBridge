@@ -8,6 +8,7 @@ import MainOverview from "./_sections/main-overview";
 import StaffOverview from "./_sections/staff-overview";
 import FacilityOverview from "./_sections/facility-overview";
 import AdminOverview from "./_sections/admin-overview";
+import SuperAdminDashboard from "./_sections/superadmin-dashboard";
 import RecentActivity from "./_sections/recent-activity";
 import {
   StatsGridSkeleton,
@@ -47,6 +48,11 @@ export default async function DashboardPage() {
   const isAdmin = role === "superadmin";
   const isDefault = !isStaff && !isFacility && !isAdmin;
 
+  // Super Admin gets the custom dashboard
+  if (isAdmin) {
+    return <SuperAdminDashboard />;
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <DashboardHeader />
@@ -84,28 +90,6 @@ export default async function DashboardPage() {
           }
         >
           <FacilityOverview organizationId={organizationId} role={role} userId={userId} />
-        </Suspense>
-      )}
-
-      {isAdmin && (
-        <Suspense
-          fallback={
-            <>
-              <div className="grid gap-8 lg:grid-cols-2">
-                <PlacementsByMonthSkeleton />
-                <UsersByRoleSkeleton />
-              </div>
-              <div className="grid gap-8 lg:grid-cols-2">
-                <RecentUsersSkeleton count={3} />
-                <div className="flex flex-col gap-6">
-                  <RecentActivitySkeleton count={4} />
-                  <PlatformHealthSkeleton />
-                </div>
-              </div>
-            </>
-          }
-        >
-          <AdminOverview organizationId={organizationId} role={role} />
         </Suspense>
       )}
 
