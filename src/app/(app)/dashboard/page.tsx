@@ -10,7 +10,7 @@ import StatsGrid from "./_sections/stats-grid";
 import { AppointmentsCard } from "./_sections/appointments-card";
 import { ActivityCard } from "./_sections/activity-card";
 import { VirtualCardsCard } from "./_sections/virtual-cards-card";
-import { BankCardPanel } from "./_sections/bank-card-panel";
+import { ProgressCard } from "./_sections/progress-card";
 import { AdvantagesCard } from "./_sections/advantages-card";
 import { TotalSpentCard } from "./_sections/total-spent-card";
 import { ContractTypeCard } from "./_sections/contract-type-card";
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="md:col-span-3">
-            <BankCardPanel />
+            <ProgressCard />
           </div>
 
           <div className="md:col-span-4">

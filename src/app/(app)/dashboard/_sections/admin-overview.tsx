@@ -3,7 +3,7 @@
 import { AppointmentsCard } from "./appointments-card";
 import { ActivityCard } from "./activity-card";
 import { VirtualCardsCard } from "./virtual-cards-card";
-import { BankCardPanel } from "./bank-card-panel";
+import { ProgressCard } from "./progress-card";
 import { ContractTypeCard } from "./contract-type-card";
 import { PlacementsByMonthCard } from "./placements-by-month-card";
 
@@ -25,9 +25,9 @@ export default function AdminOverview() {
         <VirtualCardsCard />
       </div>
 
-      {/* Facility Deposit Card — square */}
+      {/* Progress Card — square */}
       <div className="aspect-square">
-        <BankCardPanel />
+        <ProgressCard />
       </div>
 
       {/* Placement by Care Level — square */}
