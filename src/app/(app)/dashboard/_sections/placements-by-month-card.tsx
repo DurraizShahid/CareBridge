@@ -89,10 +89,9 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   return (
     <Card
       className={cn(
-        "rounded-[28px] shadow-sm h-full overflow-hidden",
+        "rounded-[28px] shadow-sm h-full overflow-hidden bg-[#ccd7d3]",
         className
       )}
-      style={{ backgroundColor: "#ccd7d3" }}
     >
       <CardContent className="flex flex-col h-full p-6">
         {/* Header */}
