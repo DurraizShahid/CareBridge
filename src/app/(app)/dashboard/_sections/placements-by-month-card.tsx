@@ -43,17 +43,17 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   return (
     <Card
       className={cn(
-        "rounded-2xl border-border/40 shadow-none bg-white h-full overflow-hidden",
+        "rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body overflow-hidden",
         className
       )}
     >
-      <CardContent className="flex h-full p-5 pt-4 gap-4">
+      <CardContent className="flex h-full p-6 gap-4">
         {/* Left side — stats */}
         <div className="flex flex-col justify-between min-w-[140px] shrink-0">
           <div>
-            <p className="text-sm font-medium text-foreground/90">
+            <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
               Placements by Month
-            </p>
+            </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Placements this period
             </p>

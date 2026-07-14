@@ -21,7 +21,7 @@ export default function DashboardHeader({
   placementsThisMonth,
 }: DashboardHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 mb-2">
+    <div className="flex flex-col gap-[19px] mb-2">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-light text-muted-foreground">
         <Link href="/" className="hover:text-foreground transition-colors">
           Home Page
@@ -30,7 +30,7 @@ export default function DashboardHeader({
         <span className="text-foreground">Dashboard</span>
       </nav>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-[19px]">
         <h1 className="text-2xl sm:text-[40px] font-semibold tracking-tight text-foreground leading-none">
           <span className="font-thin">Welcome,</span> <span className="font-normal">{userName}.</span>
         </h1>
@@ -38,7 +38,7 @@ export default function DashboardHeader({
           Here's what's happening with your placements today.
         </p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-end gap-4">
           <PipelineBar
             total={totalPlacements}
             completed={completedPlacements}
@@ -46,7 +46,7 @@ export default function DashboardHeader({
             thisMonth={placementsThisMonth}
           />
 
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap ml-auto">
             <Button
             variant="secondary"
             size="icon-sm"

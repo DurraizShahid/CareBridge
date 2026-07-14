@@ -1,6 +1,7 @@
 import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Lato, Google_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,20 @@ const inter = localFont({
     { path: "../../public/fonts/helvetica/Inter-Variable.woff2", weight: "100 900", style: "normal" },
   ],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-lato",
+  display: "swap",
+});
+
+const googleSans = Google_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-google-sans",
   display: "swap",
 });
 
@@ -49,7 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, "font-sans")}
+      className={cn("h-full", "antialiased", inter.variable, lato.variable, googleSans.variable, "font-sans")}
       suppressHydrationWarning
     >
       <head />

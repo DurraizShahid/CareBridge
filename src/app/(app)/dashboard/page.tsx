@@ -44,7 +44,7 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-[27px]">
       <DashboardHeader
         userName={userName}
         totalPlacements={totalPlacements}
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
       )}
 
       {role !== "superadmin" && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-min">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-[23px] auto-rows-min">
           <div className="md:col-span-5 md:row-span-2">
             <AppointmentsCard />
           </div>

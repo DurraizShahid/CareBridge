@@ -11,9 +11,10 @@ interface ContractTypeCardProps {
 }
 
 const contractData = [
-  { label: "Milestone", value: 140, color: "hsl(var(--primary) / 0.7)" },
-  { label: "Bonuses", value: 48, color: "hsl(var(--muted-foreground) / 0.3)" },
-  { label: "Hourly", value: 16, color: "hsl(var(--muted-foreground) / 0.15)" },
+  { label: "Skilled Nursing", value: 92, color: "hsl(var(--primary) / 0.7)" },
+  { label: "Assisted Living", value: 48, color: "hsl(var(--primary) / 0.4)" },
+  { label: "Home Health", value: 36, color: "hsl(var(--muted-foreground) / 0.3)" },
+  { label: "Memory Care", value: 24, color: "hsl(var(--muted-foreground) / 0.15)" },
 ];
 
 function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
@@ -31,13 +32,12 @@ function describeArc(cx: number, cy: number, r: number, start: number, end: numb
 export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const total = contractData.reduce((a, b) => a + b.value, 0);
-  const mainPct = Math.round((contractData[0].value / total) * 100);
 
   if (error) {
     return (
-      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl">
+      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
-          <p className="text-sm text-muted-foreground">Contract data unavailable</p>
+          <p className="text-sm text-muted-foreground">Care level data unavailable</p>
         </CardContent>
       </Card>
     );
@@ -52,10 +52,10 @@ export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
   });
 
   return (
-    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl">
+    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[21px] font-semibold text-muted-foreground">Contract Type</h3>
+          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Placement by Care Level</h3>
           <div className="flex items-center gap-1">
             <button aria-label="Details" className="p-1.5 rounded-lg hover:bg-muted/60 transition-colors">
               <ArrowUpRight className="size-4 text-muted-foreground" />
@@ -89,15 +89,15 @@ export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
                   />
                 ))}
                 <text x="60" y="54" textAnchor="middle" className="fill-foreground text-[22px] font-light" dominantBaseline="middle">
-                  {mainPct}%
+                  {total}
                 </text>
                 <text x="60" y="76" textAnchor="middle" className="fill-muted-foreground text-[5px] font-medium">
-                  Milestone
+                  Total
                 </text>
               </svg>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/30">
+            <div className="grid grid-cols-4 gap-2 pt-4 border-t border-border/30">
               {contractData.map((item, i) => (
                 <div
                   key={item.label}

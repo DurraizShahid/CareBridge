@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const defaultSpending = [120, 85, 95, 110, 140, 65, 45];
+const defaultSpending = [12000, 14000, 16000, 11000, 18000, 10000, 13000];
 
 interface TotalSpentCardProps {
   data?: number[];
@@ -22,19 +22,19 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
 
   if (error) {
     return (
-      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl">
+      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
-          <p className="text-sm text-muted-foreground">Total spending data unavailable</p>
+          <p className="text-sm text-muted-foreground">Placement value data unavailable</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl">
+    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[21px] font-semibold text-muted-foreground">Total Spent</h3>
+          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Total Placement Value</h3>
           <div className="flex items-center gap-1">
             <button aria-label="Chart view" className="p-1.5 rounded-lg hover:bg-muted/60 transition-colors">
               <ChartNoAxesColumnIncreasing className="size-4 text-muted-foreground" />
@@ -57,15 +57,16 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
         ) : (
           <>
             <div className="mb-4">
-              <p className="text-xs text-muted-foreground mb-0.5">Spent this week</p>
+              <p className="text-xs text-muted-foreground mb-0.5">Weekly contract value</p>
               <div className="flex items-baseline gap-0.5">
                 <span className="text-sm text-muted-foreground">$</span>
                 <span className="text-[34px] font-light text-foreground tabular-nums leading-none">
-                  {total.toFixed(2)}
+                  {total.toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-xs text-emerald-500 font-medium">↑ $605.00</span>
+                <span className="text-xs text-emerald-500 font-medium">↑ $18,400.00</span>
+                <span className="text-[10px] text-muted-foreground">vs last week</span>
               </div>
             </div>
 
@@ -119,15 +120,21 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
             <div className="flex items-center gap-6 pt-3 border-t border-border/30">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center">
-                  <span className="text-lg font-light text-foreground tabular-nums">10</span>
+                  <span className="text-lg font-light text-foreground tabular-nums">18</span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">Facilities</span>
+                <span className="text-[11px] text-muted-foreground">Partner facilities</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center">
-                  <span className="text-lg font-light text-foreground tabular-nums">26</span>
+                  <span className="text-lg font-light text-foreground tabular-nums">42</span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">Placements</span>
+                <span className="text-[11px] text-muted-foreground">Placed patients</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center">
+                  <span className="text-lg font-light text-foreground tabular-nums">$6.8k</span>
+                </div>
+                <span className="text-[11px] text-muted-foreground">Avg / placement</span>
               </div>
             </div>
           </>
