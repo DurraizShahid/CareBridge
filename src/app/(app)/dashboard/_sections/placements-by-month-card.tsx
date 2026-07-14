@@ -96,7 +96,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-6">
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
               Yearly Demand
             </h3>
 
