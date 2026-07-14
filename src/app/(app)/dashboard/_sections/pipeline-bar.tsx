@@ -15,7 +15,7 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
 
   const segments = [
     { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#277979]", textColor: "text-white" },
-    { label: "Active", value: dActive, flex: dActive, color: "bg-[#bab9c4]", textColor: "text-[#1a1a1a]" },
+    { label: "Active", value: dActive, flex: dActive, color: "bg-[#A0E0E0]", textColor: "text-[#1a1a1a]" },
     { label: "Total", value: dTotal, flex: dTotal, color: "hatched", textColor: "text-foreground" },
     { label: "This month", value: dThisMonth, flex: dThisMonth, color: "bordered", textColor: "text-foreground" },
   ];

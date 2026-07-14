@@ -138,26 +138,18 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
                   <div className="pb-3 pl-4 pr-1 space-y-2.5">
                     {category.items.map((item) => {
                       const pct = Math.round(((item.total - item.available) / item.total) * 100);
-                      const isFull = item.available === 0;
-                      const isLow = item.available <= 5 && item.available > 0;
                       return (
                         <div key={item.name} className="flex items-center gap-2.5">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <span className="text-[11px] font-medium text-foreground truncate">{item.name}</span>
-                              <span className={cn(
-                                "text-[10px] font-medium tabular-nums ml-2",
-                                isFull ? "text-red-500" : isLow ? "text-amber-500" : "text-muted-foreground"
-                              )}>
+                              <span className="text-[10px] font-medium tabular-nums ml-2 text-muted-foreground">
                                 {item.available}/{item.total}
                               </span>
                             </div>
                             <div className="h-1 bg-muted/60 rounded-full mt-1.5 overflow-hidden">
                               <div
-                                className={cn(
-                                  "h-full rounded-full transition-all",
-                                  isFull ? "bg-red-400" : isLow ? "bg-amber-400" : "bg-emerald-400"
-                                )}
+                                className="h-full rounded-full transition-all bg-[#A0E0E0]"
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
