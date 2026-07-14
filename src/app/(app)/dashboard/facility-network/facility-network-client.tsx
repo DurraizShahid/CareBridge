@@ -137,7 +137,7 @@ export function FacilityNetworkClient({
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end bg-card/70 backdrop-blur-xl rounded-xl border-border/60 shadow-sm p-4">
         <div className="relative flex-1">
           <RiMapPinLine className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input

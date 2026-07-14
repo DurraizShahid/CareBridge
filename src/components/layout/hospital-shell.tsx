@@ -16,7 +16,7 @@ export function HospitalShell({
   return (
     <ThemeProvider>
       <OrganizationProvider>
-        <div className="flex h-screen flex-col" style={{ background: 'oklch(0.891 0.011 286)' }}>
+        <div className="flex h-screen flex-col bg-background">
           <DashboardHeader
             sidebarLocked={false}
             onToggleSidebarLock={() => {}}
