@@ -14,14 +14,14 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
   const dThisMonth = hasRealData ? thisMonth : 18;
 
   const segments = [
-    { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#202020]", textColor: "text-white" },
-    { label: "Active", value: dActive, flex: dActive, color: "bg-[#2B2BFB]", textColor: "text-white" },
+    { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#277979]", textColor: "text-white" },
+    { label: "Active", value: dActive, flex: dActive, color: "bg-[#bab9c4]", textColor: "text-[#1a1a1a]" },
     { label: "Total", value: dTotal, flex: dTotal, color: "hatched", textColor: "text-foreground" },
     { label: "This month", value: dThisMonth, flex: dThisMonth, color: "bordered", textColor: "text-foreground" },
   ];
 
   return (
-    <div className="flex flex-col gap-1.5 flex-1">
+    <div className="flex flex-col gap-1.5 w-full">
       <div className="flex items-center gap-1">
         {segments.map((seg, i) => (
           <span

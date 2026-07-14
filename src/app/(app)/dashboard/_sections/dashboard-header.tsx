@@ -38,15 +38,17 @@ export default function DashboardHeader({
           Here's what's happening with your placements today.
         </p>
 
-        <div className="flex items-end gap-4">
-          <PipelineBar
-            total={totalPlacements}
-            completed={completedPlacements}
-            active={activePlacements}
-            thisMonth={placementsThisMonth}
-          />
+        <div className="grid grid-cols-4 gap-1 items-end">
+          <div className="col-span-2">
+            <PipelineBar
+              total={totalPlacements}
+              completed={completedPlacements}
+              active={activePlacements}
+              thisMonth={placementsThisMonth}
+            />
+          </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap ml-auto">
+          <div className="col-span-2 flex items-center gap-2.5 flex-wrap justify-end">
             <Button
             variant="secondary"
             size="icon-sm"
