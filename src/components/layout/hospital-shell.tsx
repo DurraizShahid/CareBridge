@@ -10,11 +10,13 @@ export function HospitalShell({
   children,
 }: {
   children: React.ReactNode;
+  sidebarLocked?: boolean;
+  onToggle?: () => void;
 }) {
   return (
     <ThemeProvider>
       <OrganizationProvider>
-        <div className="flex h-screen flex-col bg-surface dark:bg-background">
+        <div className="flex h-screen flex-col" style={{ background: 'oklch(0.891 0.011 286)' }}>
           <DashboardHeader
             sidebarLocked={false}
             onToggleSidebarLock={() => {}}

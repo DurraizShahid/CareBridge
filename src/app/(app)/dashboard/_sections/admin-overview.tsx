@@ -1,97 +1,63 @@
-import { getSuperAdminDashboardStats, getUsers, getFacilities, getRecentActivity } from "@/lib/data-access";
-import UsersByRoleCard from "./users-by-role-card";
-import PlacementsDotMatrix from "./placements-dot-matrix";
-import RecentUsersCard from "./recent-users-card";
-import PlatformHealthChart from "./platform-health-chart";
-import QuickActionsCard from "./quick-actions-card";
-import RecentPlacementsCard from "./recent-placements-card";
-import NetworkOverviewCard from "./network-overview-card";
-import PlacementPipelineCard from "./placement-pipeline-card";
-import RecentActivityCard from "./recent-activity-card";
-import type { SectionProps } from "./shared";
+"use client";
 
-export default async function AdminOverview({ organizationId, role }: SectionProps) {
-  const [stats, users, facilities, activities] = await Promise.all([
-    getSuperAdminDashboardStats(),
-    getUsers(organizationId, role),
-    getFacilities(organizationId, role),
-    getRecentActivity(organizationId, role),
-  ]);
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { PlacementsByMonthCard } from "./placements-by-month-card";
 
-  const recentUsers = users.slice(0, 4);
+interface BentoCardProps {
+  title: string;
+  className?: string;
+  children?: React.ReactNode;
+}
 
+function BentoCard({ title, className, children }: BentoCardProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 grid-auto-flow-dense">
+    <Card className={cn("rounded-2xl border-border/40 shadow-none bg-white h-full", className)}>
+      <CardHeader className="pb-0">
+        <CardTitle className="text-base font-medium text-foreground/90">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col justify-center p-5 pt-3">
+        {children ?? (
+          <div className="flex items-center justify-center h-full min-h-[120px] text-muted-foreground/50 text-sm">
+            Coming soon
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
-      {/* Row 1: three perfect squares */}
-      <div className="aspect-square card-enter card-enter-1">
-        <NetworkOverviewCard
-          totalHospitals={stats.totalHospitals}
-          totalFacilities={facilities.length}
-        />
+export default function AdminOverview() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
+      {/* Pro Version — tall, spans 2 rows */}
+      <div className="lg:row-span-2">
+        <BentoCard title="Pro Version" className="h-full bg-[#E5E9F2]" />
       </div>
 
-      <div className="aspect-square card-enter card-enter-2">
-        <PlacementsDotMatrix
-          completedPlacements={stats.completedPlacements}
-          pendingApprovals={stats.pendingApprovals}
-        />
+      {/* Activity — square */}
+      <div className="aspect-square">
+        <BentoCard title="Activity" className="h-full" />
       </div>
 
-      <div className="aspect-square card-enter card-enter-3">
-        <RecentActivityCard activities={activities} />
+      {/* Virtual Cards — square */}
+      <div className="aspect-square">
+        <BentoCard title="Virtual Cards" className="h-full" />
       </div>
 
-      {/* remaining cards */}
-      <div className="card-enter card-enter-4">
-        <PlatformHealthChart
-          facilityUtilizationRate={stats.facilityUtilizationRate}
-          averagePlacementTimeDays={stats.averagePlacementTimeDays}
-          totalHospitals={stats.totalHospitals}
-          totalFacilities={facilities.length}
-          totalPlacements={stats.totalPlacements}
-        />
+      {/* VISA Card — square */}
+      <div className="aspect-square">
+        <BentoCard title="VISA" className="h-full bg-[#048A81]" />
       </div>
 
-      <div className="card-enter card-enter-5">
-        <UsersByRoleCard
-          totalUsers={stats.totalUsers}
-          usersByRole={stats.usersByRole}
-          allUsers={users.map((u) => ({
-            id: u.id,
-            firstName: u.firstName ?? "",
-            lastName: u.lastName ?? "",
-            email: u.email,
-            role: u.role,
-          }))}
-        />
+      {/* Contract Type — square */}
+      <div className="aspect-square">
+        <BentoCard title="Contract Type" className="h-full" />
       </div>
 
-      <div className="card-enter card-enter-6">
-        <QuickActionsCard />
-      </div>
-
-      <div className="col-span-2 card-enter card-enter-7">
-        <RecentPlacementsCard />
-      </div>
-
-      <div className="card-enter card-enter-8">
-        <PlacementPipelineCard
-          placementsByStatus={stats.placementsByStatus}
-          totalPlacements={stats.totalPlacements}
-        />
-      </div>
-
-      <div className="col-span-2 card-enter card-enter-8">
-        <RecentUsersCard
-          users={recentUsers.map((u) => ({
-            id: u.id,
-            firstName: u.firstName ?? "",
-            lastName: u.lastName ?? "",
-            email: u.email,
-            role: u.role,
-          }))}
-        />
+      {/* Placements by Month — free width, fills remaining space */}
+      <div className="lg:col-span-2">
+        <PlacementsByMonthCard className="h-full" />
       </div>
     </div>
   );

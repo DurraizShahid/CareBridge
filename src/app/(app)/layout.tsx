@@ -50,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-6">
-          <GooeyLoader primaryColor="var(--health)" secondaryColor="color-mix(in oklch, var(--health), white 35%)" borderColor="color-mix(in oklch, var(--health), black 60%)" />
+          <GooeyLoader primaryColor="var(--health)" secondaryColor="color-mix(in oklch, var(--health), white 35%)" borderColor="color-mix(in oklch, var(--health), #202022 60%)" />
           <p className="text-sm text-muted-foreground">Loading your workspace...</p>
         </div>
       </div>
@@ -79,10 +79,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <TooltipProvider delay={0}>
             <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
               <AppSidebar locked={sidebarLocked} />
-              <main className="dashboard-gradient flex flex-1 flex-col">
+              <main className={`dashboard-gradient flex flex-1 flex-col${userRole === 'superadmin' ? ' tracking-wider' : ''}`}>
                 <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="w-full px-6 py-8">
+                  <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
                     {children}
                   </div>
                 </ScrollArea>

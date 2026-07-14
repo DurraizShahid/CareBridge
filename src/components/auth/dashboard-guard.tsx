@@ -29,7 +29,7 @@ export function DashboardGuard({ children }: { children: React.ReactNode }) {
   if (!isLoaded || !hasAccess) {
     return (
       <div className="flex items-center justify-center py-24">
-        <GooeyLoader primaryColor="var(--health)" secondaryColor="color-mix(in oklch, var(--health), white 35%)" borderColor="color-mix(in oklch, var(--health), black 60%)" />
+        <GooeyLoader primaryColor="var(--health)" secondaryColor="color-mix(in oklch, var(--health), white 35%)" borderColor="color-mix(in oklch, var(--health), #202022 60%)" />
       </div>
     );
   }

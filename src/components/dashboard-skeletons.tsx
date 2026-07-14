@@ -15,6 +15,25 @@ export function PageHeaderSkeleton() {
   );
 }
 
+export function PipelineBarSkeleton() {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-1">
+        <Skeleton className="h-3 w-[100px]" />
+        <Skeleton className="h-3 w-[100px]" />
+        <Skeleton className="h-3 w-[150px]" />
+        <Skeleton className="h-3 w-[80px]" />
+      </div>
+      <div className="flex items-center gap-1 h-12">
+        <Skeleton className="h-full w-[100px] rounded-full" />
+        <Skeleton className="h-full w-[100px] rounded-full" />
+        <Skeleton className="h-full w-[150px] rounded-full" />
+        <Skeleton className="h-full w-[80px] rounded-full" />
+      </div>
+    </div>
+  );
+}
+
 export function StatsGridSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -707,6 +726,7 @@ export function DashboardPageSkeleton() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeaderSkeleton />
+      <PipelineBarSkeleton />
       <StatsGridSkeleton />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
         <Card>

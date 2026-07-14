@@ -1,32 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
-  RiDashboardLine,
-  RiMailLine,
-  RiCalendarLine,
-  RiTruckLine,
-  RiBarChartLine,
-  RiNotificationLine,
-  RiSettingsLine,
-  RiInformationLine,
-  RiArrowRightSLine,
-  RiArrowLeftSLine,
-} from "@remixicon/react";
-import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+  SquaresFour,
+  Users,
+  BuildingOffice,
+  HouseSimple,
+  ChartBar,
+  Info,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
-import { usePermissions } from "@/hooks/use-permissions";
-import type { Permission } from "@/types/permissions";
-import type { UserRole } from "@/types";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -42,122 +31,89 @@ interface NavItem {
 }
 
 const mainNavItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: RiDashboardLine },
-  { href: "/patients", label: "Products", icon: RiMailLine },
-  { href: "/facilities", label: "Calendar", icon: RiCalendarLine, hasDot: true },
-  { href: "/placements", label: "Suppliers", icon: RiTruckLine },
-  { href: "/dashboard/facility-network", label: "Reports", icon: RiBarChartLine },
+  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
+  { href: "/patients", label: "Patients", icon: Users },
+  { href: "/facilities", label: "Facilities", icon: BuildingOffice },
+  { href: "/placements", label: "Placements", icon: HouseSimple },
+  { href: "/dashboard/facility-network", label: "Facility Network", icon: ChartBar },
 ];
 
 const bottomNavItems: NavItem[] = [
-  { href: "/notifications", label: "Notifications", icon: RiNotificationLine, hasDot: true },
-  { href: "/settings", label: "Settings", icon: RiSettingsLine },
-  { href: "/support", label: "Support", icon: RiInformationLine },
+  { href: "/support", label: "Support", icon: Info },
 ];
 
 export function AppSidebar({ locked }: { locked: boolean }) {
   const pathname = usePathname();
-  const { user } = useUser();
-  const { setOpen, open } = useSidebar();
+  const { setOpen } = useSidebar();
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
     <Sidebar
       collapsible="icon"
-      className={cn(
-        "border-r",
-        isDark ? "bg-[#0F172A] border-[#1E293B]" : "bg-white border-gray-100"
-      )}
+      className="bg-transparent"
+      style={{ "--sidebar": "transparent" } as React.CSSProperties}
       onMouseEnter={() => { if (!locked) setOpen(true); }}
       onMouseLeave={() => { if (!locked) setOpen(false); }}
     >
-      <SidebarHeader className="pb-2 relative">
-        {/* Logo and Company Name */}
-        <div className="flex items-center justify-start px-4 py-4">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className={cn(
-              "hidden group-data-[collapsible=icon]:flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm",
-              isDark ? "bg-[#1E293B]" : "bg-white"
-            )}>
-              <Image
-                src="/Images/Careblogo.png"
-                alt="CareBridge Logo"
-                width={36}
-                height={36}
-                className="size-9 object-contain"
-              />
-            </div>
-            <Image
-              src={isDark ? "/Images/Carebridgelogo.png" : "/Images/Logo.png"}
-              alt="CareBridge Logo"
-              width={250}
-              height={63}
-              className="h-15 w-auto shrink-0 object-contain block group-data-[collapsible=icon]:hidden"
-            />
-          </Link>
-        </div>
-        {/* Collapse button - positioned on the right edge */}
-        <button
-          onClick={() => setOpen(!open)}
-          className={cn(
-            "absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 flex size-8 items-center justify-center rounded-full border shadow-md transition-all hover:shadow-lg group-data-[collapsible=icon]:hidden",
-            isDark 
-              ? "border-[#334155] bg-[#1E293B] text-[#94A3B8] hover:bg-[#334155] hover:text-white" 
-              : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-          )}
-        >
-          {open ? (
-            <RiArrowLeftSLine className="size-4" />
-          ) : (
-            <RiArrowRightSLine className="size-4" />
-          )}
-        </button>
-      </SidebarHeader>
+      <SidebarContent className="flex flex-col px-2 py-3">
+        {/* Logo */}
+        <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 mb-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <Image
+            src="/carebridge.svg"
+            alt="CareBridge"
+            width={32}
+            height={32}
+            className="shrink-0"
+            priority
+          />
+          <span className="text-base font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
+            CareBridge
+          </span>
+        </Link>
 
-      <SidebarContent className="px-3 py-2">
-        {/* Main Navigation */}
-        <div className="space-y-1">
-          {mainNavItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  render={<Link href={item.href} />}
-                  isActive={isActive}
-                  tooltip={item.label}
-                  className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
-                    isDark 
-                      ? "text-[#94A3B8] hover:bg-[#1E293B] hover:text-white" 
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-800",
-                    isActive && (isDark 
-                      ? "bg-[#1E293B] text-white font-medium" 
-                      : "bg-[#EEF0FF] text-[#5B5FC7] font-medium"),
-                    "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5"
-                  )}
-                >
-                  <div className="relative">
-                    <item.icon className={cn(
-                      "size-5 transition-colors",
-                      isActive ? (isDark ? "text-white" : "text-[#5B5FC7]") : (isDark ? "text-[#94A3B8]" : "text-gray-500")
-                    )} />
-                    {item.hasDot && (
-                      <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
+        {/* Centered main nav zone */}
+        <div className="flex flex-1 flex-col justify-center">
+          <SidebarMenu className="gap-3">
+            {mainNavItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    render={<Link href={item.href} />}
+                    isActive={isActive}
+                    tooltip={item.label}
+                    className={cn(
+                      "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+                      isActive
+                        ? "!bg-[#202022] !text-white font-medium"
+                        : "!bg-[#EAE9EF] !text-[#202022] hover:!bg-[#EAE9EF]/80",
+                      "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
+                      "group-data-[collapsible=icon]:size-10!"
                     )}
-                  </div>
-                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
+                  >
+                    <div className="relative">
+                      <item.icon className={cn(
+                        "size-5 transition-colors",
+                        isActive ? "!text-white" : "!text-[#202022] opacity-60"
+                      )} />
+                      {item.hasDot && (
+                        <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
+                      )}
+                    </div>
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+
+          {/* Separator */}
+          <div className={cn("my-3 h-px", isDark ? "bg-[#1E293B]" : "bg-gray-200/50")} />
         </div>
 
-        {/* Separator */}
-        <div className={cn("my-4 h-px", isDark ? "bg-[#1E293B]" : "bg-gray-100")} />
-
-        {/* Bottom Navigation */}
-        <div className="space-y-1">
+        {/* Bottom-pinned nav zone */}
+        <SidebarMenu className="mt-auto gap-3">
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
@@ -165,13 +121,12 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 tooltip={item.label}
                 className={cn(
                   "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
-                  isDark 
-                    ? "text-[#94A3B8] hover:bg-[#1E293B] hover:text-white" 
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                  "!bg-[#EAE9EF] !text-[#202022] hover:!bg-[#EAE9EF]/80",
+                  "group-data-[collapsible=icon]:size-10!"
                 )}
               >
                 <div className="relative">
-                  <item.icon className={cn("size-5", isDark ? "text-[#94A3B8]" : "text-gray-500")} />
+                  <item.icon className="size-5 !text-[#202022] opacity-60" />
                   {item.hasDot && (
                     <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
                   )}
@@ -180,7 +135,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-        </div>
+        </SidebarMenu>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

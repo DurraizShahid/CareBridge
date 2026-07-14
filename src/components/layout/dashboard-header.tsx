@@ -1,74 +1,29 @@
 "use client";
 
-import { Fragment } from "react";
 import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from "@remixicon/react";
-import { usePathname } from "next/navigation";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-
-function breadcrumbFromPath(pathname: string): { label: string; href: string }[] {
-  const segments = pathname.split("/").filter(Boolean);
-  const crumbs: { label: string; href: string }[] = [];
-  let href = "";
-  for (const segment of segments) {
-    href += `/${segment}`;
-    const label = segment
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    crumbs.push({ label, href });
-  }
-  return crumbs;
-}
 
 export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSidebarControls }: { sidebarLocked: boolean; onToggleSidebarLock: () => void; hideSidebarControls?: boolean }) {
-  const pathname = usePathname();
-  const crumbs = breadcrumbFromPath(pathname);
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/50 bg-transparent px-6">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between bg-transparent px-6 shadow-none">
       <div className="flex items-center gap-2">
         {!hideSidebarControls && <SidebarTrigger className="-ml-2 md:hidden" />}
-        <Breadcrumb>
-          <BreadcrumbList>
-            {!hideSidebarControls && (
-              <BreadcrumbItem>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleSidebarLock}
-                  aria-label={sidebarLocked ? "Auto-collapse sidebar" : "Keep sidebar expanded"}
-                  className="hidden md:inline-flex text-muted-foreground hover:text-foreground"
-                >
-                  {sidebarLocked ? <RiSidebarFoldLine data-icon className="size-4" /> : <RiSidebarUnfoldLine data-icon className="size-4" />}
-                </Button>
-              </BreadcrumbItem>
-            )}
-            {!hideSidebarControls && <BreadcrumbSeparator />}
-            {crumbs.map((crumb, i) => (
-              <Fragment key={crumb.href}>
-                {i > 0 && <BreadcrumbSeparator />}
-                <BreadcrumbItem>
-                  {i === crumbs.length - 1 ? (
-                    <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+        {!hideSidebarControls && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleSidebarLock}
+            aria-label={sidebarLocked ? "Auto-collapse sidebar" : "Keep sidebar expanded"}
+            className="hidden md:inline-flex text-muted-foreground hover:text-foreground"
+          >
+            {sidebarLocked ? <RiSidebarFoldLine data-icon className="size-4" /> : <RiSidebarUnfoldLine data-icon className="size-4" />}
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-0.5">
@@ -91,7 +46,7 @@ export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSideba
           appearance={{
             elements: {
               userButtonAvatarBox: "size-8",
-              userButtonTrigger: "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:border-ring outline-none rounded-full",
+              userButtonTrigger: "outline-none rounded-full shadow-none",
             },
           }}
         />

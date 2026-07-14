@@ -1,16 +1,22 @@
 import {ClerkProvider} from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Inter, Raleway } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const raleway = Raleway({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+const nohemi = localFont({
+  src: [
+    { path: "../../public/fonts/Nohemi-Thin.woff2", weight: "100", style: "normal" },
+    { path: "../../public/fonts/Nohemi-ExtraLight.woff2", weight: "200", style: "normal" },
+    { path: "../../public/fonts/Nohemi-Light.woff2", weight: "300", style: "normal" },
+    { path: "../../public/fonts/Nohemi-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Nohemi-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Nohemi-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/Nohemi-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-nohemi",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -49,11 +55,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, "font-sans", raleway.variable)}
+      className={cn("h-full", "antialiased", nohemi.variable, "font-sans")}
       suppressHydrationWarning
     >
       <head />
-      <body className="min-h-full flex flex-col font-heading" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <Script
           id="theme-init"
           strategy="beforeInteractive"

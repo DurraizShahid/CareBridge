@@ -2,7 +2,7 @@
   <defs>
     <style>
       .brand { stroke: #ff3f6f; stroke-width: 28; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-      .title { font-family: Poppins, Montserrat, Arial, sans-serif; font-size: 70px; font-weight: 700; fill: #000000; }
+      .title { font-family: Poppins, Montserrat, Arial, sans-serif; font-size: 70px; font-weight: 700; fill: #202022; }
       .subtitle { font-family: Poppins, Montserrat, Arial, sans-serif; font-size: 34px; font-weight: 400; letter-spacing: 1px; fill: #111111; }
     </style>
   </defs>

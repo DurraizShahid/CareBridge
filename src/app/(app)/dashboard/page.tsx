@@ -1,106 +1,95 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getServerOrganization } from "@/lib/server-organization";
+import { currentUser } from "@clerk/nextjs/server";
 import { HOSPITAL_ROLES } from "@/lib/permissions";
+import { prisma } from "@/lib/prisma";
 import DashboardHeader from "./_sections/dashboard-header";
-import StatsGrid from "./_sections/stats-grid";
-import MainOverview from "./_sections/main-overview";
-import StaffOverview from "./_sections/staff-overview";
-import FacilityOverview from "./_sections/facility-overview";
 import AdminOverview from "./_sections/admin-overview";
-import SuperAdminDashboard from "./_sections/superadmin-dashboard";
-import RecentActivity from "./_sections/recent-activity";
+import StatsGrid from "./_sections/stats-grid";
+import { AppointmentsCard } from "./_sections/appointments-card";
+import { ActivityCard } from "./_sections/activity-card";
+import { VirtualCardsCard } from "./_sections/virtual-cards-card";
+import { BankCardPanel } from "./_sections/bank-card-panel";
+import { AdvantagesCard } from "./_sections/advantages-card";
+import { TotalSpentCard } from "./_sections/total-spent-card";
+import { ContractTypeCard } from "./_sections/contract-type-card";
 import {
   StatsGridSkeleton,
-  ActivePlacementsSkeleton,
-  MyCaseloadSkeleton,
-  PendingApprovalsSkeleton,
-  ReferralRequestsSkeleton,
-  MyFacilitySkeleton,
-  FacilityNetworkSkeleton,
-  PlacementsByMonthSkeleton,
-  UsersByRoleSkeleton,
-  RecentUsersSkeleton,
-  RecentActivitySkeleton,
-  PlatformHealthSkeleton,
 } from "@/components/dashboard-skeletons";
-
-function getRole(
-  org: Awaited<ReturnType<typeof getServerOrganization>>,
-): string {
-  if (!org || !org.role) return "customer";
-  return org.role;
-}
 
 export default async function DashboardPage() {
   const org = await getServerOrganization();
+  const user = await currentUser();
   const organizationId = org?.organizationId ?? "";
-  const userId = org?.userId ?? "";
-  const role = getRole(org);
+  const role = org?.role ?? "customer";
+  const userName = user?.firstName ?? user?.username ?? "Admin";
 
   // Hospital roles see the AI home page instead of the dashboard
   if (HOSPITAL_ROLES.includes(role as any)) {
     redirect("/dashboard/home");
   }
 
-  const isStaff = role === "social-worker";
-  const isFacility = role === "facility-coordinator";
-  const isAdmin = role === "superadmin";
-  const isDefault = !isStaff && !isFacility && !isAdmin;
+  const orgFilter = role === "superadmin" ? {} : { organizationId };
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
 
-  // Super Admin gets the custom dashboard
-  if (isAdmin) {
-    return <SuperAdminDashboard />;
-  }
+  const [totalPlacements, completedPlacements, activePlacements, placementsThisMonth] =
+    await Promise.all([
+      prisma.placement.count({ where: orgFilter }),
+      prisma.placement.count({ where: { ...orgFilter, status: "completed" } }),
+      prisma.placement.count({ where: { ...orgFilter, status: "in_progress" } }),
+      prisma.placement.count({ where: { ...orgFilter, createdAt: { gte: monthStart } } }),
+    ]);
 
   return (
-    <div className="flex flex-col gap-8">
-      <DashboardHeader />
+    <div className="flex flex-col gap-6">
+      <DashboardHeader
+        userName={userName}
+        totalPlacements={totalPlacements}
+        completedPlacements={completedPlacements}
+        activePlacements={activePlacements}
+        placementsThisMonth={placementsThisMonth}
+      />
 
-      <Suspense fallback={<StatsGridSkeleton />}>
-        <StatsGrid organizationId={organizationId} role={role} />
-      </Suspense>
+      {role === "superadmin" && <AdminOverview />}
 
-      {isStaff && (
-        <Suspense
-          fallback={
-            <div className="grid gap-8 lg:grid-cols-2">
-              <MyCaseloadSkeleton count={3} />
-              <div className="flex flex-col gap-6">
-                <PendingApprovalsSkeleton count={2} />
-                <RecentActivitySkeleton count={4} />
-              </div>
-            </div>
-          }
-        >
-          <StaffOverview organizationId={organizationId} role={role} userId={userId} />
+      {role !== "superadmin" && (
+        <Suspense fallback={<StatsGridSkeleton />}>
+          <StatsGrid organizationId={organizationId} role={role} />
         </Suspense>
       )}
 
-      {isFacility && (
-        <Suspense
-          fallback={
-            <div className="grid gap-8 lg:grid-cols-2">
-              <ReferralRequestsSkeleton count={3} />
-              <div className="flex flex-col gap-6">
-                <MyFacilitySkeleton />
-                <FacilityNetworkSkeleton count={3} />
-              </div>
-            </div>
-          }
-        >
-          <FacilityOverview organizationId={organizationId} role={role} userId={userId} />
-        </Suspense>
-      )}
+      {role !== "superadmin" && (
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-min">
+          <div className="md:col-span-5 md:row-span-2">
+            <AppointmentsCard />
+          </div>
 
-      {isDefault && (
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Suspense fallback={<ActivePlacementsSkeleton count={3} />}>
-            <MainOverview organizationId={organizationId} role={role} />
-          </Suspense>
-          <Suspense fallback={<RecentActivitySkeleton count={4} />}>
-            <RecentActivity organizationId={organizationId} role={role} />
-          </Suspense>
+          <div className="md:col-span-7">
+            <TotalSpentCard />
+          </div>
+
+          <div className="md:col-span-4">
+            <ActivityCard />
+          </div>
+
+          <div className="md:col-span-3">
+            <BankCardPanel />
+          </div>
+
+          <div className="md:col-span-4">
+            <VirtualCardsCard />
+          </div>
+
+          <div className="md:col-span-4">
+            <ContractTypeCard />
+          </div>
+
+          <div className="md:col-span-4">
+            <AdvantagesCard />
+          </div>
         </div>
       )}
     </div>
