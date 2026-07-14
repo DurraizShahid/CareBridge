@@ -125,7 +125,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
             {/* Year Dropdown */}
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-foreground/5"
-              style={{ backgroundColor: "rgba(255,255,255,0.5)" }}
+              style={{ backgroundColor: "#FFFFFF" }}
             >
               2024
               <ChevronDown className="size-4" />
@@ -138,7 +138,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
               style={{
                 width: "32px",
                 height: "32px",
-                backgroundColor: "rgba(255,255,255,0.5)",
+                backgroundColor: "#FFFFFF",
               }}
             >
               <ArrowUpRight className="size-4 text-foreground/60" />
