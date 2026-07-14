@@ -71,7 +71,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
               <div className="flex items-center gap-2">
                 <span
                   className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: "#1C1917" }}
+                  style={{ backgroundColor: TEAL }}
                 />
                 <span className="text-sm text-foreground/70">Availability</span>
               </div>
