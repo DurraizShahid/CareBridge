@@ -28,7 +28,7 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-full bg-[#E8F5E9] px-3 py-1.5 text-xs font-semibold text-[#2E7D32] shadow-sm">
+    <div className="rounded-full bg-[#E8F5E9] dark:bg-[#1A3A2A] px-3 py-1.5 text-xs font-semibold text-[#2E7D32] dark:text-[#4ADE80] shadow-sm">
       {payload[0].value} placements
     </div>
   );

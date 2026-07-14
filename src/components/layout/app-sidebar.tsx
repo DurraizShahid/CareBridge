@@ -35,6 +35,7 @@ const mainNavItems: NavItem[] = [
   { href: "/patients", label: "Patients", icon: Users },
   { href: "/facilities", label: "Facilities", icon: BuildingOffice },
   { href: "/placements", label: "Placements", icon: HouseSimple },
+  { href: "/users", label: "Users", icon: Users },
   { href: "/dashboard/facility-network", label: "Facility Network", icon: ChartBar },
 ];
 
@@ -86,8 +87,8 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                     className={cn(
                       "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
                       isActive
-                        ? "!bg-[#202022] !text-white font-medium"
-                        : "!bg-[#EAE9EF] !text-[#202022] hover:!bg-[#EAE9EF]/80",
+                        ? "!bg-[#202022] dark:!bg-white/10 !text-white font-medium"
+                        : "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
                       "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
                       "group-data-[collapsible=icon]:size-10!"
                     )}
@@ -121,7 +122,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 tooltip={item.label}
                 className={cn(
                   "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
-                  "!bg-[#EAE9EF] !text-[#202022] hover:!bg-[#EAE9EF]/80",
+                  "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
                   "group-data-[collapsible=icon]:size-10!"
                 )}
               >

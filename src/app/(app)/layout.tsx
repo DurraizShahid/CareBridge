@@ -79,7 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <TooltipProvider delay={0}>
             <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
               <AppSidebar locked={sidebarLocked} />
-              <main className={`dashboard-gradient flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : ''}`}>
+              <main className={`flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
                 <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="w-full px-4 py-8 sm:px-6 lg:px-8">

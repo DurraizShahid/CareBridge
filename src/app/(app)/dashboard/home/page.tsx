@@ -553,7 +553,7 @@ export default function HomePage() {
             className={cn(
               "relative rounded-2xl border transition-all duration-300",
               isFocused
-                ? "border-health/30 shadow-[0_4px_24px_oklch(0.55_0.15_215/0.08)] bg-white"
+                ? "border-health/30 shadow-[0_4px_24px_oklch(0.55_0.15_215/0.08)] bg-background/95 backdrop-blur-xl"
                 : "border-border/60 bg-muted/10",
             )}
           >
