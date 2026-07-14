@@ -2,43 +2,17 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { ArrowUpRight } from "lucide-react";
 
-const placementsByMonth = [
-  { month: "Feb", count: 5 },
-  { month: "Mar", count: 8 },
-  { month: "Apr", count: 6 },
-  { month: "May", count: 10 },
-  { month: "Jun", count: 12 },
-  { month: "Jul", count: 6 },
-];
+const days = ["S", "M", "T", "W", "T", "F", "S"];
+const values = [2.1, 5.8, 4.2, 3.9, 6.1, 5.4, 0];
+const maxValue = Math.max(...values);
+const activeIndex = 4; // Friday is the active day
 
-const totalPlacements = 47;
-const activePlacements = 3;
-const completedPlacements = 38;
-
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div className="rounded-full bg-[#E8F5E9] dark:bg-[#1A3A2A] px-3 py-1.5 text-xs font-semibold text-[#2E7D32] dark:text-[#4ADE80] shadow-sm">
-      {payload[0].value} placements
-    </div>
-  );
-}
-
-export function PlacementsByMonthCard({ className }: { className?: string }) {
-  const latestMonth = placementsByMonth[placementsByMonth.length - 1];
-  const previousMonth = placementsByMonth[placementsByMonth.length - 2];
-  const delta = latestMonth.count - previousMonth.count;
-  const isPositive = delta >= 0;
+export function SomethingElseCard({ className }: { className?: string }) {
+  const activeValue = values[activeIndex];
+  const hours = Math.floor(activeValue);
+  const minutes = Math.round((activeValue - hours) * 60);
 
   return (
     <Card
@@ -47,89 +21,86 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
         className
       )}
     >
-      <CardContent className="flex h-full p-6 gap-4">
-        {/* Left side — stats */}
-        <div className="flex flex-col justify-between min-w-[140px] shrink-0">
-          <div>
-            <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
-              Placements by Month
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Placements this period
-            </p>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-4xl font-bold tracking-tight text-foreground">
-              {latestMonth.count}
-            </p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  isPositive ? "text-[#2E7D32]" : "text-red-500"
-                )}
-              >
-                {isPositive ? "↑" : "↓"} {Math.abs(delta)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                vs last month
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 mt-6">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {activePlacements}
-              </span>
-              <span className="text-xs text-muted-foreground">Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {completedPlacements}
-              </span>
-              <span className="text-xs text-muted-foreground">Completed</span>
-            </div>
-          </div>
+      <CardContent className="flex flex-col h-full p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-1">
+          <h3 className="text-sm font-bold tracking-wide text-foreground">
+            Something Else
+          </h3>
+          <button
+            aria-label="View full progress"
+            className="flex items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95"
+            style={{
+              width: "32px",
+              height: "32px",
+              backgroundColor: "#F5F5F4",
+            }}
+          >
+            <ArrowUpRight className="size-4 text-foreground/60" />
+          </button>
         </div>
 
-        {/* Right side — chart */}
-        <div className="flex-1 min-h-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={placementsByMonth}
-              margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="placementGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#048A81" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#048A81" stopOpacity={0.01} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                dy={8}
-              />
-              <YAxis hide />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={false}
-              />
-              <Area
-                type="monotone"
-                dataKey="count"
-                stroke="#048A81"
-                strokeWidth={2}
-                fill="url(#placementGradient)"
-                dot={{ r: 3.5, fill: "#1F2937", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{ r: 5, fill: "#048A81", stroke: "#fff", strokeWidth: 2 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        {/* Metric */}
+        <div className="flex items-baseline gap-2 mb-4">
+          <span className="text-4xl font-bold tracking-tight text-foreground">
+            {hours}.{minutes > 0 ? minutes : 0}h
+          </span>
+          <span className="text-xs text-muted-foreground leading-tight">
+            Work Time<br />this week
+          </span>
+        </div>
+
+        {/* Bar Chart */}
+        <div className="flex-1 flex flex-col justify-end">
+          <div className="flex items-end justify-between gap-2 h-full">
+            {days.map((day, i) => {
+              const height = (values[i] / maxValue) * 100;
+              const isActive = i === activeIndex;
+
+              return (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-2 flex-1 h-full justify-end"
+                >
+                  {/* Tooltip for active bar */}
+                  {isActive && (
+                    <div className="relative mb-1">
+                      <div
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white whitespace-nowrap"
+                        style={{ backgroundColor: "#E5A626" }}
+                      >
+                        {hours}h {minutes}m
+                      </div>
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45"
+                        style={{ backgroundColor: "#E5A626" }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Bar */}
+                  <div
+                    className="w-full rounded-full transition-all duration-200"
+                    style={{
+                      height: `${Math.max(height, 8)}%`,
+                      backgroundColor: isActive ? "#E5A626" : "#1C1917",
+                      minHeight: "12px",
+                    }}
+                  />
+
+                  {/* Day label */}
+                  <span
+                    className={cn(
+                      "text-[11px] font-medium",
+                      isActive ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {day}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>

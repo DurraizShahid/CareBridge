@@ -5,7 +5,7 @@ import { ActivityCard } from "./activity-card";
 import { VirtualCardsCard } from "./virtual-cards-card";
 import { BankCardPanel } from "./bank-card-panel";
 import { ContractTypeCard } from "./contract-type-card";
-import { PlacementsByMonthCard } from "./placements-by-month-card";
+import { SomethingElseCard } from "./placements-by-month-card";
 
 export default function AdminOverview() {
   return (
@@ -35,9 +35,9 @@ export default function AdminOverview() {
         <ContractTypeCard />
       </div>
 
-      {/* Placements by Month — free width, fills remaining space */}
+      {/* Something Else — free width, fills remaining space */}
       <div className="lg:col-span-2">
-        <PlacementsByMonthCard className="h-full" />
+        <SomethingElseCard className="h-full" />
       </div>
     </div>
   );
