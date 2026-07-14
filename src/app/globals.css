@@ -219,6 +219,10 @@ select option {
   z-index: 0;
 }
 
+.card-bg-ccd7d3 {
+  background-color: #ccd7d3 !important;
+}
+
 .dashboard-gradient {
   background:
     radial-gradient(ellipse 70% 55% at 10% 80%, #B2EBF2 0%, transparent 60%),
