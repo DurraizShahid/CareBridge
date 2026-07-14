@@ -1,137 +1,199 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
 
-const placementsByMonth = [
-  { month: "Feb", count: 5 },
-  { month: "Mar", count: 8 },
-  { month: "Apr", count: 6 },
-  { month: "May", count: 10 },
-  { month: "Jun", count: 12 },
-  { month: "Jul", count: 6 },
-];
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
 
-const totalPlacements = 47;
-const activePlacements = 3;
-const completedPlacements = 38;
+const chartData = months.map((month, i) => ({
+  month,
+  demand: [120, 100, 130, 110, 125, 115, 135, 105, 95, 120, 145][i],
+  availability: [155, 135, 120, 110, 105, 130, 95, 125, 115, 130, 120][i],
+}));
 
-function CustomTooltip({ active, payload, label }: any) {
+const TEAL = "#277979";
+const YELLOW = "#D4A843";
+
+function CustomTooltip({ active, payload, nearestSeries }: any) {
   if (!active || !payload?.length) return null;
 
+  const demandData = payload.find((p: any) => p.name === "demand");
+  const availabilityData = payload.find((p: any) => p.name === "availability");
+
+  if (!demandData && !availabilityData) return null;
+
+  const isDemand = nearestSeries === "demand";
+  const data = isDemand ? demandData : availabilityData;
+  const label = isDemand ? "Demand" : "Availability";
+
   return (
-    <div className="rounded-full bg-[#E8F5E9] dark:bg-[#1A3A2A] px-3 py-1.5 text-xs font-semibold text-[#2E7D32] dark:text-[#4ADE80] shadow-sm">
-      {payload[0].value} placements
+    <div className="flex flex-col items-center">
+      <div
+        className="px-4 py-2 rounded-xl text-sm font-semibold text-white whitespace-nowrap shadow-lg"
+        style={{ backgroundColor: "#1C1917" }}
+      >
+        {label} {data?.value}
+      </div>
+      <div
+        className="w-px h-4"
+        style={{ backgroundColor: "#1C1917" }}
+      />
     </div>
   );
 }
 
 export function PlacementsByMonthCard({ className }: { className?: string }) {
-  const latestMonth = placementsByMonth[placementsByMonth.length - 1];
-  const previousMonth = placementsByMonth[placementsByMonth.length - 2];
-  const delta = latestMonth.count - previousMonth.count;
-  const isPositive = delta >= 0;
+  const [nearestSeries, setNearestSeries] = useState<"demand" | "availability">("demand");
+
+  const handleMouseMove = useCallback((state: any) => {
+    if (!state?.activePayload?.length || !state?.activeCoordinate) return;
+
+    const cursorY = state.activeCoordinate.y;
+    const payload = state.activePayload;
+
+    const demandData = payload.find((p: any) => p.name === "demand");
+    const availabilityData = payload.find((p: any) => p.name === "availability");
+
+    if (!demandData || !availabilityData) return;
+
+    // Get chart area dimensions to calculate pixel positions
+    const chartHeight = state?.chartWidth || 200;
+    const domainMin = 50;
+    const domainMax = 200;
+
+    // Estimate Y positions based on values (higher value = lower Y position in SVG)
+    const demandValue = demandData.value;
+    const availabilityValue = availabilityData.value;
+
+    // Convert values to approximate Y positions (inverted because SVG Y goes down)
+    const demandY = ((domainMax - demandValue) / (domainMax - domainMin)) * chartHeight;
+    const availabilityY = ((domainMax - availabilityValue) / (domainMax - domainMin)) * chartHeight;
+
+    // Compare distances from cursor
+    const demandDist = Math.abs(cursorY - demandY);
+    const availabilityDist = Math.abs(cursorY - availabilityY);
+
+    setNearestSeries(demandDist <= availabilityDist ? "demand" : "availability");
+  }, []);
 
   return (
-    <Card
+    <div
       className={cn(
-        "rounded-[28px] border-border/60 shadow-sm h-full bg-card/70 backdrop-blur-xl font-body overflow-hidden",
+        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-white",
         className
       )}
     >
-      <CardContent className="flex h-full p-6 gap-4">
-        {/* Left side — stats */}
-        <div className="flex flex-col justify-between min-w-[140px] shrink-0">
-          <div>
+      <div className="flex flex-col h-full p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-6">
             <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
-              Placements by Month
+              Yearly Demand
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Placements this period
-            </p>
-          </div>
 
-          <div className="mt-4">
-            <p className="text-4xl font-bold tracking-tight text-foreground">
-              {latestMonth.count}
-            </p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  isPositive ? "text-[#2E7D32]" : "text-red-500"
-                )}
-              >
-                {isPositive ? "↑" : "↓"} {Math.abs(delta)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                vs last month
-              </span>
+            {/* Legend */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: YELLOW }}
+                />
+                <span className="text-sm text-foreground/70">Demand</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: TEAL }}
+                />
+                <span className="text-sm text-foreground/70">Availability</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 mt-6">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {activePlacements}
-              </span>
-              <span className="text-xs text-muted-foreground">Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {completedPlacements}
-              </span>
-              <span className="text-xs text-muted-foreground">Completed</span>
-            </div>
+          <div className="flex items-center gap-2">
+            {/* Year Dropdown */}
+            <button
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-white/80"
+              style={{ backgroundColor: "#FFFFFF" }}
+            >
+              2024
+              <ChevronDown className="size-4" />
+            </button>
+
+            {/* Arrow Button */}
+            <button
+              aria-label="View full statistics"
+              className="flex items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95"
+              style={{
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <ArrowUpRight className="size-4 text-foreground/60" />
+            </button>
           </div>
         </div>
 
-        {/* Right side — chart */}
+        {/* Chart */}
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={placementsByMonth}
-              margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              onMouseMove={handleMouseMove}
             >
-              <defs>
-                <linearGradient id="placementGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#048A81" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#048A81" stopOpacity={0.01} />
-                </linearGradient>
-              </defs>
               <XAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "#9CA3AF" }}
+                tick={{ fontSize: 12, fill: "#6B7280" }}
                 dy={8}
               />
-              <YAxis hide />
+              <YAxis
+                domain={[50, 200]}
+                ticks={[50, 100, 150, 200]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "#6B7280" }}
+                dx={-10}
+              />
               <Tooltip
-                content={<CustomTooltip />}
-                cursor={false}
+                content={<CustomTooltip nearestSeries={nearestSeries} />}
+                cursor={{ stroke: "#9CA3AF", strokeDasharray: "4 4" }}
               />
-              <Area
+              <Line
+                name="demand"
                 type="monotone"
-                dataKey="count"
-                stroke="#048A81"
-                strokeWidth={2}
-                fill="url(#placementGradient)"
-                dot={{ r: 3.5, fill: "#1F2937", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{ r: 5, fill: "#048A81", stroke: "#fff", strokeWidth: 2 }}
+                dataKey="demand"
+                stroke={YELLOW}
+                strokeWidth={2.5}
+                dot={false}
+                activeDot={{ r: 5, fill: YELLOW, stroke: "#fff", strokeWidth: 2 }}
               />
-            </AreaChart>
+              <Line
+                name="availability"
+                type="monotone"
+                dataKey="availability"
+                stroke={TEAL}
+                strokeWidth={2.5}
+                strokeDasharray="6 4"
+                dot={false}
+                activeDot={{ r: 5, fill: TEAL, stroke: "#fff", strokeWidth: 2 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

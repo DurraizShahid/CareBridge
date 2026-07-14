@@ -388,7 +388,7 @@ function TimelineScrollButton({ onClick }: { onClick: () => void }) {
 
 function FacilityCalendarSkeleton() {
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: "#CCD7D3" }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: "#FFFFFF" }}>
       <div className="shrink-0 px-6 pt-6 pb-4">
         <div className="flex items-center justify-between mb-6">
           <div className="h-8 w-28 animate-pulse rounded-lg" style={{ backgroundColor: "#FFFFFF" }} />
@@ -532,11 +532,16 @@ export function AppointmentsCard() {
   if (hasError) return <FacilityCalendarErrorState onRetry={() => setHasError(false)} />;
 
   return (
-    <div className="flex h-full max-h-[520px] flex-col overflow-hidden rounded-[30px] shadow-sm" style={{ backgroundColor: "#CCD7D3" }}>
+    <div
+      className="flex h-full min-h-[620px] flex-col overflow-hidden rounded-[30px] shadow-sm"
+      style={{ backgroundColor: "#FFFFFF" }}
+    >
       {/* Header */}
-      <div className="shrink-0 p-6 pb-4">
-        <div className="flex items-start justify-between mb-4">
-          <h2 className="text-[32px] font-semibold leading-tight" style={{ color: DARK_TEXT }}>Schedule</h2>
+      <div className="shrink-0 p-5 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
+            Schedule
+          </h3>
           <button
             aria-label="View full calendar"
             className="flex items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2"

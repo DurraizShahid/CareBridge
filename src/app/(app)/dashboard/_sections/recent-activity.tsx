@@ -12,7 +12,7 @@ export default async function RecentActivity({ organizationId, role }: SectionPr
   }
 
   return (
-    <Card className="shadow-sm backdrop-blur-xl bg-health/[0.04] border border-health/10 rounded-2xl h-full transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-health/20">
+    <Card className="shadow-sm bg-white border border-health/10 rounded-2xl h-full transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:border-health/20">
       <CardContent className="p-[18px]">
         <h3 className="text-sm font-semibold text-muted-foreground mb-4">Recent Activity</h3>
         <div className="relative flex flex-col">
