@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
@@ -23,8 +24,17 @@ const chartData = months.map((month, i) => ({
 const TEAL = "#277979";
 const YELLOW = "#D4A843";
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, nearestSeries }: any) {
   if (!active || !payload?.length) return null;
+
+  const demandData = payload.find((p: any) => p.name === "demand");
+  const availabilityData = payload.find((p: any) => p.name === "availability");
+
+  if (!demandData && !availabilityData) return null;
+
+  const isDemand = nearestSeries === "demand";
+  const data = isDemand ? demandData : availabilityData;
+  const label = isDemand ? "Demand" : "Availability";
 
   return (
     <div className="flex flex-col items-center">
@@ -32,7 +42,7 @@ function CustomTooltip({ active, payload, label }: any) {
         className="px-4 py-2 rounded-xl text-sm font-semibold text-white whitespace-nowrap shadow-lg"
         style={{ backgroundColor: "#1C1917" }}
       >
-        {payload[0]?.name === "demand" ? "Demand" : "Availability"} {payload[0]?.value}
+        {label} {data?.value}
       </div>
       <div
         className="w-px h-4"
@@ -43,6 +53,39 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function PlacementsByMonthCard({ className }: { className?: string }) {
+  const [nearestSeries, setNearestSeries] = useState<"demand" | "availability">("demand");
+
+  const handleMouseMove = useCallback((state: any) => {
+    if (!state?.activePayload?.length || !state?.activeCoordinate) return;
+
+    const cursorY = state.activeCoordinate.y;
+    const payload = state.activePayload;
+
+    const demandData = payload.find((p: any) => p.name === "demand");
+    const availabilityData = payload.find((p: any) => p.name === "availability");
+
+    if (!demandData || !availabilityData) return;
+
+    // Get chart area dimensions to calculate pixel positions
+    const chartHeight = state?.chartWidth || 200;
+    const domainMin = 50;
+    const domainMax = 200;
+
+    // Estimate Y positions based on values (higher value = lower Y position in SVG)
+    const demandValue = demandData.value;
+    const availabilityValue = availabilityData.value;
+
+    // Convert values to approximate Y positions (inverted because SVG Y goes down)
+    const demandY = ((domainMax - demandValue) / (domainMax - domainMin)) * chartHeight;
+    const availabilityY = ((domainMax - availabilityValue) / (domainMax - domainMin)) * chartHeight;
+
+    // Compare distances from cursor
+    const demandDist = Math.abs(cursorY - demandY);
+    const availabilityDist = Math.abs(cursorY - availabilityY);
+
+    setNearestSeries(demandDist <= availabilityDist ? "demand" : "availability");
+  }, []);
+
   return (
     <Card
       className={cn(
@@ -109,6 +152,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
             <LineChart
               data={chartData}
               margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              onMouseMove={handleMouseMove}
             >
               <XAxis
                 dataKey="month"
@@ -126,7 +170,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
                 dx={-10}
               />
               <Tooltip
-                content={<CustomTooltip />}
+                content={<CustomTooltip nearestSeries={nearestSeries} />}
                 cursor={{ stroke: "#9CA3AF", strokeDasharray: "4 4" }}
               />
               <Line
