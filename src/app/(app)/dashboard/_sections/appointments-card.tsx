@@ -151,15 +151,15 @@ function EventDetailPanel({ appointment, onClose }: { appointment: Appointment; 
         </div>
 
         <div className="grid grid-cols-1 gap-3">
-          <div className="flex items-start gap-3 rounded-xl p-3 transition-colors duration-150 hover:bg-[rgba(204,215,211,0.25)]" style={{ backgroundColor: "rgba(204,215,211,0.15)" }}>
-            <MapPin className="size-4 shrink-0 mt-0.5" style={{ color: TEAL }} />
+          <div className="flex items-start gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-[rgba(204,215,211,0.3)] hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] cursor-default" style={{ backgroundColor: "rgba(204,215,211,0.15)" }}>
+            <MapPin className="size-4 shrink-0 mt-0.5 transition-transform duration-200 group-hover:translate-y-0.5" style={{ color: TEAL }} />
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(39,121,121,0.4)" }}>Location</p>
               <p className="text-[13px] mt-0.5" style={{ color: DARK_TEXT }}>{appointment.location}</p>
             </div>
           </div>
-          <div className="flex items-start gap-3 rounded-xl p-3 transition-colors duration-150 hover:bg-[rgba(204,215,211,0.25)]" style={{ backgroundColor: "rgba(204,215,211,0.15)" }}>
-            <User className="size-4 shrink-0 mt-0.5" style={{ color: TEAL }} />
+          <div className="flex items-start gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-[rgba(204,215,211,0.3)] hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] cursor-default" style={{ backgroundColor: "rgba(204,215,211,0.15)" }}>
+            <User className="size-4 shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110" style={{ color: TEAL }} />
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(39,121,121,0.4)" }}>Participants</p>
               <p className="text-[13px] mt-0.5" style={{ color: DARK_TEXT }}>{appointment.participants}</p>
@@ -213,24 +213,34 @@ function MeetingCard({
           opacity: 0,
         }}
       >
+        {isActive && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)",
+              backgroundSize: "200% 100%",
+              animation: "shimmer 3s ease-in-out infinite",
+            }}
+          />
+        )}
         <CollapsibleTrigger className="w-full text-left" aria-label={isExpanded ? "Collapse" : "Expand"}>
-          <div className="px-4 py-3 transition-all duration-150 group-hover/card:brightness-[0.97]">
+          <div className="px-4 py-3 transition-all duration-200 group-hover/card:brightness-[0.97] group-active/card:scale-[0.98]">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <p className={cn("text-[15px] font-medium leading-snug", isActive && "text-white")} style={!isActive ? { color: DARK_TEXT } : undefined}>
+                <p className={cn("text-[15px] font-medium leading-snug transition-colors duration-200", isActive && "text-white")} style={!isActive ? { color: DARK_TEXT } : undefined}>
                   {appointment.subject}
                 </p>
-                <p className={cn("text-[13px] mt-0.5", isActive && "text-white/75")} style={!isActive ? { color: "rgba(39,121,121,0.6)" } : undefined}>
+                <p className={cn("text-[13px] mt-0.5 transition-colors duration-200", isActive && "text-white/75")} style={!isActive ? { color: "rgba(39,121,121,0.6)" } : undefined}>
                   {appointment.time}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <span
-                  className="size-2.5 rounded-full shrink-0 transition-all duration-300 group-hover/card:scale-150 group-hover/card:shadow-[0_0_6px_rgba(39,121,121,0.4)]"
+                  className="size-2.5 rounded-full shrink-0 transition-all duration-300 group-hover/card:scale-150 group-hover/card:shadow-[0_0_8px_rgba(39,121,121,0.5)]"
                   style={{ backgroundColor: isActive ? "rgba(255,255,255,0.6)" : TEAL }}
                 />
                 <ChevronDownIcon
-                  className="size-4 transition-transform duration-300"
+                  className="size-4 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                   style={{ color: isActive ? "#FFFFFF" : TEAL, transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
                 />
               </div>
@@ -253,11 +263,11 @@ function MeetingCard({
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); onOpenDetail(); }}
-              className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:gap-2.5 hover:shadow-sm active:scale-[0.97]"
+              className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:gap-3 hover:shadow-md hover:scale-[1.02] active:scale-[0.97]"
               style={{ backgroundColor: isActive ? "rgba(255,255,255,0.15)" : "rgba(39,121,121,0.08)", color: isActive ? "#FFFFFF" : TEAL }}
             >
               View details
-              <ArrowRight className="size-3 transition-transform duration-200 group-hover/card:translate-x-0.5" />
+              <ArrowRight className="size-3 transition-transform duration-200 group-hover/card:translate-x-1" />
             </button>
           </div>
         </CollapsibleContent>
@@ -291,24 +301,49 @@ function TimelineLine({
 
   return (
     <div className="relative flex flex-col" style={{ width: `${PILL_W}px` }}>
-      {/* Dashed line — rendered first so pills sit on top */}
-      <div className="absolute" style={{ left: `${CX}px`, top: `${ROW / 2}px`, bottom: `${ROW / 2}px`, borderLeft: `1.5px dashed rgba(39,121,121,0.35)` }} />
-      {/* Dots in the gaps between pills */}
-      {HOURS.map((_, idx) => {
-        if (idx === 0) return null;
+      {/* Dashed line — behind everything */}
+      <div className="absolute" style={{ left: `${CX - 1}px`, top: `${ROW / 2 + PILL_H / 2 + 2}px`, bottom: `${ROW / 2 + PILL_H / 2 + 2}px`, borderLeft: `2px dashed rgba(39,121,121,0.4)`, zIndex: 0 }} />
+      {/* Dots centered on the dashed line above each pill */}
+      {HOURS.map((hour, idx) => {
+        const isActive = activeSlots.has(idx);
+        const isHovered = hoveredSlot === idx;
         return (
           <div
-            key={`dot-${idx}`}
-            className="absolute rounded-full"
+            key={`dot-${hour}`}
+            className="absolute flex items-center justify-center"
             style={{
-              width: `${DOT - 2}px`,
-              height: `${DOT - 2}px`,
-              top: `${idx * ROW - (DOT - 2) / 2}px`,
-              left: `${CX - (DOT - 2) / 2}px`,
-              backgroundColor: TEAL,
-              boxShadow: `0 0 0 2px ${DARK_TEXT}40`,
+              top: `${idx * ROW - 2}px`,
+              left: `${CX - 7}px`,
+              width: "14px",
+              height: "14px",
+              zIndex: 4,
             }}
-          />
+          >
+            {/* Outer ring - always round */}
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                backgroundColor: isActive ? "rgba(39,121,121,0.25)" : "rgba(39,121,121,0.18)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {/* Inner dot - always round */}
+              <div
+                style={{
+                  width: isActive ? "6px" : "4px",
+                  height: isActive ? "6px" : "4px",
+                  borderRadius: "50%",
+                  backgroundColor: TEAL,
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          </div>
         );
       })}
       {/* Hour pills — rendered after line so they cover it */}
@@ -333,7 +368,7 @@ function TimelineLine({
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSlotClick(hour); } }}
           >
             <div
-              className="relative z-10 flex items-center justify-center rounded-full text-xs font-medium transition-all duration-200"
+              className="relative flex items-center justify-center rounded-full text-xs font-medium transition-all duration-200"
               style={{
                 width: `${PILL_W}px`,
                 height: `${PILL_H}px`,
@@ -342,6 +377,7 @@ function TimelineLine({
                 color: isActive ? "#FFFFFF" : isHovered ? TEAL : DARK_TEXT,
                 boxShadow: isActive ? "0 2px 8px rgba(39,121,121,0.18)" : isHovered ? "0 2px 8px rgba(39,121,121,0.08)" : undefined,
                 transform: isHovered ? "scale(1.08)" : "scale(1)",
+                zIndex: 10,
               }}
             >
               {label}
@@ -533,7 +569,7 @@ export function AppointmentsCard() {
 
   return (
     <div
-      className="flex h-full min-h-[620px] flex-col overflow-hidden rounded-[30px] shadow-sm"
+      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-[30px] shadow-sm"
       style={{ backgroundColor: "#FFFFFF" }}
     >
       {/* Header */}
@@ -544,11 +580,11 @@ export function AppointmentsCard() {
           </h3>
           <button
             aria-label="View full calendar"
-            className="flex items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="flex items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-lg hover:rotate-12 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ width: "48px", height: "48px", backgroundColor: "#FFFFFF", boxShadow: "0 2px 12px rgba(39,121,121,0.12)" }}
             onClick={() => document.getElementById("appointments-card-body")?.scrollIntoView({ behavior: "smooth" })}
           >
-            <ArrowUpRight className="size-5 transition-transform duration-200 hover:translate-x-0.5 hover:-translate-y-0.5" style={{ color: TEAL }} />
+            <ArrowUpRight className="size-5 transition-transform duration-200" style={{ color: TEAL }} />
           </button>
         </div>
 
@@ -569,6 +605,8 @@ export function AppointmentsCard() {
               @keyframes slide-in-bottom { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
               @keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 4px rgba(39,121,121,0.2); } 50% { box-shadow: 0 0 0 8px rgba(39,121,121,0.08); } }
               @keyframes card-enter { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+              @keyframes dot-pulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.5); opacity: 0.6; } }
+              @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
             `}</style>
             {dates.map((date) => {
               const isSelected = isSameDay(date, selectedDay);
@@ -580,16 +618,22 @@ export function AppointmentsCard() {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => handleDateSelect(date)}
-                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-xl hover:bg-[rgba(39,121,121,0.05)]"
-                  style={{ minWidth: "52px", backgroundColor: isSelected ? "rgba(39,121,121,0.08)" : "transparent" }}
+                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-xl hover:bg-[rgba(39,121,121,0.1)] hover:scale-105 hover:shadow-sm active:scale-95 group/date"
+                  style={{
+                    minWidth: "52px",
+                    backgroundColor: isSelected ? "rgba(39,121,121,0.12)" : "transparent",
+                    transform: isSelected ? "scale(1.05)" : "scale(1)",
+                  }}
                 >
-                  <span className="text-[13px] font-medium leading-none" style={{ color: isSelected ? DARK_TEXT : "rgba(39,121,121,0.45)" }}>
+                  <span className="text-[13px] font-medium leading-none transition-all duration-200 group-hover/date:text-[#155F60]" style={{ color: isSelected ? DARK_TEXT : "rgba(39,121,121,0.45)" }}>
                     {format(date, "EEE")}
                   </span>
-                  <span className="text-2xl leading-tight" style={{ color: isSelected ? TEAL : "rgba(39,121,121,0.45)", fontWeight: isSelected ? 700 : 500 }}>
+                  <span className="text-2xl leading-tight transition-all duration-200 group-hover/date:font-bold group-hover/date:text-[#277979]" style={{ color: isSelected ? TEAL : "rgba(39,121,121,0.45)", fontWeight: isSelected ? 700 : 500 }}>
                     {format(date, "d")}
                   </span>
-                  {isTodayDate && !isSelected && <span className="size-1.5 rounded-full -mt-1" style={{ backgroundColor: TEAL }} />}
+                  {isTodayDate && !isSelected && (
+                    <span className="size-1.5 rounded-full -mt-1 transition-all duration-200 group-hover/date:scale-150" style={{ backgroundColor: TEAL, animation: "dot-pulse 2s ease-in-out infinite" }} />
+                  )}
                 </button>
               );
             })}
