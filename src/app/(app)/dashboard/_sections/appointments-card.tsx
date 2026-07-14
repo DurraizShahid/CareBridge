@@ -343,25 +343,6 @@ function CurrentTimeMarker() {
   );
 }
 
-function TimelineScrollButton({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="flex justify-center py-3">
-      <button
-        onClick={onClick}
-        aria-label="View later schedule times"
-        className="flex items-center justify-center rounded-full shadow-sm transition-transform hover:scale-105 active:scale-95"
-        style={{
-          width: "34px",
-          height: "34px",
-          backgroundColor: TEAL,
-        }}
-      >
-        <ChevronDownIcon className="size-4 text-white" />
-      </button>
-    </div>
-  );
-}
-
 function FacilityCalendarSkeleton() {
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "#CCD7D3" }}>
@@ -574,51 +555,67 @@ export function AppointmentsCard() {
       </div>
 
       {/* Schedule Body */}
-      <div
-        id="appointments-card-body"
-        ref={scheduleBodyRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-4"
-      >
-        {selectedDayAppointments.length === 0 ? (
-          <FacilityCalendarEmptyState />
-        ) : (
-          <div className="relative">
-            <div className="relative flex gap-3">
-              {/* Timeline */}
-              <div className="relative shrink-0" style={{ width: "80px" }}>
-                <TimelineLine />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div
+          id="appointments-card-body"
+          ref={scheduleBodyRef}
+          className="h-full overflow-y-auto overscroll-contain px-6 pb-14 pt-1"
+        >
+          {selectedDayAppointments.length === 0 ? (
+            <FacilityCalendarEmptyState />
+          ) : (
+            <div className="relative">
+              <div className="relative flex gap-3">
+                {/* Timeline */}
+                <div className="relative shrink-0" style={{ width: "80px" }}>
+                  <TimelineLine />
 
-                {isToday(selectedDay) && (
-                  <div className="absolute left-0 right-0" style={{ top: 0 }}>
-                    <CurrentTimeMarker />
-                  </div>
-                )}
+                  {isToday(selectedDay) && (
+                    <div className="absolute left-0 right-0" style={{ top: 0 }}>
+                      <CurrentTimeMarker />
+                    </div>
+                  )}
+                </div>
 
-                <TimelineScrollButton onClick={scrollToLater} />
-              </div>
+                {/* Meeting Column */}
+                <div className="flex-1 min-w-0 space-y-3 pb-4">
+                  {selectedDayAppointments.map((appointment, idx) => {
+                    const isActive = appointment.type === "urgent";
+                    const isExpanded = expandedMeetingId === idx;
 
-              {/* Meeting Column */}
-              <div className="flex-1 min-w-0 space-y-3 pb-4">
-                {selectedDayAppointments.map((appointment, idx) => {
-                  const isActive = appointment.type === "urgent";
-                  const isExpanded = expandedMeetingId === idx;
-
-                  return (
-                    <MeetingCard
-                      key={idx}
-                      appointment={appointment}
-                      isActive={isActive}
-                      isExpanded={isExpanded}
-                      onToggle={() =>
-                        setExpandedMeetingId(isExpanded ? null : idx)
-                      }
-                    />
-                  );
-                })}
+                    return (
+                      <MeetingCard
+                        key={idx}
+                        appointment={appointment}
+                        isActive={isActive}
+                        isExpanded={isExpanded}
+                        onToggle={() =>
+                          setExpandedMeetingId(isExpanded ? null : idx)
+                        }
+                      />
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Fixed scroll button at bottom */}
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+          <button
+            onClick={scrollToLater}
+            aria-label="View later schedule times"
+            className="flex items-center justify-center rounded-full shadow-md transition-transform hover:scale-105 active:scale-95 pointer-events-auto"
+            style={{
+              width: "34px",
+              height: "34px",
+              backgroundColor: TEAL,
+            }}
+          >
+            <ChevronDownIcon className="size-4 text-white" />
+          </button>
+        </div>
       </div>
     </div>
   );

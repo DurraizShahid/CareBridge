@@ -6,6 +6,7 @@
 import type {
   Patient,
   PatientStatus,
+  Contact,
   Facility,
   FacilityType,
   Placement,
@@ -594,7 +595,7 @@ export async function getFacilities(
       phone: f.phone,
       email: f.email,
       website: f.website ?? undefined,
-      contacts: f.contacts as any,
+      contacts: Array.isArray(f.contacts) ? (f.contacts as unknown as Contact[]) : [],
       licensure: f.licensure,
       accreditations: f.accreditations,
       capacity: f.capacity,

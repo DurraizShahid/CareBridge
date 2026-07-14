@@ -269,7 +269,7 @@ export default async function FacilityDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {facility.contacts && facility.contacts.length > 0 && (
+              {Array.isArray(facility.contacts) && facility.contacts.length > 0 && (
                 <>
                   <Separator />
                   <div>
