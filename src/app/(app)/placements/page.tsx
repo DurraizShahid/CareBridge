@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
+import type { Placement, Patient, Facility } from "@/types";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   assessment: {
@@ -56,15 +57,27 @@ export default async function PlacementsPage() {
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
-  const [placements, patients, facilities] = await Promise.all([
-    getPlacements(organizationId, role),
-    getPatients(organizationId, role),
-    getFacilities(organizationId, role),
-  ]);
+
+  let placements: Placement[] = [];
+  let patients: Patient[] = [];
+  let facilities: Facility[] = [];
+  try {
+    const results = await Promise.all([
+      getPlacements(organizationId, role),
+      getPatients(organizationId, role),
+      getFacilities(organizationId, role),
+    ]);
+    placements = results[0];
+    patients = results[1];
+    facilities = results[2];
+  } catch {
+    // If data fetching fails, show empty state below
+  }
 
   const sorted = [...placements].sort(
     (a, b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority),
   );
+  const isEmpty = sorted.length === 0;
 
   const canCreate = roleHasPermission(role, "placements:create");
 
@@ -102,6 +115,25 @@ export default async function PlacementsPage() {
       </PageHeader>
 
       {/* Placement cards */}
+      {isEmpty && (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 px-6 py-16 text-center">
+          <p className="text-lg font-semibold text-card-foreground">No placements yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create a new placement to start tracking patient transfers.
+          </p>
+          {canCreate && (
+            <Link
+              href="/placements/new"
+              className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
+            >
+              <Plus className="h-4 w-4" />
+              New Placement
+            </Link>
+          )}
+        </div>
+      )}
+
+      {!isEmpty && (
       <div className="space-y-4">
         {sorted.map((plc) => {
           const config = statusConfig[plc.status] ?? {
@@ -163,9 +195,9 @@ export default async function PlacementsPage() {
               {/* Progress dots for workflow */}
               {plc.status !== "completed" && plc.status !== "cancelled" && (
                 <div className="mt-4 flex items-center gap-1.5">
-                  {["assessment", "searching", "pending_approval", "in_progress", "completed"].map(
+                  {["assessment", "searching", "pending-approval", "in-progress", "completed"].map(
                     (step, idx) => {
-                      const statusOrder = ["assessment", "searching", "pending_approval", "in_progress", "completed"];
+                      const statusOrder = ["assessment", "searching", "pending-approval", "in-progress", "completed"];
                       const currentIdx = statusOrder.indexOf(plc.status);
                       const stepIdx = statusOrder.indexOf(step);
                       const isComplete = stepIdx <= currentIdx && plc.status !== "assessment";
@@ -219,6 +251,7 @@ export default async function PlacementsPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

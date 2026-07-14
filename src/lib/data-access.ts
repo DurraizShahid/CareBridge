@@ -44,8 +44,8 @@ function toISO(date: Date | null | undefined): string {
 }
 
 // Convert Prisma snake_case enums to UI kebab-case
-function snakeToKebab(str: string): string {
-  return str.replace(/_/g, "-");
+function snakeToKebab(str: string | null | undefined): string {
+  return str?.replace(/_/g, "-") ?? "";
 }
 
 // Convert UI kebab-case enums to Prisma snake_case
