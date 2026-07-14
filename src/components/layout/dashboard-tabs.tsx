@@ -48,7 +48,7 @@ export function DashboardTabs({ effectiveRole, scrolled }: { effectiveRole?: str
   if (!isLoaded) return null;
 
   const visible = tabItems.filter((item) => {
-    if (item.href === "/dashboard/facility-network" && effectiveRole === "facility-coordinator") return false;
+    if (item.href === "/dashboard/facility-network" && (effectiveRole === "facility-coordinator" || effectiveRole === "administrator")) return false;
     return !item.requiredPermission || can(item.requiredPermission);
   });
 

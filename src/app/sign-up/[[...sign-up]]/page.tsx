@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSignUp, useAuth, useClerk } from '@clerk/nextjs';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
@@ -24,8 +24,13 @@ export default function SignUpPage() {
   const [verifyCode, setVerifyCode] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push('/onboarding');
+    }
+  }, [isSignedIn, router]);
+
   if (isSignedIn) {
-    router.push('/onboarding');
     return null;
   }
 
