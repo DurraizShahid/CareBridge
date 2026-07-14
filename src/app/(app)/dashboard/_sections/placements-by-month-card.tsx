@@ -88,7 +88,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-[#ccd7d3]",
+        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-[#B2BEB5]",
         className
       )}
     >
