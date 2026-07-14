@@ -5,17 +5,11 @@ import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const nohemi = localFont({
+const inter = localFont({
   src: [
-    { path: "../../public/fonts/Nohemi-Thin.woff2", weight: "100", style: "normal" },
-    { path: "../../public/fonts/Nohemi-ExtraLight.woff2", weight: "200", style: "normal" },
-    { path: "../../public/fonts/Nohemi-Light.woff2", weight: "300", style: "normal" },
-    { path: "../../public/fonts/Nohemi-Regular.woff2", weight: "400", style: "normal" },
-    { path: "../../public/fonts/Nohemi-Medium.woff2", weight: "500", style: "normal" },
-    { path: "../../public/fonts/Nohemi-SemiBold.woff2", weight: "600", style: "normal" },
-    { path: "../../public/fonts/Nohemi-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../../public/fonts/helvetica/Inter-Variable.woff2", weight: "100 900", style: "normal" },
   ],
-  variable: "--font-nohemi",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -55,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", nohemi.variable, "font-sans")}
+      className={cn("h-full", "antialiased", inter.variable, "font-sans")}
       suppressHydrationWarning
     >
       <head />

@@ -25,6 +25,9 @@ import type {
   FacilityMedia,
   PatientDocument,
   CareLevel,
+  FacilityMatchBreakdown,
+  FacilityMatchResult,
+  PatientMatchResult,
 } from "@/types";
 import { prisma } from "@/lib/prisma";
 
@@ -212,6 +215,58 @@ function calculateFacilityScore(
   return score;
 }
 
+function calculateFacilityScoreWithBreakdown(
+  facility: Facility,
+  patient: { careLevelRequired: string; insurance: unknown },
+  preferredLocation: Placement["preferredLocation"] | undefined,
+): FacilityMatchBreakdown {
+  const careLevelMatch = facility.careLevelsOffered.includes(patient.careLevelRequired as any);
+  const hasAvailability = facility.hasAvailability && facility.currentOccupancy < facility.capacity;
+  const insuranceAccepted = facilityAcceptsPatientInsurance(facility, patient.insurance);
+
+  if (!careLevelMatch || !hasAvailability || !insuranceAccepted) {
+    return {
+      careLevelMatch,
+      insuranceAccepted,
+      hasAvailability,
+      baseScore: 0,
+      capacityScore: 0,
+      ratingScore: 0,
+      waitlistPenalty: 0,
+      locationBonus: 0,
+      totalScore: -1,
+    };
+  }
+
+  let baseScore = 50;
+  const capacityScore = Math.max(facility.capacity - facility.currentOccupancy, 0);
+  const ratingScore = Math.round(facility.rating * 5);
+  const waitlistPenalty = facility.waitlistDays ?? 0;
+
+  const address = facility.address;
+  const facilityCity = normalizeSearchValue(address.city);
+  const facilityState = normalizeSearchValue(address.state);
+  const preferredCity = preferredLocation?.city ? normalizeSearchValue(preferredLocation.city) : "";
+  const preferredState = preferredLocation?.state ? normalizeSearchValue(preferredLocation.state) : "";
+  let locationBonus = 0;
+  if (preferredCity && facilityCity === preferredCity) locationBonus += 10;
+  if (preferredState && facilityState === preferredState) locationBonus += 5;
+
+  const totalScore = baseScore + capacityScore + ratingScore - waitlistPenalty + locationBonus;
+
+  return {
+    careLevelMatch,
+    insuranceAccepted,
+    hasAvailability,
+    baseScore,
+    capacityScore,
+    ratingScore,
+    waitlistPenalty,
+    locationBonus,
+    totalScore,
+  };
+}
+
 async function computeMatchedFacilities(
   tx: any,
   organizationId: string,
@@ -231,6 +286,102 @@ async function computeMatchedFacilities(
     .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
     .slice(0, 5)
     .map((facility: { id: string }) => facility.id);
+}
+
+const careLevelLabels: Record<string, string> = {
+  "independent-living": "Independent Living",
+  "assisted-living": "Assisted Living",
+  "skilled-nursing": "Skilled Nursing",
+  "long-term-care": "Long Term Care",
+  rehabilitation: "Rehabilitation",
+  "home-health": "Home Health",
+  hospice: "Hospice",
+  "memory-care": "Memory Care",
+};
+
+function buildMatchExplanation(
+  facility: Facility,
+  patient: Patient,
+  breakdown: FacilityMatchBreakdown,
+): string {
+  const careLabel = careLevelLabels[patient.careLevelRequired] ?? patient.careLevelRequired;
+  const parts: string[] = [];
+
+  if (breakdown.careLevelMatch) parts.push(`Offers required care level (${careLabel})`);
+  if (breakdown.insuranceAccepted) {
+    const raw = Array.isArray(patient.insurance) ? (patient.insurance[0] as any)?.type ?? null : null;
+    const insLabel = typeof raw === "string" ? raw.replace(/-/g, " ") : "your insurance";
+    parts.push(`Accepts ${insLabel}`);
+  }
+  if (breakdown.hasAvailability) {
+    const available = facility.capacity - facility.currentOccupancy;
+    parts.push(`${available} bed${available === 1 ? "" : "s"} available`);
+  }
+
+  const factors: string[] = [];
+  factors.push(`${breakdown.baseScore} base`);
+  if (breakdown.capacityScore > 0) factors.push(`+${breakdown.capacityScore} capacity`);
+  if (breakdown.ratingScore > 0) factors.push(`+${breakdown.ratingScore} rating`);
+  if (breakdown.waitlistPenalty > 0) factors.push(`-${breakdown.waitlistPenalty} waitlist`);
+  if (breakdown.locationBonus > 0) factors.push(`+${breakdown.locationBonus} location`);
+
+  return `${parts.join("; ")}. Score: ${factors.join(" ")} = ${breakdown.totalScore} pts.`;
+}
+
+export async function getPatientFacilityMatches(
+  patientId: string,
+  organizationId: string,
+  role: string,
+): Promise<FacilityMatchResult[]> {
+  const patient = await getPatient(patientId, organizationId, role);
+  if (!patient) return [];
+
+  const facilities = await getFacilities(organizationId, role);
+
+  return facilities
+    .map((facility) => {
+      const breakdown = calculateFacilityScoreWithBreakdown(
+        facility,
+        {
+          careLevelRequired: patient.careLevelRequired,
+          insurance: patient.insurance,
+        },
+        undefined,
+      );
+      const explanation = buildMatchExplanation(facility, patient, breakdown);
+      return { facility, score: breakdown.totalScore, breakdown, explanation };
+    })
+    .filter((r) => r.score >= 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+}
+
+export async function getFacilityPatientMatches(
+  facilityId: string,
+  organizationId: string,
+  role: string,
+): Promise<PatientMatchResult[]> {
+  const facility = await getFacility(facilityId, organizationId, role);
+  if (!facility) return [];
+
+  const patients = await getPatients(organizationId, role);
+
+  return patients
+    .map((patient) => {
+      const breakdown = calculateFacilityScoreWithBreakdown(
+        facility,
+        {
+          careLevelRequired: patient.careLevelRequired,
+          insurance: patient.insurance,
+        },
+        undefined,
+      );
+      const explanation = buildMatchExplanation(facility, patient, breakdown);
+      return { patient, score: breakdown.totalScore, breakdown, explanation };
+    })
+    .filter((r) => r.score >= 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
 }
 
 async function recalculateFacilityOccupancy(

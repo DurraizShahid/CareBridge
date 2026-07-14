@@ -306,3 +306,29 @@ export interface ActivityEvent {
   userId: string;
   organizationId: string;
 }
+
+export interface FacilityMatchBreakdown {
+  careLevelMatch: boolean;
+  insuranceAccepted: boolean;
+  hasAvailability: boolean;
+  baseScore: number;
+  capacityScore: number;
+  ratingScore: number;
+  waitlistPenalty: number;
+  locationBonus: number;
+  totalScore: number;
+}
+
+export interface FacilityMatchResult {
+  facility: Facility;
+  score: number;
+  breakdown: FacilityMatchBreakdown;
+  explanation: string;
+}
+
+export interface PatientMatchResult {
+  patient: Patient;
+  score: number;
+  breakdown: FacilityMatchBreakdown;
+  explanation: string;
+}

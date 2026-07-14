@@ -88,6 +88,11 @@ export default async function PatientDetailPage({ params }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
+          {roleHasPermission(org.role, "placements:read") && (
+            <Button variant="secondary" render={<Link href={`/patients/${patient.id}/matching`} />}>
+              Match Facilities
+            </Button>
+          )}
           {canEdit && (
             <Button variant="outline" render={<Link href={`/patients/${patient.id}/edit`} />}>
               Edit

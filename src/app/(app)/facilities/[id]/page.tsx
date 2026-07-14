@@ -13,13 +13,16 @@ import {
   ImageIcon,
   Video,
   Box,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getFacility, getPlacements, getFacilityUsers } from "@/lib/data-access";
+import { getFacility, getPlacements, getFacilityUsers, getFacilityPatientMatches } from "@/lib/data-access";
+import type { PatientMatchResult } from "@/types";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import { DeleteFacilityDialog } from "./delete-dialog";
@@ -95,9 +98,10 @@ export default async function FacilityDetailPage({ params }: Props) {
   const facility = await getFacility(id, organizationId, role);
   if (!facility) notFound();
 
-  const [placements, facilityUsers] = await Promise.all([
+  const [placements, facilityUsers, matchedPatients] = await Promise.all([
     getPlacements(organizationId, role),
     getFacilityUsers(organizationId, role),
+    getFacilityPatientMatches(id, organizationId, role),
   ]);
 
   const facilityPlacements = placements.filter(
@@ -370,6 +374,92 @@ export default async function FacilityDetailPage({ params }: Props) {
                           </p>
                         </div>
                         <Badge className={cfg.color}>{cfg.label}</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Matched Patients section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                Matched Patients ({matchedPatients.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {matchedPatients.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No patients match this facility&apos;s criteria.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {matchedPatients.map((result: PatientMatchResult) => {
+                    const { patient, breakdown } = result;
+                    return (
+                      <div
+                        key={patient.id}
+                        className="rounded-lg border border-border p-4 text-sm"
+                      >
+                        <div className="mb-2 flex items-start justify-between">
+                          <div>
+                            <Link
+                              href={`/patients/${patient.id}`}
+                              className="font-medium underline-offset-4 hover:underline"
+                            >
+                              {patient.firstName} {patient.lastName}
+                            </Link>
+                            <p className="text-xs text-muted-foreground">
+                              {patient.primaryDiagnosis} &middot;{" "}
+                              {patient.careLevelRequired.replace(/-/g, " ")}
+                            </p>
+                          </div>
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                              breakdown.totalScore >= 80
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : breakdown.totalScore >= 60
+                                  ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            }`}
+                          >
+                            {breakdown.totalScore} pts
+                          </span>
+                        </div>
+
+                        <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1">
+                          <span className="flex items-center gap-1">
+                            {breakdown.careLevelMatch ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5 text-red-500" />
+                            )}
+                            <span className="text-xs">Care Level</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            {breakdown.insuranceAccepted ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5 text-red-500" />
+                            )}
+                            <span className="text-xs">Insurance</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            {breakdown.hasAvailability ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5 text-red-500" />
+                            )}
+                            <span className="text-xs">Availability</span>
+                          </span>
+                        </div>
+
+                        <div className="rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
+                          {result.explanation}
+                        </div>
                       </div>
                     );
                   })}
