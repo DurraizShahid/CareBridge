@@ -88,7 +88,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-[#B2BEB5]",
+        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-[#E9E9E9]",
         className
       )}
     >
@@ -122,7 +122,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
           <div className="flex items-center gap-2">
             {/* Year Dropdown */}
             <button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-foreground/5"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-white/80"
               style={{ backgroundColor: "#FFFFFF" }}
             >
               2024
