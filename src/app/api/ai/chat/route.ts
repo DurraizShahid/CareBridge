@@ -201,10 +201,10 @@ export async function POST(req: Request) {
               ),
             );
             controller.enqueue(sseEvent("done", ""));
+            controller.close();
           } catch {
-            // ignore close errors
+            // stream already in errored state
           }
-          controller.close();
         }
       },
     });

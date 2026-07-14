@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSignIn, useAuth, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -20,8 +20,13 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
 
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push('/onboarding');
+    }
+  }, [isSignedIn, router]);
+
   if (isSignedIn) {
-    router.push('/onboarding');
     return null;
   }
 

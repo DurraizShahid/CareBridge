@@ -217,8 +217,12 @@ function BackgroundOrbs() {
 }
 
 export default function HomePage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  if (!isLoaded) {
+    return null;
+  }
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);

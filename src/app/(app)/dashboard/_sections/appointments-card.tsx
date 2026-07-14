@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import {
-  ChevronUp,
   ArrowUpRight,
   Clock,
   MapPin,
@@ -179,42 +178,30 @@ function MeetingCard({
           className="w-full text-left"
           aria-label={isExpanded ? "Collapse meeting details" : "Expand meeting details"}
         >
-          <div className="px-4 py-3">
+          <div className="px-5 py-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p
                   className={cn(
-                    "text-sm font-medium leading-snug truncate",
+                    "text-sm font-semibold leading-snug",
                     isActive ? "text-white" : "",
                   )}
-                  style={!isActive ? { color: DARK_TEXT } : undefined}
+                  style={!isActive ? { color: TEAL } : undefined}
                 >
                   {appointment.subject}
                 </p>
                 <p
                   className={cn(
-                    "text-xs mt-0.5",
+                    "text-xs mt-1",
                     isActive ? "text-white/75" : "",
                   )}
-                  style={!isActive ? { color: "rgba(39,121,121,0.68)" } : undefined}
+                  style={!isActive ? { color: "rgba(39,121,121,0.6)" } : undefined}
                 >
                   {appointment.time}
                 </p>
-                <MeetingParticipantsList participants={appointment.participants} />
               </div>
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <AppointmentStatusDot status={appointment.type} />
-                {isExpanded ? (
-                  <ChevronUp
-                    className="size-4"
-                    style={{ color: isActive ? "#FFFFFF" : TEAL }}
-                  />
-                ) : (
-                  <ChevronDownIcon
-                    className="size-4"
-                    style={{ color: isActive ? "#FFFFFF" : TEAL }}
-                  />
-                )}
               </div>
             </div>
           </div>
@@ -223,10 +210,10 @@ function MeetingCard({
         <CollapsibleContent>
           <div
             className={cn(
-              "px-4 pb-4 pt-0 space-y-2.5 border-t",
+              "px-5 pb-4 pt-0 space-y-2.5 border-t",
               isActive ? "border-white/20" : "",
             )}
-            style={!isActive ? { borderColor: "rgba(204,215,211,0.5)" } : undefined}
+            style={!isActive ? { borderColor: "rgba(39,121,121,0.1)" } : undefined}
           >
             <p
               className={cn(
@@ -237,7 +224,7 @@ function MeetingCard({
             >
               {appointment.details}
             </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs" style={{ color: "rgba(39,121,121,0.68)" }}>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs" style={{ color: "rgba(39,121,121,0.6)" }}>
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-3.5 shrink-0" />
                 {appointment.location}
@@ -251,6 +238,7 @@ function MeetingCard({
                 {appointment.duration}
               </span>
             </div>
+            <MeetingParticipantsList participants={appointment.participants} />
           </div>
         </CollapsibleContent>
       </div>
@@ -262,13 +250,13 @@ function TimelineLine({ onTimeSelect }: { onTimeSelect?: (slot: number) => void 
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
   return (
-    <div className="relative flex flex-col items-center" style={{ width: "80px" }}>
+    <div className="relative flex flex-col" style={{ width: "80px" }}>
       {HOURS.map((hour, idx) => {
-        const label = hour === 0 ? "12" : hour < 12 ? `${hour}` : hour === 12 ? "12" : `${hour - 12}`;
-        const suffix = hour < 12 ? "AM" : "PM";
+        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        const label = `${String(displayHour).padStart(2, "0")}:00`;
         const isActive = selectedSlot === idx;
         return (
-          <div key={hour} className="relative flex items-center justify-end gap-2" style={{ height: "60px" }}>
+          <div key={hour} className="relative flex items-center" style={{ height: "60px" }}>
             <button
               onClick={() => {
                 setSelectedSlot(isActive ? null : idx);
@@ -276,45 +264,53 @@ function TimelineLine({ onTimeSelect }: { onTimeSelect?: (slot: number) => void 
               }}
               className="flex items-center justify-center rounded-full text-xs font-medium shrink-0 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
-                width: "76px",
-                height: "38px",
+                width: "60px",
+                height: "32px",
                 backgroundColor: isActive ? TEAL : "transparent",
-                border: isActive ? "none" : `1.5px solid rgba(39,121,121,0.68)`,
+                border: isActive ? "none" : `1.5px solid rgba(39,121,121,0.5)`,
                 color: isActive ? "#FFFFFF" : DARK_TEXT,
                 boxShadow: isActive ? `0 2px 8px rgba(39,121,121,0.18)` : undefined,
               }}
             >
               {label}
-              <span
-                className="ml-0.5 text-[10px]"
-                style={{ color: isActive ? "rgba(255,255,255,0.7)" : "rgba(39,121,121,0.38)" }}
-              >
-                {suffix}
-              </span>
             </button>
-            <div className="relative flex items-center justify-center" style={{ width: "12px", height: "12px" }}>
-              <div
-                className="rounded-full absolute"
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  backgroundColor: TEAL,
-                  opacity: isActive ? 0.9 : 0.4,
-                }}
-              />
-            </div>
           </div>
         );
       })}
+      {/* Dashed line with dots centered between time pills and cards */}
       <div
-        className="absolute top-0 bottom-0"
+        className="absolute top-0 bottom-0 flex flex-col items-center"
         style={{
-          left: "calc(100% - 6px)",
-          width: "0",
-          borderLeft: `1.5px dashed ${TEAL}`,
-          opacity: 0.5,
+          left: "68px",
         }}
-      />
+      >
+        {/* Dashed line */}
+        <div
+          className="absolute top-0 bottom-0"
+          style={{
+            width: "0",
+            borderLeft: `1.5px dashed ${TEAL}`,
+            opacity: 0.4,
+          }}
+        />
+        {/* Dots at each time position */}
+        {HOURS.map((hour, idx) => {
+          const isActive = selectedSlot === idx;
+          return (
+            <div
+              key={hour}
+              className="absolute rounded-full"
+              style={{
+                width: "6px",
+                height: "6px",
+                backgroundColor: TEAL,
+                opacity: isActive ? 0.9 : 0.4,
+                top: `${idx * 60 + 27}px`,
+              }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -371,14 +367,14 @@ function FacilityCalendarSkeleton() {
     <div className="flex flex-col h-full" style={{ backgroundColor: "#CCD7D3" }}>
       <div className="shrink-0 px-6 pt-6 pb-4">
         <div className="flex items-center justify-between mb-6">
-          <div className="h-8 w-28 animate-pulse rounded-lg bg-white dark:bg-white/10" />
+          <div className="h-8 w-32 animate-pulse rounded-lg bg-white dark:bg-white/10" />
           <div className="size-11 animate-pulse rounded-full bg-white dark:bg-white/10" />
         </div>
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden">
           {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="flex shrink-0 flex-col items-center gap-1.5 animate-pulse" style={{ minWidth: "48px" }}>
+            <div key={i} className="flex shrink-0 flex-col items-center gap-1.5 animate-pulse" style={{ minWidth: "56px" }}>
               <div className="h-3 w-8 rounded bg-white dark:bg-white/10" />
-              <div className="h-6 w-6 rounded bg-white dark:bg-white/10" />
+              <div className="h-5 w-6 rounded bg-white dark:bg-white/10" />
             </div>
           ))}
         </div>
@@ -387,7 +383,7 @@ function FacilityCalendarSkeleton() {
         <div className="flex gap-4 h-full">
           <div className="flex flex-col gap-3 animate-pulse" style={{ width: "80px" }}>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-5 w-14 rounded bg-white dark:bg-white/10" />
+              <div key={i} className="h-4 w-14 rounded-full bg-white dark:bg-white/10" />
             ))}
           </div>
           <div className="flex-1 space-y-3 animate-pulse">
@@ -441,7 +437,7 @@ export function AppointmentsCard() {
 
   const dates = useMemo(() => {
     const start = startOfWeek(today, { weekStartsOn: 0 });
-    return Array.from({ length: 28 }, (_, i) => addDays(start, i));
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, []);
 
   const appointmentsByDay = useMemo(() => {
@@ -508,7 +504,7 @@ export function AppointmentsCard() {
       {/* Header */}
       <div className="shrink-0 p-6 pb-1">
         <div className="flex items-end justify-between mb-5">
-          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
+          <h3 className="text-2xl font-bold" style={{ color: DARK_TEXT }}>
             Schedule
           </h3>
           <button
@@ -534,7 +530,7 @@ export function AppointmentsCard() {
           ref={dateStripRef}
           role="tablist"
           aria-label="Facility calendar dates"
-          className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth pb-3"
+          className="flex w-full gap-2 overflow-x-auto overscroll-x-contain scroll-smooth pb-3"
           style={{ scrollbarWidth: "thin", scrollbarColor: `${TEAL} transparent` }}
           onKeyDown={handleKeyDown}
         >
@@ -547,26 +543,26 @@ export function AppointmentsCard() {
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => handleDateSelect(date)}
-                className="shrink-0 snap-center flex flex-col items-center gap-0.5 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 rounded-xl px-3 py-1.5"
+                className="shrink-0 flex flex-col items-center gap-1 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 rounded-xl px-3 py-2"
                 style={{
-                  minWidth: "52px",
+                  minWidth: "56px",
                   backgroundColor: isSelected ? "var(--color-card, #FFFFFF)" : "transparent",
                   boxShadow: isSelected ? `0 2px 8px rgba(39,121,121,0.1)` : undefined,
                 }}
               >
                 <span
-                  className="text-sm font-medium leading-none"
+                  className="text-xs font-medium leading-none"
                   style={{
-                    color: isSelected ? DARK_TEXT : "rgba(39,121,121,0.38)",
+                    color: isSelected ? DARK_TEXT : "rgba(39,121,121,0.45)",
                   }}
                 >
                   {format(date, "EEE")}
                 </span>
                 <span
-                  className="text-2xl leading-tight"
+                  className="text-xl leading-tight"
                   style={{
-                    color: isSelected ? TEAL : "rgba(39,121,121,0.38)",
-                    fontWeight: isSelected ? 600 : 500,
+                    color: isSelected ? TEAL : "rgba(39,121,121,0.45)",
+                    fontWeight: isSelected ? 700 : 500,
                   }}
                 >
                   {format(date, "d")}
@@ -587,16 +583,7 @@ export function AppointmentsCard() {
           <FacilityCalendarEmptyState />
         ) : (
           <div className="relative">
-            {/* Subtle background overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none rounded-2xl"
-              aria-hidden="true"
-              style={{
-                backgroundColor: "rgba(204,215,211,0.18)",
-              }}
-            />
-
-            <div className="relative flex gap-4">
+            <div className="relative flex gap-3">
               {/* Timeline */}
               <div className="relative shrink-0" style={{ width: "80px" }}>
                 <TimelineLine />

@@ -56,153 +56,160 @@ export async function POST(req: NextRequest) {
     return new Response("Verification failed", { status: 400 });
   }
 
-  switch (evt.type) {
-    // ── User Events ──
-    case "user.created": {
-      const data = evt.data as ClerkUserData;
-      const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
-      const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
-      try {
-        const existingUser = await prisma.user.findUnique({ where: { id } });
-        const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
-        const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
-        const createData = {
-          id,
-          email,
-          firstName: first_name ?? "",
-          lastName: last_name ?? "",
-          role,
-          title: "",
-          department: "",
-          hospitalId: "",
-          phone: "",
-          avatarUrl: image_url,
-          ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
-        };
+  if (!evt.data) {
+    console.warn(`⚠️ Webhook: ${evt.type} — missing data, skipping`);
+    return new Response("OK", { status: 200 });
+  }
 
-        await prisma.user.upsert({
-          where: { id },
-          update: {
+  try {
+    switch (evt.type) {
+      // ── User Events ──
+      case "user.created": {
+        try {
+          const data = evt.data as ClerkUserData;
+          const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
+          const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
+          const existingUser = await prisma.user.findUnique({ where: { id } });
+          const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
+          const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
+          const createData = {
+            id,
             email,
             firstName: first_name ?? "",
             lastName: last_name ?? "",
             role,
+            title: "",
+            department: "",
+            hospitalId: "",
+            phone: "",
             avatarUrl: image_url,
-            ...(orgId ? { organizationId: orgId } : {}),
-          },
-          create: createData,
-        });
+            ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
+          };
+
+          await prisma.user.upsert({
+            where: { id },
+            update: {
+              email,
+              firstName: first_name ?? "",
+              lastName: last_name ?? "",
+              role,
+              avatarUrl: image_url,
+              ...(orgId ? { organizationId: orgId } : {}),
+            },
+            create: createData,
+          });
           console.log(`✅ Webhook: user.created — ${email} (${role})`);
-      } catch (err) {
-        console.error(`❌ Webhook: user.created failed for ${email}:`, err);
+        } catch (err) {
+          console.error(`❌ Webhook: user.created failed:`, err);
+        }
+        break;
       }
-      break;
-    }
 
-    case "user.updated": {
-      const data = evt.data as ClerkUserData;
-      const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
-      const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
-      try {
-        const existingUser = await prisma.user.findUnique({ where: { id } });
-        const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
-        const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
-        const createData = {
-          id,
-          email,
-          firstName: first_name ?? "",
-          lastName: last_name ?? "",
-          role,
-          title: "",
-          department: "",
-          hospitalId: "",
-          phone: "",
-          avatarUrl: image_url,
-          ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
-        };
-
-        await prisma.user.upsert({
-          where: { id },
-          update: {
+      case "user.updated": {
+        try {
+          const data = evt.data as ClerkUserData;
+          const { id, email_addresses, first_name, last_name, image_url, public_metadata } = data;
+          const email = email_addresses?.[0]?.email_address ?? "unknown@email.com";
+          const existingUser = await prisma.user.findUnique({ where: { id } });
+          const role = resolveRole(public_metadata) ?? existingUser?.role ?? UserRoleEnum.customer;
+          const orgId = resolveOrganizationId(public_metadata) ?? existingUser?.organizationId ?? null;
+          const createData = {
+            id,
             email,
             firstName: first_name ?? "",
             lastName: last_name ?? "",
             role,
+            title: "",
+            department: "",
+            hospitalId: "",
+            phone: "",
             avatarUrl: image_url,
-            ...(orgId ? { organizationId: orgId } : {}),
-          },
-          create: createData,
-        });
+            ...(orgId ? { organization: { connect: { id: orgId } } } : {}),
+          };
+
+          await prisma.user.upsert({
+            where: { id },
+            update: {
+              email,
+              firstName: first_name ?? "",
+              lastName: last_name ?? "",
+              role,
+              avatarUrl: image_url,
+              ...(orgId ? { organizationId: orgId } : {}),
+            },
+            create: createData,
+          });
           console.log(`✅ Webhook: user.updated — ${email} (${role})`);
-      } catch (err) {
-        console.error(`❌ Webhook: user.updated failed for ${email}:`, err);
+        } catch (err) {
+          console.error(`❌ Webhook: user.updated failed:`, err);
+        }
+        break;
       }
-      break;
-    }
 
-    case "user.deleted": {
-      const data = evt.data as ClerkUserData;
-      const { id } = data;
-      try {
-        await prisma.user.delete({ where: { id } });
-        console.log(`✅ Webhook: user.deleted — ${id}`);
-      } catch {
-        // User may not exist in DB; that's fine
-        console.log(`ℹ️  Webhook: user.deleted — ${id} (not in DB, skipping)`);
+      case "user.deleted": {
+        try {
+          const data = evt.data as ClerkUserData;
+          const { id } = data;
+          await prisma.user.delete({ where: { id } });
+          console.log(`✅ Webhook: user.deleted — ${id}`);
+        } catch {
+          console.log(`ℹ️  Webhook: user.deleted — not in DB, skipping`);
+        }
+        break;
       }
-      break;
-    }
 
-    // ── Organization Events ──
-    case "organization.created": {
-      const data = evt.data as ClerkOrganizationData;
-      const { id, name, slug, public_metadata } = data;
-      const orgType = normalizeOrganizationType(public_metadata?.type) ?? "hospital";
-      try {
-        await prisma.organization.upsert({
-          where: { id },
-          update: { name, slug },
-          create: { id, name, slug, type: orgType },
-        });
-        console.log(`✅ Webhook: organization.created — ${name}`);
-      } catch (err) {
-        console.error(`❌ Webhook: organization.created failed for ${name}:`, err);
+      // ── Organization Events ──
+      case "organization.created": {
+        try {
+          const data = evt.data as ClerkOrganizationData;
+          const { id, name, slug, public_metadata } = data;
+          const orgType = normalizeOrganizationType(public_metadata?.type) ?? "hospital";
+          await prisma.organization.upsert({
+            where: { id },
+            update: { name, slug },
+            create: { id, name, slug, type: orgType },
+          });
+          console.log(`✅ Webhook: organization.created — ${name}`);
+        } catch (err) {
+          console.error(`❌ Webhook: organization.created failed:`, err);
+        }
+        break;
       }
-      break;
-    }
 
-    case "organization.updated": {
-      const data = evt.data as ClerkOrganizationData;
-      const { id, name, slug } = data;
-      try {
-        await prisma.organization.upsert({
-          where: { id },
-          update: { name, slug },
-          // If org doesn't exist yet, default type to hospital
-          create: { id, name, slug, type: "hospital" },
-        });
-        console.log(`✅ Webhook: organization.updated — ${name}`);
-      } catch (err) {
-        console.error(`❌ Webhook: organization.updated failed for ${name}:`, err);
+      case "organization.updated": {
+        try {
+          const data = evt.data as ClerkOrganizationData;
+          const { id, name, slug } = data;
+          await prisma.organization.upsert({
+            where: { id },
+            update: { name, slug },
+            create: { id, name, slug, type: "hospital" },
+          });
+          console.log(`✅ Webhook: organization.updated — ${name}`);
+        } catch (err) {
+          console.error(`❌ Webhook: organization.updated failed:`, err);
+        }
+        break;
       }
-      break;
-    }
 
-    case "organization.deleted": {
-      const data = evt.data as { id: string };
-      const { id } = data;
-      try {
-        await prisma.organization.delete({ where: { id } });
-        console.log(`✅ Webhook: organization.deleted — ${id}`);
-      } catch {
-        console.log(`ℹ️  Webhook: organization.deleted — ${id} (not in DB, skipping)`);
+      case "organization.deleted": {
+        try {
+          const data = evt.data as { id: string };
+          const { id } = data;
+          await prisma.organization.delete({ where: { id } });
+          console.log(`✅ Webhook: organization.deleted — ${id}`);
+        } catch {
+          console.log(`ℹ️  Webhook: organization.deleted — not in DB, skipping`);
+        }
+        break;
       }
-      break;
-    }
 
-    default: {
-      console.log(`ℹ️  Webhook: unhandled event type — ${evt.type}`);
+      default: {
+        console.log(`ℹ️  Webhook: unhandled event type — ${evt.type}`);
+      }
     }
+  } catch (err) {
+    console.error(`❌ Webhook: unexpected error processing ${evt.type}:`, err);
   }
 
   return new Response("OK", { status: 200 });
