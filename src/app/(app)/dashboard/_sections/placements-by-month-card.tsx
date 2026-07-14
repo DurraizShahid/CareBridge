@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import {
@@ -87,13 +86,13 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   }, []);
 
   return (
-    <Card
+    <div
       className={cn(
-        "rounded-[28px] shadow-sm h-full overflow-hidden bg-[#ccd7d3]",
+        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden bg-[#ccd7d3]",
         className
       )}
     >
-      <CardContent className="flex flex-col h-full p-6">
+      <div className="flex flex-col h-full p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-6">
@@ -194,7 +193,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
