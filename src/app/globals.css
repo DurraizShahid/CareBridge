@@ -200,7 +200,12 @@
   .sidebar-active-shimmer,
   .sidebar-active-pulse,
   .sidebar-indicator-enter,
-  .sidebar-item-in {
+  .sidebar-item-in,
+  .animate-float,
+  .animate-float-2,
+  .animate-breathe,
+  .animate-shimmer::after,
+  .animate-gradient {
     animation: none;
   }
 }
@@ -337,6 +342,42 @@ select option {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes blob-float {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(30px, -40px) scale(1.05); }
+  50%  { transform: translate(-20px, -60px) scale(0.95); }
+  75%  { transform: translate(40px, -20px) scale(1.02); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blob-float-2 {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33%  { transform: translate(-20px, 30px) scale(1.1) rotate(120deg); }
+  66%  { transform: translate(30px, -10px) scale(0.9) rotate(240deg); }
+  100% { transform: translate(0, 0) scale(1) rotate(360deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes border-dance {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 @layer utilities {
   .card-enter {
     animation: card-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -350,4 +391,60 @@ select option {
   .card-enter-6 { animation-delay: 300ms; }
   .card-enter-7 { animation-delay: 360ms; }
   .card-enter-8 { animation-delay: 420ms; }
+  .animate-gradient {
+    animation: gradient 4s ease infinite;
+    background-size: 200% 200%;
+  }
+  .animate-float {
+    animation: blob-float 12s ease-in-out infinite;
+  }
+  .animate-float-2 {
+    animation: blob-float-2 18s ease-in-out infinite;
+  }
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite;
+  }
+  .animate-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .animate-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.08) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: shimmer-slide 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .animate-border-glow {
+    position: relative;
+  }
+  .animate-border-glow::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      oklch(0.55 0.15 215 / 0.5),
+      oklch(0.6 0.15 280 / 0.5),
+      oklch(0.55 0.15 215 / 0.5),
+      oklch(0.6 0.15 280 / 0.5)
+    );
+    background-size: 300% 300%;
+    animation: border-dance 4s ease infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .animate-border-glow:hover::before,
+  .animate-border-glow.is-focused::before {
+    opacity: 1;
+  }
 }

@@ -587,13 +587,12 @@ export function AppointmentsCard() {
           <FacilityCalendarEmptyState />
         ) : (
           <div className="relative">
-            {/* Diagonal striped empty region */}
+            {/* Subtle background overlay */}
             <div
               className="absolute inset-0 pointer-events-none rounded-2xl"
               aria-hidden="true"
               style={{
                 backgroundColor: "rgba(204,215,211,0.18)",
-                backgroundImage: `repeating-linear-gradient(-55deg, transparent, transparent 7px, rgba(39,121,121,0.035) 7px, rgba(39,121,121,0.035) 10px)`,
               }}
             />
 
