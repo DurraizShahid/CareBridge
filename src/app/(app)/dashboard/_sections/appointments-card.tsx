@@ -297,42 +297,70 @@ function TimelineLine({
   const PILL_H = 34;
   const ROW = 60;
   const CX = PILL_W / 2;
-  const DOT = 6;
+  const totalHeight = HOURS.length * ROW;
 
   return (
     <div className="relative flex flex-col" style={{ width: `${PILL_W}px` }}>
-      {/* Dashed line — behind everything */}
-      <div className="absolute" style={{ left: `${CX - 1}px`, top: `${ROW / 2 + PILL_H / 2 + 2}px`, bottom: `${ROW / 2 + PILL_H / 2 + 2}px`, borderLeft: `2px dashed rgba(39,121,121,0.4)`, zIndex: 0 }} />
-      {/* Dots centered on the dashed line above each pill */}
+      {/* SVG dashed line running continuously from first dot to last dot */}
+      <svg
+        className="absolute"
+        style={{ left: `${CX - 1}px`, top: 0, width: "2px", height: `${totalHeight}px`, zIndex: 0 }}
+        viewBox={`0 0 2 ${totalHeight}`}
+        preserveAspectRatio="none"
+      >
+        {/* Single continuous dashed line from first dot center to last dot center */}
+        {(() => {
+          const lineStart = ROW / 2;
+          const lineEnd = (HOURS.length - 1) * ROW + ROW / 2;
+          const lineHeight = lineEnd - lineStart;
+          const dashLen = 4;
+          const gapLen = 4;
+          const numDashes = Math.floor(lineHeight / (dashLen + gapLen));
+
+          return Array.from({ length: numDashes }).map((_, idx) => (
+            <rect
+              key={`dash-${idx}`}
+              x="0"
+              y={lineStart + idx * (dashLen + gapLen)}
+              width="2"
+              height={dashLen}
+              fill={TEAL}
+              opacity={0.5}
+              rx="1"
+            />
+          ));
+        })()}
+      </svg>
+
+      {/* Bullseye dots above each pill */}
       {HOURS.map((hour, idx) => {
         const isActive = activeSlots.has(idx);
-        const isHovered = hoveredSlot === idx;
         return (
           <div
             key={`dot-${hour}`}
             className="absolute flex items-center justify-center"
             style={{
-              top: `${idx * ROW - 2}px`,
+              top: `${idx * ROW - 4}px`,
               left: `${CX - 7}px`,
               width: "14px",
               height: "14px",
               zIndex: 4,
             }}
           >
-            {/* Outer ring - always round */}
+            {/* Outer ring */}
             <div
               style={{
                 width: "12px",
                 height: "12px",
                 borderRadius: "50%",
-                backgroundColor: isActive ? "rgba(39,121,121,0.25)" : "rgba(39,121,121,0.18)",
+                backgroundColor: isActive ? "rgba(39,121,121,0.25)" : "rgba(39,121,121,0.15)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              {/* Inner dot - always round */}
+              {/* Inner dot */}
               <div
                 style={{
                   width: isActive ? "6px" : "4px",

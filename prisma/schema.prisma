@@ -126,6 +126,7 @@ model Organization {
   activities    ActivityEvent[]
   inviteCodes   InviteCode[]
   joinRequests  JoinRequest[]
+  chats         Chat[]
 }
 
 model InviteCode {
@@ -188,6 +189,7 @@ model User {
   createdInviteCodes     InviteCode[]     @relation("InviteCodeCreator")
   reviewedJoinRequests   JoinRequest[]    @relation("JoinRequestReviewedBy")
   joinRequest            JoinRequest?     @relation("JoinRequestUser")
+  chats                  Chat[]
 }
 
 model Patient {
@@ -350,4 +352,33 @@ model Hospital {
   organizationId String
 
   organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Chat {
+  id             String       @id @default(cuid())
+  title          String       @default("New Chat")
+  userId         String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  messages       ChatMessage[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([updatedAt])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  chatId    String
+  role      String   // "user" | "assistant" | "system"
+  content   String
+  createdAt DateTime @default(now())
+
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
 }
