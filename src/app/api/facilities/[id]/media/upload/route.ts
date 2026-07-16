@@ -5,16 +5,24 @@ import { getS3Client, getBucketName } from "@/lib/storage";
 import { getFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .split(/[\\/]/)
+    .pop()
+    ?.replace(/[^a-zA-Z0-9._-]/g, "_")
+    .slice(0, 120) || "upload";
+}
+
 const ALLOWED_TYPES: Record<string, readonly string[]> = {
   image: ["image/jpeg", "image/png", "image/webp", "image/avif"],
-   gaussian_splat: ["application/octet-stream", "model/ply", "application/x-ply", "model/spz"],
+  gaussian_splat: ["model/ply", "application/x-ply", "model/spz"],
   video: ["video/mp4", "video/webm", "video/quicktime"],
 };
 
 const MAX_SIZES: Record<string, number> = {
   image: 10 * 1024 * 1024, // 10 MB
-  gaussian_splat: 500 * 1024 * 1024, // 500 MB
-  video: 500 * 1024 * 1024, // 500 MB
+  gaussian_splat: 100 * 1024 * 1024, // 100 MB
+  video: 200 * 1024 * 1024, // 200 MB
 };
 
 export async function POST(
@@ -38,6 +46,8 @@ export async function POST(
       return NextResponse.json({ error: "Facility not found" }, { status: 404 });
     }
 
+
+
     const body = await req.json();
     const { fileName, contentType, mediaType } = body as {
       fileName: string;
@@ -53,7 +63,7 @@ export async function POST(
     }
 
     const maxSize = MAX_SIZES[mediaType];
-    const key = `facilities/${id}/${mediaType}/${crypto.randomUUID()}-${fileName}`;
+    const key = `facilities/${id}/${mediaType}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 
     const client = getS3Client();
     const bucket = getBucketName();

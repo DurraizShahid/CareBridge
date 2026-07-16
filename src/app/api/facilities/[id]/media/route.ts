@@ -17,7 +17,17 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const org = await getServerOrganization();
+    if (!org?.organizationId) {
+      return NextResponse.json({ error: "No organization found" }, { status: 400 });
+    }
+
     const { id } = await params;
+    const facility = await getFacility(id, org.organizationId, org.role);
+    if (!facility) {
+      return NextResponse.json({ error: "Facility not found" }, { status: 404 });
+    }
+
     const media = await getFacilityMedia(id);
     return NextResponse.json(media);
   } catch (error: unknown) {

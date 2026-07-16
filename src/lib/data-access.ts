@@ -1986,6 +1986,410 @@ export async function deletePatientDocument(
   return { success: true };
 }
 
+// ── HIPAA Documentation Vault Functions ──
+
+function toDocumentCategory(value: string): import("@/types").DocumentCategory {
+  return snakeToKebab(value) as import("@/types").DocumentCategory;
+}
+
+function toPrismaCategory(value: string): string {
+  return kebabToSnake(value);
+}
+
+function toDocumentAccessAction(value: string): import("@/types").DocumentAccessAction {
+  return value as import("@/types").DocumentAccessAction;
+}
+
+export async function getDocuments(
+  organizationId: string,
+  role: string,
+  params: import("@/types").DocumentSearchParams = {},
+) {
+  const where: Record<string, unknown> = isSuperadmin(role)
+    ? { deletedAt: null }
+    : { organizationId, deletedAt: null };
+
+  if (params.query) {
+    where.OR = [
+      { title: { contains: params.query, mode: "insensitive" } },
+      { description: { contains: params.query, mode: "insensitive" } },
+      { tags: { has: params.query } },
+      { fileName: { contains: params.query, mode: "insensitive" } },
+    ];
+  }
+
+  if (params.category) {
+    where.category = toPrismaCategory(params.category);
+  }
+
+  if (params.tags && params.tags.length > 0) {
+    where.tags = { hasSome: params.tags };
+  }
+
+  if (params.uploadedById) {
+    where.uploadedById = params.uploadedById;
+  }
+
+  if (params.isArchived !== undefined) {
+    where.isArchived = params.isArchived;
+  }
+
+  if (params.dateFrom || params.dateTo) {
+    const createdAt: Record<string, Date> = {};
+    if (params.dateFrom) createdAt.gte = new Date(params.dateFrom);
+    if (params.dateTo) createdAt.lte = new Date(params.dateTo);
+    where.createdAt = createdAt;
+  }
+
+  const page = params.page ?? 1;
+  const pageSize = Math.min(params.pageSize ?? 20, 100);
+  const skip = (page - 1) * pageSize;
+
+  const sortField = params.sortBy ?? "createdAt";
+  const sortOrder = params.sortOrder ?? "desc";
+
+  const [docs, total] = await Promise.all([
+    (prisma as any).document.findMany({
+      where,
+      orderBy: { [sortField]: sortOrder },
+      skip,
+      take: pageSize,
+      include: {
+        uploadedBy: { select: { firstName: true, lastName: true, email: true } },
+      },
+    }),
+    (prisma as any).document.count({ where }),
+  ]);
+
+  return {
+    data: docs.map((d: Record<string, unknown>) => mapDocument(d)),
+    pagination: {
+      page,
+      pageSize,
+      totalItems: total,
+      totalPages: Math.ceil(total / pageSize),
+    },
+  };
+}
+
+function mapDocument(d: any): import("@/types").Document {
+  return {
+    id: d.id,
+    organizationId: d.organizationId,
+    uploadedById: d.uploadedById,
+    title: d.title,
+    description: d.description ?? undefined,
+    category: toDocumentCategory(d.category),
+    tags: d.tags ?? [],
+    fileName: d.fileName,
+    fileType: d.fileType,
+    fileSize: d.fileSize,
+    storageKey: d.storageKey,
+    storageBucket: d.storageBucket,
+    storageEndpoint: d.storageEndpoint,
+    encryptionKey: d.encryptionKey ?? undefined,
+    encryptionIv: d.encryptionIv ?? undefined,
+    checksum: d.checksum ?? undefined,
+    mimeType: d.mimeType,
+    version: d.version,
+    isArchived: d.isArchived,
+    isOnLegalHold: d.isOnLegalHold,
+    retentionDate: d.retentionDate ? toISO(d.retentionDate) : undefined,
+    notes: d.notes ?? undefined,
+    expiresAt: d.expiresAt ? toISO(d.expiresAt) : undefined,
+    deletedAt: d.deletedAt ? toISO(d.deletedAt) : undefined,
+    uploadedBy: d.uploadedBy ? { firstName: d.uploadedBy.firstName, lastName: d.uploadedBy.lastName, email: d.uploadedBy.email } : undefined,
+    createdAt: toISO(d.createdAt),
+    updatedAt: toISO(d.updatedAt),
+  };
+}
+
+export async function getDocument(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<import("@/types").Document | null> {
+  const where = isSuperadmin(role) ? { id, deletedAt: null } : { id, organizationId, deletedAt: null };
+  const d = await (prisma as any).document.findFirst({
+    where,
+    include: {
+      uploadedBy: { select: { firstName: true, lastName: true, email: true } },
+    },
+  });
+  if (!d) return null;
+  return mapDocument(d);
+}
+
+export async function createDocument(
+  data: {
+    organizationId: string;
+    uploadedById: string;
+    title: string;
+    description?: string;
+    category: string;
+    tags: string[];
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    storageKey: string;
+    storageBucket: string;
+    storageEndpoint: string;
+    encryptionKey?: string;
+    encryptionIv?: string;
+    checksum?: string;
+    mimeType: string;
+    retentionDate?: string;
+    notes?: string;
+    expiresAt?: string;
+  },
+): Promise<import("@/types").Document> {
+  const d = await (prisma as any).document.create({
+    data: {
+      id: crypto.randomUUID(),
+      organizationId: data.organizationId,
+      uploadedById: data.uploadedById,
+      title: data.title,
+      description: data.description ?? null,
+      category: toPrismaCategory(data.category),
+      tags: data.tags,
+      fileName: data.fileName,
+      fileType: data.fileType,
+      fileSize: data.fileSize,
+      storageKey: data.storageKey,
+      storageBucket: data.storageBucket,
+      storageEndpoint: data.storageEndpoint,
+      encryptionKey: data.encryptionKey ?? null,
+      encryptionIv: data.encryptionIv ?? null,
+      checksum: data.checksum ?? null,
+      mimeType: data.mimeType,
+      version: 1,
+      retentionDate: data.retentionDate ? new Date(data.retentionDate) : null,
+      notes: data.notes ?? null,
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+    },
+    include: {
+      uploadedBy: { select: { firstName: true, lastName: true, email: true } },
+    },
+  });
+  return mapDocument(d);
+}
+
+export async function updateDocument(
+  id: string,
+  data: {
+    title?: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    notes?: string;
+    retentionDate?: string;
+    expiresAt?: string;
+    isArchived?: boolean;
+    isOnLegalHold?: boolean;
+  },
+  organizationId: string,
+  role: string,
+): Promise<import("@/types").Document | null> {
+  const where = isSuperadmin(role) ? { id, deletedAt: null } : { id, organizationId, deletedAt: null };
+  const existing = await (prisma as any).document.findFirst({ where });
+  if (!existing) return null;
+
+  const updateData: Record<string, unknown> = {};
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.description !== undefined) updateData.description = data.description ?? null;
+  if (data.category !== undefined) updateData.category = toPrismaCategory(data.category);
+  if (data.tags !== undefined) updateData.tags = data.tags;
+  if (data.notes !== undefined) updateData.notes = data.notes ?? null;
+  if (data.retentionDate !== undefined) updateData.retentionDate = data.retentionDate ? new Date(data.retentionDate) : null;
+  if (data.expiresAt !== undefined) updateData.expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
+  if (data.isArchived !== undefined) updateData.isArchived = data.isArchived;
+  if (data.isOnLegalHold !== undefined) updateData.isOnLegalHold = data.isOnLegalHold;
+
+  const d = await (prisma as any).document.update({
+    where: { id },
+    data: updateData,
+    include: {
+      uploadedBy: { select: { firstName: true, lastName: true, email: true } },
+    },
+  });
+  return mapDocument(d);
+}
+
+export async function deleteDocument(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<{ success: boolean }> {
+  const where = isSuperadmin(role) ? { id, deletedAt: null } : { id, organizationId, deletedAt: null };
+  const existing = await (prisma as any).document.findFirst({ where });
+  if (!existing) throw new DataAccessError(404, "Document not found");
+
+  if (existing.isOnLegalHold) {
+    throw new DataAccessError(409, "Document is on legal hold and cannot be deleted");
+  }
+
+  // Soft delete
+  await (prisma as any).document.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
+
+  // Log the deletion
+  await logDocumentAccess({
+    documentId: id,
+    userId: existing.uploadedById,
+    action: "DELETE",
+    success: true,
+    details: "Document soft-deleted",
+  });
+
+  return { success: true };
+}
+
+export async function getDocumentVersions(
+  documentId: string,
+  organizationId: string,
+  role: string,
+): Promise<import("@/types").DocumentVersion[]> {
+  const where = isSuperadmin(role)
+    ? { documentId, document: { deletedAt: null } }
+    : { documentId, document: { organizationId, deletedAt: null } };
+
+  const versions = await (prisma as any).documentVersion.findMany({
+    where,
+    orderBy: { version: "desc" },
+    include: {
+      uploadedBy: { select: { firstName: true, lastName: true, email: true } },
+    },
+  });
+
+  return versions.map((v: any) => ({
+    id: v.id,
+    documentId: v.documentId,
+    version: v.version,
+    fileName: v.fileName,
+    fileType: v.fileType,
+    fileSize: v.fileSize,
+    storageKey: v.storageKey,
+    storageBucket: v.storageBucket,
+    checksum: v.checksum ?? undefined,
+    uploadedById: v.uploadedById,
+    changeNotes: v.changeNotes ?? undefined,
+    uploadedBy: v.uploadedBy ? { firstName: v.uploadedBy.firstName, lastName: v.uploadedBy.lastName, email: v.uploadedBy.email } : undefined,
+    createdAt: toISO(v.createdAt),
+  }));
+}
+
+export async function getDocumentAccessLogs(
+  documentId: string,
+  organizationId: string,
+  role: string,
+  params: { page?: number; pageSize?: number } = {},
+): Promise<{
+  data: import("@/types").DocumentAccessLog[];
+  pagination: { page: number; pageSize: number; totalItems: number; totalPages: number };
+}> {
+  const where = isSuperadmin(role)
+    ? { documentId, document: { deletedAt: null } }
+    : { documentId, document: { organizationId, deletedAt: null } };
+
+  const page = params.page ?? 1;
+  const pageSize = Math.min(params.pageSize ?? 20, 100);
+  const skip = (page - 1) * pageSize;
+
+  const [logs, total] = await Promise.all([
+    (prisma as any).documentAccessLog.findMany({
+      where,
+      orderBy: { timestamp: "desc" },
+      skip,
+      take: pageSize,
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
+      },
+    }),
+    (prisma as any).documentAccessLog.count({ where }),
+  ]);
+
+  return {
+    data: logs.map((l: any) => ({
+      id: l.id,
+      documentId: l.documentId,
+      userId: l.userId,
+      action: toDocumentAccessAction(l.action),
+      timestamp: toISO(l.timestamp),
+      ipAddress: l.ipAddress ?? undefined,
+      userAgent: l.userAgent ?? undefined,
+      success: l.success,
+      details: l.details ?? undefined,
+      user: l.user ? { firstName: l.user.firstName, lastName: l.user.lastName, email: l.user.email } : undefined,
+    })),
+    pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+  };
+}
+
+export async function logDocumentAccess(data: {
+  documentId: string;
+  userId: string;
+  action: string;
+  ipAddress?: string;
+  userAgent?: string;
+  success?: boolean;
+  details?: string;
+}): Promise<void> {
+  await (prisma as any).documentAccessLog.create({
+    data: {
+      id: crypto.randomUUID(),
+      documentId: data.documentId,
+      userId: data.userId,
+      action: data.action,
+      ipAddress: data.ipAddress ?? null,
+      userAgent: data.userAgent ?? null,
+      success: data.success ?? true,
+      details: data.details ?? null,
+    },
+  });
+}
+
+export async function getDocumentStats(
+  organizationId: string,
+  role: string,
+): Promise<import("@/types").DocumentStats> {
+  const where = isSuperadmin(role) ? { deletedAt: null } : { organizationId, deletedAt: null };
+
+  const [totalDocuments, totalSizeAgg, byCategory, recentUploads, expiringSoon, archivedCount] = await Promise.all([
+    (prisma as any).document.count({ where }),
+    (prisma as any).document.aggregate({ where, _sum: { fileSize: true } }),
+    (prisma as any).document.groupBy({
+      by: ["category"],
+      where,
+      _count: { id: true },
+    }),
+    (prisma as any).document.count({
+      where: { ...where, createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+    }),
+    (prisma as any).document.count({
+      where: { ...where, expiresAt: { not: null, lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } },
+    }),
+    (prisma as any).document.count({
+      where: { ...where, isArchived: true },
+    }),
+  ]);
+
+  const byCategoryRecord: Record<string, number> = {};
+  byCategory.forEach((g: any) => {
+    byCategoryRecord[toDocumentCategory(g.category)] = g._count.id;
+  });
+
+  return {
+    totalDocuments,
+    totalSize: (totalSizeAgg as any)._sum?.fileSize ?? 0,
+    byCategory: byCategoryRecord,
+    recentUploads,
+    expiringSoon,
+    archivedCount,
+  };
+}
+
 // ── Hospital Functions ──
 
 /**

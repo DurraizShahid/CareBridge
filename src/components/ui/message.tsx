@@ -12,7 +12,7 @@ function MessageGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function Message({
+const Message = React.memo(function Message({
   className,
   align = "start",
   ...props
@@ -28,7 +28,7 @@ function Message({
       {...props}
     />
   )
-}
+})
 
 function MessageAvatar({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -43,7 +43,7 @@ function MessageAvatar({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function MessageContent({ className, ...props }: React.ComponentProps<"div">) {
+const MessageContent = React.memo(function MessageContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="message-content"
@@ -54,7 +54,7 @@ function MessageContent({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     />
   )
-}
+})
 
 function MessageHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
