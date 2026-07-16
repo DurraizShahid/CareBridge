@@ -79,7 +79,7 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
                   </linearGradient>
                 </defs>
                 <path
-                  d={`M ${data.map((v, i) => {
+                  d={`${data.map((v, i) => {
                     const x = 20 + (i / (data.length - 1)) * 360;
                     const y = 105 - (v / maxVal) * 90;
                     return `${i === 0 ? "M" : "L"} ${x} ${y}`;
