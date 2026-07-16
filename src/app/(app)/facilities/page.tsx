@@ -1,41 +1,128 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Search, MapPin, Phone, Star, Plus } from "lucide-react";
+import { Search, Plus } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
+import { FacilityCard } from "@/components/facility-card";
 
-const facilityTypeLabels: Record<string, string> = {
-  "skilled-nursing-facility": "Skilled Nursing Facility",
-  "skilled_nursing_facility": "Skilled Nursing Facility",
-  "rehabilitation-center": "Rehabilitation Center",
-  "rehabilitation_center": "Rehabilitation Center",
-  "assisted-living": "Assisted Living",
-  "assisted_living": "Assisted Living",
-  "long-term-care": "Long-Term Care",
-  "long_term_care": "Long-Term Care",
-  "home-health-agency": "Home Health Agency",
-  "home_health_agency": "Home Health Agency",
-  hospice: "Hospice",
-};
+const facilityNames = [
+  "Sunrise Senior Living", "Golden Years Nursing", "Pacific Care Center",
+  "Mountain View Rehabilitation", "Lakeside Assisted Living", "Harbor View Medical",
+  "Cedar Ridge Nursing Home", "Oakwood Senior Care", "Maplewood Rehabilitation",
+  "Pinecrest Assisted Living", "Willow Springs Nursing", "Birchwood Senior Center",
+  "Elm Court Care Home", "Magnolia Gardens", "Rosewood Medical Center",
+  "Cherry Blossom Nursing", "Ivy League Senior Care", "Aspen Ridge Rehabilitation",
+  "Sycamore Assisted Living", "Hawthorn Medical Center", "Cypress Point Nursing",
+  "Juniper Hill Senior Care", "Laurel Springs Rehabilitation", "Stonegate Assisted Living",
+  "Riverside Medical Center", "Brookside Nursing Home", "Meadow View Senior Care",
+  "Highland Park Rehabilitation", "Valley Oaks Assisted Living", "Westlake Medical Center",
+  "Northpoint Nursing", "Southwind Senior Care", "Eastview Rehabilitation",
+  "Westwood Assisted Living", "Clearwater Medical Center", "Greenfield Nursing Home",
+  "Blue Harbor Senior Care", "Lakewood Rehabilitation", "Forest Glen Assisted Living",
+  "Springdale Medical Center", "Summit View Nursing", "Autumn Leaves Senior Care",
+  "Winter Haven Rehabilitation", "Summer Breeze Assisted Living", "Spring Meadow Medical",
+  "Coral Springs Nursing", "Sandy Beach Senior Care", "Palm Grove Rehabilitation",
+  "Island View Assisted Living", "Coastal Medical Center",
+];
+
+const facilityTypes = [
+  "Skilled Nursing Facility", "Rehabilitation Center", "Assisted Living",
+  "Long-Term Care", "Skilled Nursing Facility", "Rehabilitation Center",
+  "Assisted Living", "Skilled Nursing Facility", "Rehabilitation Center",
+  "Assisted Living", "Skilled Nursing Facility", "Long-Term Care",
+];
+
+const usCities = [
+  { city: "New York", state: "NY" },
+  { city: "Los Angeles", state: "CA" },
+  { city: "Chicago", state: "IL" },
+  { city: "Houston", state: "TX" },
+  { city: "Phoenix", state: "AZ" },
+  { city: "Philadelphia", state: "PA" },
+  { city: "San Antonio", state: "TX" },
+  { city: "San Diego", state: "CA" },
+  { city: "Dallas", state: "TX" },
+  { city: "San Jose", state: "CA" },
+  { city: "Austin", state: "TX" },
+  { city: "Jacksonville", state: "FL" },
+  { city: "Fort Worth", state: "TX" },
+  { city: "Columbus", state: "OH" },
+  { city: "Charlotte", state: "NC" },
+  { city: "Indianapolis", state: "IN" },
+  { city: "San Francisco", state: "CA" },
+  { city: "Seattle", state: "WA" },
+  { city: "Denver", state: "CO" },
+  { city: "Washington", state: "DC" },
+  { city: "Nashville", state: "TN" },
+  { city: "Oklahoma City", state: "OK" },
+  { city: "El Paso", state: "TX" },
+  { city: "Boston", state: "MA" },
+  { city: "Portland", state: "OR" },
+];
+
+const careLevelOptions = [
+  ["Skilled Nursing", "Rehabilitation"],
+  ["Assisted Living", "Long-Term Care"],
+  ["Skilled Nursing", "Rehabilitation", "Assisted Living"],
+  ["Rehabilitation", "Assisted Living"],
+  ["Skilled Nursing", "Long-Term Care"],
+  ["Assisted Living", "Memory Care"],
+  ["Skilled Nursing", "Rehabilitation", "Long-Term Care"],
+];
+
+const sourceOptions = ["Website", "LinkedIn"];
+
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateFacilities() {
+  return facilityNames.map((name, index) => {
+    const rating = 4.2 + seededRandom(index * 7 + 3) * 0.8;
+    const occupancyPercent = 53 + Math.floor(seededRandom(index * 11 + 5) * 28);
+    const location = usCities[index % usCities.length];
+    const type = facilityTypes[index % facilityTypes.length];
+    const careLevels = careLevelOptions[index % careLevelOptions.length];
+    const hasAvailability = occupancyPercent < 75;
+    const source = sourceOptions[index % sourceOptions.length];
+
+    return {
+      id: `facility-${index + 1}`,
+      name,
+      type,
+      rating: Math.round(rating * 10) / 10,
+      occupancyPercent,
+      careLevels,
+      city: location.city,
+      state: location.state,
+      hasAvailability,
+      source,
+    };
+  });
+}
 
 export default async function FacilitiesPage() {
   const org = await getServerOrganization();
+  const user = await currentUser();
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
+  const userName = user?.firstName ?? user?.username ?? "Admin";
   if (!roleHasPermission(role, "facilities:read")) redirect("/dashboard");
-  const facilities = await getFacilities(organizationId, role);
   const canCreate = roleHasPermission(role, "facilities:create");
+  const facilities = generateFacilities();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Facilities"
+        title=""
         description="Browse and discover care settings for your patients."
+        userName={userName}
+        breadcrumbs={[{ label: "Facilities" }]}
       >
         {canCreate && (
           <Button variant="default" render={<Link href="/facilities/new" />}>
@@ -55,89 +142,16 @@ export default async function FacilitiesPage() {
         />
       </div>
 
-      {/* Facility Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Facility Cards - 5 columns */}
+      <div className="flex items-center gap-4 mb-2">
+        <h2 className="text-lg font-semibold text-foreground">New Facilities</h2>
+        <Link href="/facilities" className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
+          View all
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {facilities.map((facility) => (
-          <Link
-            key={facility.id}
-            href={`/facilities/${facility.id}`}
-            className="group flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md"
-          >
-            {/* Card header */}
-            <div className="flex items-start justify-between border-b border-border px-5 py-4">
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate font-heading text-base font-bold text-card-foreground">
-                  {facility.name}
-                </h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {facilityTypeLabels[facility.type] ?? facility.type}
-                </p>
-              </div>
-              <div
-              className={cn(
-                "flex h-7 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-medium",
-                facility.hasAvailability
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-              )}
-            >
-              <span
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full",
-                  facility.hasAvailability ? "bg-green-500" : "bg-red-500",
-                )}
-              />
-              {facility.hasAvailability ? "Available" : "Full"}
-            </div>
-            </div>
-
-            {/* Card body */}
-            <div className="flex-1 space-y-3 px-5 py-4">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">
-                  {facility.address.city}, {facility.address.state}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Phone className="h-3.5 w-3.5 shrink-0" />
-                <span>{facility.phone}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Star className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span>
-                  {facility.rating} ({facility.reviewsCount} reviews)
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {facility.careLevelsOffered.slice(0, 3).map((level) => (
-                  <span
-                    key={level}
-                    className="inline-flex rounded-full bg-health/10 px-2 py-0.5 text-xs text-health"
-                  >
-                    {level.replace("-", " ").replace("_", " ")}
-                  </span>
-                ))}
-                {facility.careLevelsOffered.length > 3 && (
-                  <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    +{facility.careLevelsOffered.length - 3}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Card footer */}
-            <div className="flex items-center justify-between border-t border-border px-5 py-3">
-              <span className="text-xs text-muted-foreground">
-                {facility.currentOccupancy}/{facility.capacity} beds filled
-              </span>
-              {facility.waitlistDays && (
-                <span className="text-xs text-muted-foreground">
-                  ~{facility.waitlistDays}d waitlist
-                </span>
-              )}
-            </div>
-          </Link>
+          <FacilityCard key={facility.id} facility={facility} />
         ))}
       </div>
 

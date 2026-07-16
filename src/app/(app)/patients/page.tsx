@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Plus, Search } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
 import { roleHasPermission } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -33,16 +34,23 @@ const statusLabels: Record<string, string> = {
 
 export default async function PatientsPage() {
   const org = await getServerOrganization();
+  const user = await currentUser();
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
+  const userName = user?.firstName ?? user?.username ?? "Admin";
   const patients = await getPatients(organizationId, role);
 
   const canCreate = org ? roleHasPermission(role, "patients:create") : false;
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Patients" description="Manage and view all patients under your care.">
+      <PageHeader
+        title=""
+        description="Manage and view all patients under your care."
+        userName={userName}
+        breadcrumbs={[{ label: "Patients" }]}
+      >
         {canCreate && (
           <Button render={<Link href="/patients/new" />}>
             <Plus className="h-4 w-4" />

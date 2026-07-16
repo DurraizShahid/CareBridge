@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSignIn, useAuth, useClerk } from '@clerk/nextjs';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,6 +20,7 @@ export default function SignInPage() {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -26,43 +28,105 @@ export default function SignInPage() {
     }
   }, [isSignedIn, router]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error') || params.get('oauth_error');
+    if (error) {
+      setErrorMessage(decodeURIComponent(error));
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      url.searchParams.delete('oauth_error');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+
   if (isSignedIn) {
     return null;
   }
 
   const handleGoogleSignIn = async () => {
-    await signIn.sso({
-      strategy: 'oauth_google',
-      redirectUrl: '/onboarding',
-      redirectCallbackUrl: '/sign-in',
-    });
+    setErrorMessage(null);
+    try {
+      await signIn.sso({
+        strategy: 'oauth_google',
+        redirectUrl: '/onboarding',
+        redirectCallbackUrl: '/sign-in',
+      });
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
+    }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn.create({ identifier: emailAddress });
-    if (signIn.status === 'needs_first_factor') {
-      setStep('password');
+    setErrorMessage(null);
+    try {
+      await signIn.create({ identifier: emailAddress });
+
+      if (signIn.status === 'needs_first_factor') {
+        const factors = signIn.supportedFirstFactors ?? [];
+        const hasPassword = factors.some((f) => f.strategy === 'password');
+
+        if (hasPassword) {
+          setStep('password');
+        } else if (factors.some((f) => f.strategy === 'oauth_google')) {
+          setErrorMessage(
+            'This account uses Google Sign-In. Please click "Continue with Google" above.'
+          );
+        } else {
+          setErrorMessage(
+            'This account uses a different sign-in method. Please try signing in with Google or check your email for a verification link.'
+          );
+        }
+      }
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
     }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn.password({ identifier: emailAddress, password });
-    if (signIn.status === 'needs_second_factor') {
-      setStep('mfa');
-    } else if (signIn.status === 'complete' && signIn.createdSessionId) {
-      await setActive({ session: signIn.createdSessionId });
-      router.push('/onboarding');
+    setErrorMessage(null);
+    try {
+      await signIn.password({ identifier: emailAddress, password });
+      if (signIn.status === 'needs_second_factor') {
+        setStep('mfa');
+      } else if (signIn.status === 'complete' && signIn.createdSessionId) {
+        await setActive({ session: signIn.createdSessionId });
+        router.push('/onboarding');
+      }
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
     }
   };
 
   const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn.mfa.verifyTOTP({ code: mfaCode });
-    if (signIn.status === 'complete' && signIn.createdSessionId) {
-      await setActive({ session: signIn.createdSessionId });
-      router.push('/onboarding');
+    setErrorMessage(null);
+    try {
+      await signIn.mfa.verifyTOTP({ code: mfaCode });
+      if (signIn.status === 'complete' && signIn.createdSessionId) {
+        await setActive({ session: signIn.createdSessionId });
+        router.push('/onboarding');
+      }
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
     }
   };
 
@@ -146,6 +210,12 @@ export default function SignInPage() {
               Sign in to your account to continue.
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+              {errorMessage}
+            </div>
+          )}
 
           {step === 'email' && (
             <div className="space-y-4">
@@ -294,16 +364,26 @@ export default function SignInPage() {
                   </p>
                 )}
               </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={fetchStatus === 'fetching'}
-              >
-                {fetchStatus === 'fetching' && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Verify
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep('password')}
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={fetchStatus === 'fetching'}
+                >
+                  {fetchStatus === 'fetching' && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Verify
+                </Button>
+              </div>
             </form>
           )}
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,14 +14,20 @@ import {
   RiSparklingFill,
   RiCloseLine,
   RiMenuLine,
+  RiStopCircleLine,
+  RiArrowGoBackLine,
+  RiFileCopyLine,
+  RiCheckLine,
+  RiTimeLine,
 } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
-import { Message, MessageContent } from "@/components/ui/message";
+import { Message, MessageContent, MessageFooter } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { FacilityResultCard } from "@/components/ai/facility-result-card";
 import { PlacementConfirmationCard } from "@/components/ai/placement-confirmation-card";
 import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
 import { cn } from "@/lib/utils";
+
 import type { Facility } from "@/types";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
 
@@ -32,6 +38,8 @@ interface ChatMessage {
   placementDraft?: PlacementDraft;
   suggestions?: string[];
   isStreaming?: boolean;
+  isError?: boolean;
+  timestamp?: number;
 }
 
 const suggestions = [
@@ -179,15 +187,16 @@ function processAIBuffer(
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-2 px-1">
-      <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-health/20 to-warmth/20">
+    <div className="flex items-center gap-2 px-1" role="status" aria-label="AI is typing">
+      <div className="flex size-5 items-center justify-center rounded-full bg-health/15">
         <RiSparklingFill className="size-3 text-health" />
       </div>
       <div className="flex gap-1">
-        <span className="size-1.5 rounded-full bg-gradient-to-b from-health to-warmth animate-bounce [animation-delay:0ms]" />
-        <span className="size-1.5 rounded-full bg-gradient-to-b from-health to-warmth animate-bounce [animation-delay:150ms]" />
-        <span className="size-1.5 rounded-full bg-gradient-to-b from-health to-warmth animate-bounce [animation-delay:300ms]" />
+        <span className="size-1.5 rounded-full bg-health/60 motion-safe:animate-typing-dot motion-safe:[animation-delay:0ms]" />
+        <span className="size-1.5 rounded-full bg-health/60 motion-safe:animate-typing-dot motion-safe:[animation-delay:150ms]" />
+        <span className="size-1.5 rounded-full bg-health/60 motion-safe:animate-typing-dot motion-safe:[animation-delay:300ms]" />
       </div>
+      <span className="sr-only">CareBridge AI is generating a response</span>
     </div>
   );
 }
@@ -197,22 +206,63 @@ export default function HomePage() {
   const { user, isLoaded } = useUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [query, setQuery] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 768;
+  });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
+  const [characterCount, setCharacterCount] = useState(0);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Auto-resize textarea
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [query]);
+
+  // Close sidebar on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
+
+  const copyMessage = async (text: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageIndex(index);
+      setTimeout(() => setCopiedMessageIndex(null), 2000);
+    } catch {
+    }
+  };
+
+  const formatTime = (ts: number) => {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(ts);
+  };
 
   if (!isLoaded) {
     return null;
@@ -250,6 +300,7 @@ export default function HomePage() {
     abortRef.current?.abort();
     setCurrentChatId(chatId);
     setIsStreaming(false);
+    setSidebarOpen(false);
 
     try {
       const response = await fetch(`/api/chats/${chatId}`);
@@ -263,6 +314,7 @@ export default function HomePage() {
         );
         setMessages(loadedMessages);
         setHasStarted(loadedMessages.length > 0);
+        messageContainerRef.current?.focus();
       }
     } catch (error) {
       console.error("Error loading chat:", error);
@@ -270,46 +322,75 @@ export default function HomePage() {
   };
 
   const handleSuggestionClick = (label: string) => {
-    setQuery(label);
-    handleSubmit(new Event("submit") as any, label);
+    sendMessage(label);
   };
 
   const handleFollowUpClick = (question: string) => {
-    setQuery(question);
-    handleSubmit(new Event("submit") as any, question);
+    sendMessage(question);
   };
 
   const handleDismissPlacement = (msgIndex: number) => {
     setMessages((prev) => {
       const msg = prev[msgIndex];
       if (msg?.role !== "assistant") return prev;
-      const { placementDraft: _, ...rest } = msg;
-      return [...prev.slice(0, msgIndex), rest, ...prev.slice(msgIndex + 1)];
+      const updated = { ...msg };
+      delete updated.placementDraft;
+      return [...prev.slice(0, msgIndex), updated as ChatMessage, ...prev.slice(msgIndex + 1)];
     });
   };
 
   const handlePlacementConfirmed = () => {
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent,
-    overrideQuery?: string,
-  ) => {
+  const handleRetry = async (text: string) => {
+    sendMessage(text);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const text = (overrideQuery ?? query).trim();
+    await sendMessage(query);
+  };
+
+  const handleStopStreaming = () => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.role === "assistant" && last.isStreaming) {
+        const { cleanContent, suggestions } = parseSuggestions(last.content || "");
+        return [
+          ...prev.slice(0, -1),
+          {
+            ...last,
+            content: cleanContent,
+            suggestions,
+            isStreaming: false,
+          },
+        ];
+      }
+      return prev;
+    });
+  };
+
+  const sendMessage = async (overrideText: string) => {
+    const text = overrideText.trim();
     if (!text || isStreaming) return;
 
     setQuery("");
+    setCharacterCount(0);
     setHasStarted(true);
 
-    const userMessage: ChatMessage = { role: "user", content: text };
-    const aiMessage: ChatMessage = {
-      role: "assistant",
-      content: "",
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, userMessage, aiMessage]);
+    setMessages((prev) => {
+      const ts = Date.now();
+      const userMsg: ChatMessage = { role: "user", content: text, timestamp: ts };
+      const aiMsg: ChatMessage = {
+        role: "assistant",
+        content: "",
+        isStreaming: true,
+        timestamp: ts,
+      };
+      return [...prev, userMsg, aiMsg];
+    });
     setIsStreaming(true);
 
     // Create a new chat if needed
@@ -319,7 +400,7 @@ export default function HomePage() {
         const response = await fetch("/api/chats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: "New Chat" }),
+          body: JSON.stringify({ title: text.slice(0, 60) }),
         });
         if (response.ok) {
           const chat = await response.json();
@@ -334,7 +415,7 @@ export default function HomePage() {
 
     // Save user message to database
     if (chatId) {
-      await saveMessage(chatId, "user", text);
+      saveMessage(chatId, "user", text);
     }
 
     const controller = new AbortController();
@@ -418,7 +499,7 @@ export default function HomePage() {
               if (last?.role === "assistant" && last.isStreaming) {
                 return [
                   ...prev.slice(0, -1),
-                  { ...last, content: last.content || err, isStreaming: false },
+                  { ...last, content: last.content || err, isStreaming: false, isError: true },
                 ];
               }
               return prev;
@@ -430,7 +511,7 @@ export default function HomePage() {
       // Save assistant message to database
       if (chatId && fullResponse) {
         const { cleanContent } = parseSuggestions(fullResponse);
-        await saveMessage(chatId, "assistant", cleanContent);
+        saveMessage(chatId, "assistant", cleanContent);
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
@@ -443,6 +524,7 @@ export default function HomePage() {
                 ...last,
                 content: "Sorry, something went wrong. Please try again.",
                 isStreaming: false,
+                isError: true,
               },
             ];
           }
@@ -455,7 +537,7 @@ export default function HomePage() {
         const last = prev[prev.length - 1];
         if (last?.role !== "assistant") return prev;
 
-        const rawContent = last.isStreaming ? last.content : last.content;
+        const rawContent = last.content;
         const { cleanContent, suggestions } = parseSuggestions(rawContent);
 
         return [
@@ -472,45 +554,59 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden relative">
+    <div
+      className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-2 flex overflow-hidden"
+      style={{ height: 'calc(100dvh - 3.5rem - 2rem)' }}
+    >
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-[15] bg-black/15 backdrop-blur-[2px] motion-safe:transition-opacity motion-safe:duration-200 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Chat History Sidebar */}
       <div
         className={cn(
-          "shrink-0 border-r border-border/30 transition-all duration-300 ease-in-out",
+          "shrink-0 border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out relative z-[var(--z-sidebar)]",
           sidebarOpen ? "w-64" : "w-0"
         )}
+        aria-hidden={!sidebarOpen}
       >
-        {sidebarOpen && (
+        <div className="w-64 h-full">
           <ChatHistorySidebar
             currentChatId={currentChatId}
             onChatSelect={handleChatSelect}
             onNewChat={handleNewChat}
             refreshTrigger={refreshTrigger}
           />
-        )}
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Header */}
-        <header className="relative flex shrink-0 items-center justify-between border-b border-border/30 bg-background/40 backdrop-blur-2xl px-6 py-3.5">
+        <header className="relative z-[var(--z-header)] flex shrink-0 items-center justify-between border-b border-border/30 bg-background px-6 py-3.5">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="size-8"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
               <RiMenuLine className="size-4" />
             </Button>
-            <h2 className="text-sm font-semibold text-foreground leading-tight">CareBridge AI</h2>
+
           </div>
           {hasStarted && (
             <Button
               variant="secondary"
               size="sm"
               onClick={handleNewChat}
-              className="gap-1.5 rounded-full h-8 text-xs shadow-sm bg-background/70 backdrop-blur-xl border-border/50"
+              className="gap-1.5 rounded-full h-8 text-xs"
+              aria-label="Start a new chat"
             >
               <RiCloseLine className="size-3.5" />
               New Chat
@@ -519,59 +615,75 @@ export default function HomePage() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div
+          ref={messageContainerRef}
+          className="flex-1 overflow-y-auto min-h-0"
+          role="log"
+          aria-live="polite"
+          aria-label="Chat messages"
+          tabIndex={-1}
+        >
           {!hasStarted ? (
             // ── Welcome State ──
-            <div className="flex min-h-full flex-col items-center justify-center px-4 py-16">
-              {/* Hero text */}
-              <div className="mb-8 text-center">
-                <h1 className="text-[2.75rem] sm:text-[3.25rem] font-bold tracking-tight text-foreground leading-[1.05]">
+            <div className="flex min-h-full flex-col items-center justify-center px-6 py-24">
+              <div className="text-center max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-700 fill-mode-both">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-[1.05] text-balance">
                   {getGreeting()}, {user?.firstName ?? "there"}
                 </h1>
-                <p className="text-[1.75rem] sm:text-[2rem] font-bold tracking-tight leading-[1.1] mt-1">
-                  What can I help you{" "}
-                  <span className="bg-gradient-to-r from-health via-warmth to-health bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient">
-                    find today?
-                  </span>
+                <p className="text-base sm:text-lg font-medium text-muted-foreground mt-3 leading-snug">
+                  What can I help you find today?
                 </p>
               </div>
             </div>
           ) : (
             // ── Conversation ──
-            <div className="mx-auto w-full max-w-[680px] space-y-5 px-4 py-8">
+            <div className="mx-auto w-full max-w-[720px] space-y-5 px-4 py-8">
               {messages.map((msg, i) => (
                 <div
                   key={i}
                   className={cn(
-                    "transition-all duration-500",
-                    i >= messages.length - 2 ? "card-enter card-enter-1" : "opacity-100",
+                    "group/message motion-safe:transition-all motion-safe:duration-500",
+                    i >= messages.length - 2 ? `card-enter card-enter-${messages.length - i}` : "opacity-100",
                   )}
                 >
                   {msg.role === "user" ? (
                     <Message align="end">
                       <MessageContent>
                         <Bubble variant="default" align="end">
-                          <BubbleContent className="bg-gradient-to-br from-health to-warmth text-white shadow-lg shadow-health/15">
+                          <BubbleContent className="bg-health text-white">
                             <div className="flex items-start gap-2">
                               <span className="flex-1">{msg.content}</span>
                             </div>
                           </BubbleContent>
                         </Bubble>
+                        {msg.timestamp && (
+                          <MessageFooter>
+                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <RiTimeLine className="size-2.5" />
+                              {formatTime(msg.timestamp)}
+                            </span>
+                          </MessageFooter>
+                        )}
                       </MessageContent>
                     </Message>
                   ) : (
                     <Message align="start">
                       <div className="flex items-start gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-health to-warmth shadow-md shadow-health/15">
+                        <div
+                          className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-health"
+                          aria-hidden="true"
+                        >
                           <RiSparkling2Line className="size-4 text-white" />
                         </div>
                         <MessageContent>
-                          <div className="flex items-center gap-2 mb-1.5 px-1">
+                          <div className="flex items-center gap-2 mb-1 px-1">
                             <span className="text-xs font-semibold text-foreground">CareBridge AI</span>
-                            <span className="text-[9px] text-muted-foreground/50">Assistant</span>
                           </div>
-                          <Bubble variant="outline" align="start">
-                            <BubbleContent className="shadow-sm bg-card/80 backdrop-blur-xl border-border/60 rounded-3xl">
+                          <Bubble
+                            variant={msg.isError ? "destructive" : "outline"}
+                            align="start"
+                          >
+                            <BubbleContent>
                               {msg.content ? (
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -587,7 +699,7 @@ export default function HomePage() {
                             </BubbleContent>
                           </Bubble>
                           {msg.facilities && msg.facilities.length > 0 && (
-                            <div className="grid grid-cols-2 gap-2 px-0.5 mt-2">
+                            <div className="grid gap-2 px-0.5 mt-2 sm:grid-cols-2">
                               {msg.facilities.map((facility) => (
                                 <FacilityResultCard
                                   key={facility.id}
@@ -603,8 +715,33 @@ export default function HomePage() {
                               onDismiss={() => handleDismissPlacement(i)}
                             />
                           )}
-                          {msg.isStreaming && <div className="mt-1.5"><TypingIndicator /></div>}
+                          {msg.isStreaming && (
+                            <div className="mt-1.5">
+                              <TypingIndicator />
+                            </div>
+                          )}
+                          {!msg.isStreaming && msg.isError && (
+                            <div className="flex items-center gap-2 mt-2 px-0.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const prevUserMsg = messages
+                                    .slice(0, i)
+                                    .reverse()
+                                    .find((m) => m.role === "user");
+                                  if (prevUserMsg) handleRetry(prevUserMsg.content);
+                                }}
+                                className="gap-1.5 text-xs h-7"
+                                aria-label="Retry sending message"
+                              >
+                                <RiArrowGoBackLine className="size-3.5" />
+                                Retry
+                              </Button>
+                            </div>
+                          )}
                           {!msg.isStreaming &&
+                            !msg.isError &&
                             msg.suggestions &&
                             msg.suggestions.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 px-0.5 mt-2">
@@ -615,13 +752,44 @@ export default function HomePage() {
                                     onClick={() =>
                                       handleFollowUpClick(suggestion)
                                     }
-                                    className="text-xs px-3 py-1.5 rounded-full border border-border/50 bg-muted/30 text-muted-foreground hover:bg-gradient-to-r hover:from-health/10 hover:to-warmth/10 hover:text-foreground hover:border-health/30 transition-all duration-200"
+                                    className="text-xs px-3 py-1.5 rounded-full border border-border/50 bg-muted/30 text-muted-foreground hover:bg-health/10 hover:text-foreground hover:border-health/30 active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                                   >
                                     {suggestion}
                                   </button>
                                 ))}
                               </div>
                             )}
+                          {/* Message actions row */}
+                          {!msg.isStreaming && msg.content && (
+                            <div className="flex items-center gap-1 mt-1.5 px-0.5">
+                              <div className="opacity-0 group-hover/message:opacity-100 motion-safe:transition-opacity motion-safe:duration-200">
+                                <button
+                                  type="button"
+                                  onClick={() => copyMessage(msg.content, i)}
+                                  className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  aria-label={copiedMessageIndex === i ? "Copied" : "Copy message"}
+                                >
+                                  {copiedMessageIndex === i ? (
+                                    <>
+                                      <RiCheckLine className="size-3" />
+                                      Copied
+                                    </>
+                                  ) : (
+                                    <>
+                                      <RiFileCopyLine className="size-3" />
+                                      Copy
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                              {msg.timestamp && (
+                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                  <RiTimeLine className="size-2.5" />
+                                  {formatTime(msg.timestamp)}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </MessageContent>
                       </div>
                     </Message>
@@ -634,38 +802,27 @@ export default function HomePage() {
         </div>
 
         {/* Input Area */}
-        <div className="relative shrink-0 border-t border-border/20 bg-gradient-to-t from-background/80 via-background/60 to-transparent backdrop-blur-sm px-4 pb-4 pt-3.5">
-          {/* Focus glow behind input */}
-          <div
-            className={cn(
-              "pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 size-48 rounded-full transition-all duration-700 ease-out blur-[80px]",
-              isFocused ? "opacity-100 scale-100" : "opacity-0 scale-75",
-            )}
-            style={{ background: "oklch(0.55 0.15 215 / 0.1)" }}
-            aria-hidden="true"
-          />
+        <div className="relative shrink-0 border-t border-border/20 bg-background px-4 pb-4 pt-3.5 min-h-[7.5rem]">
 
           <form
             onSubmit={handleSubmit}
-            className="mx-auto w-full max-w-[680px]"
+            className="mx-auto w-full max-w-[720px]"
           >
             <div
-              className={cn(
-                "group relative rounded-2xl border bg-card/60 backdrop-blur-2xl shadow-sm transition-all duration-300",
-                isFocused
-                  ? "border-health/40 shadow-[0_4px_32px_oklch(0.55_0.15_215/0.12)] bg-card/80"
-                  : "border-border/40 hover:border-border/70 hover:shadow-md",
-              )}
+              className="group relative rounded-2xl border border-border/40 bg-card shadow-sm motion-safe:transition-all motion-safe:duration-300 hover:border-border/70 hover:shadow-md focus-within:border-primary/40 focus-within:shadow-md"
             >
               <div className="flex items-start p-4 pb-0">
                 <textarea
+                  ref={textareaRef}
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setCharacterCount(e.target.value.length);
+                  }}
                   placeholder="Ask AI a question or make a request..."
-                  rows={2}
-                  className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/40 pt-0.5 leading-relaxed"
+                  rows={1}
+                  aria-label="Message input"
+                  className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground pt-0.5 leading-relaxed max-h-40 focus-visible:ring-0"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -676,22 +833,50 @@ export default function HomePage() {
               </div>
 
               <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
-                <div className="flex items-center gap-1">
-                  <span className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                    <RiSparkling2Line className="size-2.5" />
-                    AI Assistant
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  {isStreaming ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleStopStreaming}
+                      className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10 active:scale-95"
+                      aria-label="Stop generating response"
+                    >
+                      <RiStopCircleLine className="size-4" />
+                      Stop
+                    </Button>
+                  ) : null}
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {!query && !isStreaming && (
+                    <span className="text-[10px] text-muted-foreground/30 hidden sm:inline" aria-hidden="true">
+                      Enter to send · Shift+Enter for new line
+                    </span>
+                  )}
+                  {characterCount > 0 && !isStreaming && (
+                    <span
+                      className={cn(
+                        "text-[10px] tabular-nums",
+                        characterCount > 4000
+                          ? "text-destructive"
+                          : "text-muted-foreground/40"
+                      )}
+                      aria-label={`${characterCount} characters`}
+                    >
+                      {characterCount}
+                    </span>
+                  )}
                   <Button
                     type="submit"
                     size="icon"
                     disabled={!query.trim() || isStreaming}
+                    aria-label={query.trim() ? "Send message" : "Type a message to send"}
                     className={cn(
-                      "size-9 rounded-full transition-all duration-300 shadow-sm",
+                      "size-9 rounded-full motion-safe:transition-all motion-safe:duration-300",
                       query.trim() && !isStreaming
-                        ? "bg-gradient-to-br from-health to-warmth text-white hover:opacity-90 hover:shadow-lg hover:shadow-health/25 hover:scale-105 active:scale-95"
+                        ? "bg-health text-white hover:bg-health/90 active:scale-95"
                         : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -704,7 +889,7 @@ export default function HomePage() {
 
           {/* Suggestion Items */}
           {!hasStarted && (
-            <div className="mx-auto w-full max-w-[680px] mt-4 flex flex-col gap-2">
+            <div className="mx-auto w-full max-w-[720px] mt-4 flex flex-wrap gap-2">
               {suggestions.map((suggestion) => {
                 const Icon = suggestion.icon;
                 return (
@@ -712,9 +897,9 @@ export default function HomePage() {
                     key={suggestion.label}
                     type="button"
                     onClick={() => handleSuggestionClick(suggestion.label)}
-                    className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm px-4 py-3 text-left text-sm text-muted-foreground hover:bg-card/60 hover:border-border/60 hover:text-foreground transition-all duration-200"
+                    className="flex flex-1 items-center gap-3 rounded-xl border border-border/40 bg-card px-4 py-3 text-left text-sm text-muted-foreground hover:bg-accent hover:border-border/60 hover:text-foreground active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   >
-                    <Icon className="size-4 shrink-0 text-muted-foreground/60" />
+                    <Icon className="size-4 shrink-0 text-muted-foreground" />
                     <span>{suggestion.label}</span>
                   </button>
                 );

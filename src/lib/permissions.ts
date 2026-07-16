@@ -113,22 +113,9 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   ],
 };
 
-const ROLE_ALIASES: Record<string, UserRole> = {
-  social_worker: "social-worker",
-  discharge_planner: "discharge-planner",
-  facility_coordinator: "facility-coordinator",
-  "social-worker": "social-worker",
-  "discharge-planner": "discharge-planner",
-  "facility-coordinator": "facility-coordinator",
-  administrator: "administrator",
-  superadmin: "superadmin",
-  customer: "customer",
-};
+import { normalizeRole } from "@/lib/organization-role";
 
-export function normalizeRole(role: unknown): UserRole | null {
-  if (typeof role !== "string") return null;
-  return ROLE_ALIASES[role.trim().toLowerCase()] ?? null;
-}
+export { normalizeRole };
 
 export function getFallbackRole(): UserRole {
   return process.env.NODE_ENV === "development" ? "superadmin" : "customer";

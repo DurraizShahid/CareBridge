@@ -1,27 +1,16 @@
 "use client";
 
-import { createContext, useContext, useMemo } from "react";
-import { useUser } from "@clerk/nextjs";
-import { usePermissions } from "@/hooks/use-permissions";
-import { currentUser as mockUser, organizations } from "@/lib/data";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { organizations } from "@/lib/data";
 import type { Organization } from "@/types";
 
-// ── Context type ──
-
 interface OrganizationContextValue {
-  /** The current user's organization ID. */
   organizationId: string;
-  /** The organization object for the current user. */
   organization: Organization | null;
-  /** All known organizations (for superadmin cross-org views). */
   allOrganizations: Organization[];
-  /** True if the user is a superadmin (bypasses org scoping). */
   isSuperadmin: boolean;
-  /** True if the context has fully resolved. */
   isLoaded: boolean;
 }
-
-// ── Context ──
 
 const OrganizationContext = createContext<OrganizationContextValue>({
   organizationId: "",
@@ -31,20 +20,46 @@ const OrganizationContext = createContext<OrganizationContextValue>({
   isLoaded: false,
 });
 
-// ── Provider ──
-
 export function OrganizationProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user: clerkUser, isLoaded: clerkLoaded, isSignedIn } = useUser();
-  const { role, isLoaded: permLoaded } = usePermissions();
+  const [state, setState] = useState<{
+    organizationId: string;
+    role: string | null;
+    isLoaded: boolean;
+  }>({ organizationId: "", role: null, isLoaded: false });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/me");
+        if (!res.ok) {
+          if (!cancelled) setState({ organizationId: "", role: null, isLoaded: true });
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setState({
+            organizationId: data?.organizationId ?? "",
+            role: data?.role ?? null,
+            isLoaded: true,
+          });
+        }
+      } catch {
+        if (!cancelled) setState({ organizationId: "", role: null, isLoaded: true });
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const value = useMemo<OrganizationContextValue>(() => {
-    const loaded = clerkLoaded && permLoaded;
-
-    if (!loaded) {
+    if (!state.isLoaded) {
       return {
         organizationId: "",
         organization: null,
@@ -54,26 +69,17 @@ export function OrganizationProvider({
       };
     }
 
-    // Resolve the organization ID from Clerk metadata or mock data
-    const organizationId: string = (() => {
-      if (isSignedIn && clerkUser?.publicMetadata?.organizationId) {
-        return clerkUser.publicMetadata.organizationId as string;
-      }
-      // Fallback to mock data during development
-      return mockUser.organizationId ?? "org-001";
-    })();
-
     const organization =
-      organizations.find((o) => o.id === organizationId) ?? null;
+      organizations.find((o) => o.id === state.organizationId) ?? null;
 
     return {
-      organizationId,
+      organizationId: state.organizationId,
       organization,
       allOrganizations: organizations,
-      isSuperadmin: role === "superadmin",
+      isSuperadmin: state.role === "superadmin",
       isLoaded: true,
     };
-  }, [clerkUser, clerkLoaded, permLoaded, isSignedIn, role]);
+  }, [state]);
 
   return (
     <OrganizationContext.Provider value={value}>
@@ -81,8 +87,6 @@ export function OrganizationProvider({
     </OrganizationContext.Provider>
   );
 }
-
-// ── Hook ──
 
 export function useOrganization(): OrganizationContextValue {
   const ctx = useContext(OrganizationContext);

@@ -1,38 +1,46 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { canRoleAccessRoute, resolveRole } from "@/lib/permissions";
+import { canRoleAccessRoute, resolveRole, HOSPITAL_ROLES } from "@/lib/permissions";
 
 const isPublicRoute = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)", "/onboarding(.*)", "/api/webhooks(.*)"]);
 
+function getRoleFromClaims(sessionClaims: Record<string, unknown> | undefined | null): string | null {
+  if (!sessionClaims || typeof sessionClaims !== "object") return null;
+
+  // Clerk stores public metadata in the JWT as public_metadata (snake_case)
+  const pubMeta = sessionClaims.public_metadata;
+  if (pubMeta && typeof pubMeta === "object" && typeof (pubMeta as Record<string, unknown>).role === "string") {
+    return (pubMeta as Record<string, unknown>).role as string;
+  }
+
+  // Fallback: check metadata (some Clerk configs use this key)
+  const meta = sessionClaims.metadata;
+  if (meta && typeof meta === "object" && typeof (meta as Record<string, unknown>).role === "string") {
+    return (meta as Record<string, unknown>).role as string;
+  }
+
+  return null;
+}
+
 export default clerkMiddleware(async (auth, request) => {
-  // 1. Allow public routes through
   if (isPublicRoute(request)) {
     return NextResponse.next();
   }
 
-  // 2. Protect: user must be signed in
   const authObj = await auth.protect();
-
-  // 3. Resolve the user's role from Clerk session claims or fallback
-  const role = resolveRole((() => {
-    if (authObj.sessionClaims?.metadata && typeof authObj.sessionClaims.metadata === "object") {
-      const metadata = authObj.sessionClaims.metadata as Record<string, unknown>;
-      if (typeof metadata.role === "string") return metadata.role;
-    }
-    // Also check direct claim (e.g., if role is embedded at top level of session token)
-    if (typeof authObj.sessionClaims?.role === "string") {
-      return authObj.sessionClaims.role as string;
-    }
-    return null;
-  })());
-
-  // 4. Permission check for protected routes
   const { pathname } = request.nextUrl;
-  const { allowed, redirect } = canRoleAccessRoute(role, pathname);
 
+  const role = resolveRole(getRoleFromClaims(authObj.sessionClaims as Record<string, unknown>));
+
+  // Redirect hospital-role users from /dashboard to /dashboard/home
+  if (pathname === "/dashboard" && HOSPITAL_ROLES.includes(role as any)) {
+    return NextResponse.redirect(new URL("/dashboard/home", request.url));
+  }
+
+  // Permission check for other protected routes
+  const { allowed, redirect } = canRoleAccessRoute(role, pathname);
   if (!allowed) {
-    const redirectUrl = new URL(redirect, request.url);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL(redirect, request.url));
   }
 
   return NextResponse.next();

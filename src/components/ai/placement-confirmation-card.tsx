@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   RiCheckLine,
@@ -9,6 +10,7 @@ import {
   RiHealthBookLine,
   RiCheckboxCircleLine,
   RiExternalLinkLine,
+  RiEditLine,
 } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,8 +74,8 @@ export function PlacementConfirmationCard({
 
   if (isDone) {
     return (
-      <Card className="border-health/30 bg-health/5">
-        <CardContent className="p-4 flex items-center gap-3">
+      <Card size="sm" className="border-health/30 bg-health/5">
+        <CardContent className="flex items-center gap-3">
           <RiCheckboxCircleLine className="size-6 text-health shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">
@@ -83,19 +85,19 @@ export function PlacementConfirmationCard({
               {draft.facilityName} — {draft.careLevel}
             </p>
           </div>
-          <a href="/placements">
-            <Button variant="outline" size="sm" className="shrink-0 text-xs gap-1 h-8">
+          <Link href="/placements">
+            <Button variant="outline" size="sm" className="shrink-0 text-xs gap-1 h-8 active:scale-[0.98]">
               View <RiExternalLinkLine className="size-3" />
             </Button>
-          </a>
+          </Link>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border-health/20">
-      <CardContent className="p-4 space-y-3">
+    <Card size="sm" className="border-health/20">
+      <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">
             <RiHealthBookLine className="size-4 text-health" />
@@ -113,30 +115,29 @@ export function PlacementConfirmationCard({
           <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
             <RiUserHeartLine className="size-4 text-muted-foreground shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Patient</p>
+              <p className="text-xs text-muted-foreground">Patient</p>
               <p className="font-medium truncate">{draft.patientName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
             <RiHospitalLine className="size-4 text-muted-foreground shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Facility</p>
+              <p className="text-xs text-muted-foreground">Facility</p>
               <p className="font-medium truncate">{draft.facilityName}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="capitalize">Care Level: <strong className="text-foreground">{draft.careLevel}</strong></span>
-          <span className="text-border/50">|</span>
-          <span className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             Availability:
             {draft.hasAvailability ? (
               <Badge variant="default" className="text-[10px] px-1.5 h-4">Available</Badge>
             ) : (
               <Badge variant="destructive" className="text-[10px] px-1.5 h-4">Full</Badge>
             )}
-          </span>
+          </div>
         </div>
 
         {draft.assessmentNotes && (
@@ -150,10 +151,22 @@ export function PlacementConfirmationCard({
             size="sm"
             onClick={handleConfirm}
             disabled={isCreating}
-            className="gap-1.5 text-xs h-8"
+            className="gap-1.5 text-xs h-8 active:scale-[0.98]"
+            aria-label={isCreating ? "Creating placement" : "Confirm placement"}
           >
             <RiCheckLine className="size-3.5" />
             {isCreating ? "Creating..." : "Confirm Placement"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDismiss}
+            disabled={isCreating}
+            className="gap-1.5 text-xs h-8"
+            aria-label="Dismiss placement draft"
+          >
+            <RiEditLine className="size-3.5" />
+            Edit
           </Button>
           <Button
             variant="ghost"
@@ -161,6 +174,7 @@ export function PlacementConfirmationCard({
             onClick={onDismiss}
             disabled={isCreating}
             className="gap-1.5 text-xs h-8 text-muted-foreground"
+            aria-label="Dismiss placement draft"
           >
             <RiCloseLine className="size-3.5" />
             Cancel

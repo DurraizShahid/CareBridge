@@ -55,6 +55,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --z-sidebar: 20;
+  --z-header: 30;
+  --z-dropdown: 40;
+  --z-modal-backdrop: 45;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
 }
 
 :root {
@@ -205,7 +212,8 @@
   .animate-float-2,
   .animate-breathe,
   .animate-shimmer::after,
-  .animate-gradient {
+  .animate-gradient,
+  .animate-in {
     animation: none;
   }
 }
@@ -346,6 +354,11 @@ select option {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes typing-dot {
+  0%, 20%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
 @keyframes gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -386,6 +399,19 @@ select option {
   .card-enter {
     animation: card-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
+  }
+  .animate-typing-dot {
+    animation: typing-dot 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-enter {
+      animation: none;
+      opacity: 1;
+    }
+    .animate-typing-dot {
+      animation: none;
+      opacity: 1;
+    }
   }
   .card-enter-1 { animation-delay: 0ms; }
   .card-enter-2 { animation-delay: 60ms; }

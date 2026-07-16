@@ -4,43 +4,49 @@
  * All granular permission keys in the system.
  * Convention: `<resource>:<action>`
  * Wildcard `*` grants all actions on a resource.
+ *
+ * Defined as a const array with `satisfies` to enforce the `<resource>:<action>` format
+ * at compile time — adding an entry without a colon will produce a type error.
  */
-export type Permission =
+export const PERMISSIONS = [
   // ── Patients ──
-  | "patients:read"
-  | "patients:create"
-  | "patients:update"
-  | "patients:delete"
+  "patients:read",
+  "patients:create",
+  "patients:update",
+  "patients:delete",
   // ── Placements ──
-  | "placements:read"
-  | "placements:create"
-  | "placements:update"
-  | "placements:approve"
-  | "placements:delete"
+  "placements:read",
+  "placements:create",
+  "placements:update",
+  "placements:approve",
+  "placements:delete",
   // ── Facilities ──
-  | "facilities:read"
-  | "facilities:create"
-  | "facilities:update"
-  | "facilities:delete"
+  "facilities:read",
+  "facilities:create",
+  "facilities:update",
+  "facilities:delete",
   // ── Hospitals ──
-  | "hospitals:manage"
+  "hospitals:manage",
   // ── Users (admin) ──
-  | "users:read"
-  | "users:read-org"
-  | "users:create"
-  | "users:update"
-  | "users:delete"
-  | "users:manage-roles"
+  "users:read",
+  "users:read-org",
+  "users:create",
+  "users:update",
+  "users:delete",
+  "users:manage-roles",
   // ── Dashboard access ──
-  | "dashboard:overview"
-  | "dashboard:staff"
-  | "dashboard:facility"
-  | "dashboard:admin"
+  "dashboard:overview",
+  "dashboard:staff",
+  "dashboard:facility",
+  "dashboard:admin",
   // ── System ──
-  | "settings:read"
-  | "settings:write"
+  "settings:read",
+  "settings:write",
   // ── Audit ──
-  | "audit:view";
+  "audit:view",
+] as const satisfies `${string}:${string}`[];
+
+export type Permission = (typeof PERMISSIONS)[number];
 
 /**
  * Aggregated permission resource strings used for wildcard matching.

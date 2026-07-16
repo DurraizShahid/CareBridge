@@ -15,14 +15,14 @@ export async function GET() {
   try {
     const authObj = await auth();
     if (!authObj.userId) {
-      // Not authenticated — return empty in dev
-      return NextResponse.json(null);
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Try to get from Clerk's API first (includes publicMetadata)
     const clerkUser = await currentUser();
+    if (!clerkUser) {
+      return NextResponse.json({ error: "User not found in Clerk" }, { status: 404 });
+    }
 
-    // Optionally hydrate from local DB for additional profile info
     let dbUser = null;
     try {
       dbUser = await prisma.user.findUnique({ where: { id: authObj.userId } });
@@ -33,16 +33,16 @@ export async function GET() {
     const role = resolveRole(dbUser?.role, clerkUser?.publicMetadata?.role);
 
     return NextResponse.json({
-    id: authObj.userId,
-    role,
-    organizationId: dbUser?.organizationId ?? null,
-    firstName: dbUser?.firstName ?? clerkUser?.firstName ?? "",
-    lastName: dbUser?.lastName ?? clerkUser?.lastName ?? "",
-    email: dbUser?.email ?? clerkUser?.emailAddresses?.[0]?.emailAddress ?? "",
-    imageUrl: clerkUser?.imageUrl ?? null,
-  });
-  } catch {
-    // If Clerk is not configured, return null
-    return NextResponse.json(null);
+      id: authObj.userId,
+      role,
+      organizationId: dbUser?.organizationId ?? null,
+      firstName: dbUser?.firstName ?? clerkUser?.firstName ?? "",
+      lastName: dbUser?.lastName ?? clerkUser?.lastName ?? "",
+      email: dbUser?.email ?? clerkUser?.emailAddresses?.[0]?.emailAddress ?? "",
+      imageUrl: clerkUser?.imageUrl ?? null,
+    });
+  } catch (err) {
+    console.error("GET /api/me error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

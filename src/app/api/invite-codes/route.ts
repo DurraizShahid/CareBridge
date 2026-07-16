@@ -46,11 +46,7 @@ export async function GET() {
 
     return NextResponse.json(inviteCodes);
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    console.error('Error fetching invite codes:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return authErrorResponse(error);
   }
 }
 
@@ -85,14 +81,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(inviteCode);
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    if (error instanceof Error && error.message !== 'Could not generate a unique invite code.') {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    console.error('Error creating invite code:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return authErrorResponse(error);
   }
 }

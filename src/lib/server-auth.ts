@@ -56,5 +56,7 @@ export function authErrorResponse(error: unknown) {
     );
   }
 
-  return null;
+  const message = error instanceof Error ? error.message : "Internal server error";
+  console.error("Unexpected auth error:", error);
+  return NextResponse.json({ error: message }, { status: 500 });
 }

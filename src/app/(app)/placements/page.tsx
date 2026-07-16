@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -54,9 +55,11 @@ const priorityOrder = ["emergency", "high", "medium", "low"];
 
 export default async function PlacementsPage() {
   const org = await getServerOrganization();
+  const user = await currentUser();
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
+  const userName = user?.firstName ?? user?.username ?? "Admin";
 
   let placements: Placement[] = [];
   let patients: Patient[] = [];
@@ -100,8 +103,10 @@ export default async function PlacementsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Placements"
+        title=""
         description="Track and manage active patient placements."
+        userName={userName}
+        breadcrumbs={[{ label: "Placements" }]}
       >
         {canCreate && (
           <Link

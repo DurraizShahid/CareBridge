@@ -26,11 +26,7 @@ export async function GET() {
 
     return NextResponse.json(joinRequests);
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    console.error('Error fetching join requests:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return authErrorResponse(error);
   }
 }
 
@@ -63,22 +59,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'You already have a join request on file' }, { status: 400 });
     }
 
-    const joinRequest = await prisma.joinRequest.create({
-      data: {
-        id: crypto.randomUUID(),
-        userId,
-        organizationId,
-        inviteCodeId,
-        requestedRole: inviteCode.role,
-      },
-    });
+    const [joinRequest] = await prisma.$transaction([
+      prisma.joinRequest.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId,
+          organizationId,
+          inviteCodeId,
+          requestedRole: inviteCode.role,
+        },
+      }),
+      prisma.inviteCode.update({
+        where: { id: inviteCodeId },
+        data: { usedCount: { increment: 1 } },
+      }),
+    ]);
 
     return NextResponse.json(joinRequest);
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    console.error('Error creating join request:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return authErrorResponse(error);
   }
 }

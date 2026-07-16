@@ -65,8 +65,7 @@ export default function OnboardingPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to create organization');
 
       setMessage({ text: 'Organization created successfully!', type: 'success' });
-      // Refresh to get updated user data
-      setTimeout(() => window.location.href = '/dashboard', 1000);
+      setTimeout(() => router.push('/dashboard'), 1000);
     } catch (err: unknown) {
       setMessage({ text: err instanceof Error ? err.message : 'Something went wrong', type: 'error' });
       setIsLoading(false);

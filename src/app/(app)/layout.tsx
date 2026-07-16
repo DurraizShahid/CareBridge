@@ -26,6 +26,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const checkUser = async () => {
       try {
         const res = await fetch('/api/me');
+        if (!res.ok) {
+          console.error('GET /api/me failed:', res.status, await res.text());
+          router.push('/onboarding');
+          return;
+        }
         const data = await res.json();
         if (data && data.organizationId) {
           setHasOrg(true);

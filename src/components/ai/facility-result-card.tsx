@@ -33,9 +33,13 @@ export function FacilityResultCard({ facility }: FacilityResultCardProps) {
   const location = [addr.city, addr.state].filter(Boolean).join(", ");
 
   return (
-    <Link href={`/dashboard/facility-network/${facility.id}`}>
+    <Link
+      href={`/dashboard/facility-network/${facility.id}`}
+      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+      aria-label={`View ${facility.name} details`}
+    >
       <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md hover:border-foreground/20 active:scale-[0.99]">
-        <CardContent className="p-3.5">
+        <CardContent>
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -73,17 +77,18 @@ export function FacilityResultCard({ facility }: FacilityResultCardProps) {
 
           <div className="flex flex-wrap gap-1">
             {facility.careLevelsOffered.slice(0, 3).map((level) => (
-              <span
+              <Badge
                 key={level}
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 h-4 font-normal"
               >
                 {careLevelLabels[level] ?? level}
-              </span>
+              </Badge>
             ))}
             {facility.careLevelsOffered.length > 3 && (
-              <span className="text-[10px] px-1.5 py-0.5 text-muted-foreground">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal text-muted-foreground">
                 +{facility.careLevelsOffered.length - 3}
-              </span>
+              </Badge>
             )}
           </div>
         </CardContent>

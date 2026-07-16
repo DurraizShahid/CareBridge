@@ -35,11 +35,20 @@ export default function SignUpPage() {
   }
 
   const handleGoogleSignUp = async () => {
-    await signUp.sso({
-      strategy: 'oauth_google',
-      redirectUrl: '/onboarding',
-      redirectCallbackUrl: '/sign-up',
-    });
+    setErrorMessage(null);
+    try {
+      await signUp.sso({
+        strategy: 'oauth_google',
+        redirectUrl: '/onboarding',
+        redirectCallbackUrl: '/sign-up',
+      });
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
+    }
   };
 
   const handleInfoSubmit = async (e: React.FormEvent) => {
@@ -74,10 +83,19 @@ export default function SignUpPage() {
 
   const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp.verifications.verifyEmailCode({ code: verifyCode });
-    if (signUp.status === 'complete' && signUp.createdSessionId) {
-      await setActive({ session: signUp.createdSessionId });
-      router.push('/onboarding');
+    setErrorMessage(null);
+    try {
+      await signUp.verifications.verifyEmailCode({ code: verifyCode });
+      if (signUp.status === 'complete' && signUp.createdSessionId) {
+        await setActive({ session: signUp.createdSessionId });
+        router.push('/onboarding');
+      }
+    } catch (err: unknown) {
+      if (isClerkAPIResponseError(err)) {
+        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+      } else {
+        setErrorMessage('Something went wrong. Please try again.');
+      }
     }
   };
 
@@ -352,7 +370,16 @@ export default function SignUpPage() {
                 type="button"
                 variant="secondary"
                 onClick={async () => {
-                  await signUp.verifications.sendEmailCode();
+                  setErrorMessage(null);
+                  try {
+                    await signUp.verifications.sendEmailCode();
+                  } catch (err: unknown) {
+                    if (isClerkAPIResponseError(err)) {
+                      setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
+                    } else {
+                      setErrorMessage('Something went wrong. Please try again.');
+                    }
+                  }
                 }}
                 disabled={fetchStatus === 'fetching'}
               >

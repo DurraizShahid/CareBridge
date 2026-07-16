@@ -1,38 +1,50 @@
 "use client";
 
-import { useMemo } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useEffect, useMemo, useState } from "react";
 import type { Permission } from "@/types/permissions";
 import {
   canRoleAccessRoute,
   normalizeRole,
-  resolveRole,
   roleHasAllPermissions,
   roleHasAnyPermission,
   roleHasPermission,
 } from "@/lib/permissions";
-import { currentUser as mockUser } from "@/lib/data";
 import type { UserRole } from "@/types";
 
-// ── Resolve the effective role ──
-
-/**
- * Hook that provides permission-checking utilities for the current user.
- *
- * Uses Clerk's authenticated user in production, and falls back to the
- * mock `currentUser` from `@/lib/data` during development.
- */
 export function usePermissions() {
-  const { user: clerkUser, isLoaded, isSignedIn } = useUser();
+  const [state, setState] = useState<{
+    role: UserRole | null;
+    isLoaded: boolean;
+    isSignedIn: boolean;
+  }>({ role: null, isLoaded: false, isSignedIn: false });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/me");
+        if (!res.ok) {
+          if (!cancelled) setState({ role: null, isLoaded: true, isSignedIn: false });
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          const role = normalizeRole(data?.role);
+          setState({ role, isLoaded: true, isSignedIn: true });
+        }
+      } catch {
+        if (!cancelled) setState({ role: null, isLoaded: true, isSignedIn: false });
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   return useMemo(() => {
-    const role: UserRole | null = !isLoaded
-      ? null
-      : isSignedIn
-        ? resolveRole(clerkUser?.publicMetadata.role)
-        : normalizeRole(mockUser.role);
+    const { role, isLoaded, isSignedIn } = state;
 
-    // Build the permission helpers
     const can = (permission: Permission): boolean => !!role && roleHasPermission(role, permission);
     const canAll = (permissions: Permission[]): boolean => !!role && roleHasAllPermissions(role, permissions);
     const canAny = (permissions: Permission[]): boolean => !!role && roleHasAnyPermission(role, permissions);
@@ -44,11 +56,8 @@ export function usePermissions() {
     };
 
     return {
-      /** The resolved user role string. */
       role,
-      /** Whether Clerk auth has finished loading. */
       isLoaded,
-      /** Whether the user is signed in (Clerk). */
       isSignedIn,
       /** Check a single permission. */
       can,
@@ -59,5 +68,5 @@ export function usePermissions() {
       /** Check whether the role can access a route. */
       canAccessRoute,
     } as const;
-  }, [clerkUser, isLoaded, isSignedIn]);
+  }, [state]);
 }

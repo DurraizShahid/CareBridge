@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Search } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { getUsers } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -15,16 +16,20 @@ const roleLabels: Record<string, string> = {
 
 export default async function UsersPage() {
   const org = await getServerOrganization();
+  const user = await currentUser();
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
+  const userName = user?.firstName ?? user?.username ?? "Admin";
   const users = await getUsers(organizationId, role);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Users"
+        title=""
         description="Manage and view all users in your organization."
+        userName={userName}
+        breadcrumbs={[{ label: "Users" }]}
       />
 
       <div className="relative">

@@ -104,10 +104,6 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    console.error('Error processing join request:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return authErrorResponse(error);
   }
 }

@@ -9,7 +9,7 @@ export function AuthControls() {
     <>
       <Show when="signed-out">
         <div className="flex items-center gap-1">
-          <SignInButton mode="modal">
+          <SignInButton mode="redirect">
             <button
               type="button"
               className="rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"

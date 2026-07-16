@@ -2,13 +2,22 @@
 
 import { useState, useEffect } from "react";
 import {
-  RiAddLine,
   RiChat1Line,
   RiDeleteBinLine,
-  RiMoreLine,
   RiChatNewLine,
 } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 interface Chat {
@@ -72,8 +81,7 @@ export function ChatHistorySidebar({
 }: ChatHistorySidebarProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Chat | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,20 +121,20 @@ export function ChatHistorySidebar({
     } catch (error) {
       console.error("Error deleting chat:", error);
     }
-    setActiveMenuId(null);
+    setDeleteTarget(null);
   };
 
   const groupedChats = groupChatsByDate(chats);
 
   return (
-    <div className="flex h-full flex-col bg-background/40 backdrop-blur-xl">
+    <div className="flex h-full flex-col bg-sidebar">
       {/* New Chat Button */}
-      <div className="p-3">
+      <div className="px-3 pt-3 pb-2">
         <Button
           variant="outline"
           size="sm"
           onClick={onNewChat}
-          className="w-full justify-start gap-2 h-9 text-sm font-normal"
+          className="w-full justify-start gap-2 h-8 text-sm font-normal"
         >
           <RiChatNewLine className="size-4" />
           New Chat
@@ -134,95 +142,102 @@ export function ChatHistorySidebar({
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto px-2 pb-4">
+      <nav className="flex-1 overflow-y-auto px-2 pb-3" aria-label="Chat history">
         {isLoading ? (
-          <div className="space-y-2 p-2">
+          <div className="space-y-1 px-1">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-10 rounded-lg bg-muted/50 animate-pulse"
-              />
+              <div key={i} className="flex items-center gap-2 px-2 py-2">
+                <Skeleton className="size-4 shrink-0" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
             ))}
           </div>
         ) : chats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <RiChat1Line className="size-8 text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground/60">
-              No chat history yet
+          <div className="flex flex-col items-center justify-center py-16 px-3 text-center">
+            <RiChat1Line className="size-8 text-muted-foreground/40 mb-2" />
+            <p className="text-sm font-medium text-muted-foreground/80">
+              No conversations yet
             </p>
-            <p className="text-xs text-muted-foreground/40 mt-1">
-              Start a new conversation
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Start a new chat to begin
             </p>
           </div>
         ) : (
           groupedChats.map((group) => (
-            <div key={group.label} className="mb-4">
-              <div className="px-2 py-1.5">
-                <span className="text-xs font-medium text-muted-foreground/60">
+            <div key={group.label} className="mb-3">
+              <div className="px-2 py-1">
+                <span className="text-xs font-medium text-muted-foreground">
                   {group.label}
                 </span>
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-px">
                 {group.chats.map((chat) => (
                   <div
                     key={chat.id}
                     className={cn(
-                      "group relative flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer transition-colors",
+                      "group relative flex items-center gap-2 rounded-lg px-2 py-1.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-1",
                       currentChatId === chat.id
                         ? "bg-accent/50 text-accent-foreground"
                         : "hover:bg-accent/30 text-muted-foreground hover:text-foreground"
                     )}
                     onClick={() => onChatSelect(chat.id)}
-                    onMouseEnter={() => setHoveredChatId(chat.id)}
-                    onMouseLeave={() => {
-                      setHoveredChatId(null);
-                      if (activeMenuId === chat.id) {
-                        setActiveMenuId(null);
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onChatSelect(chat.id);
                       }
                     }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Chat: ${chat.title}`}
+                    aria-current={currentChatId === chat.id ? "page" : undefined}
                   >
                     <RiChat1Line className="size-4 shrink-0 opacity-60" />
                     <span className="flex-1 truncate text-sm">
                       {chat.title}
                     </span>
-                    {(hoveredChatId === chat.id || activeMenuId === chat.id) && (
-                      <div className="flex items-center">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuId(
-                              activeMenuId === chat.id ? null : chat.id
-                            );
-                          }}
-                          className="p-1 rounded-md hover:bg-muted/50 transition-colors"
-                        >
-                          <RiMoreLine className="size-3.5" />
-                        </button>
-                        {activeMenuId === chat.id && (
-                          <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-lg border bg-popover p-1 shadow-md">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(chat.id);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                              <RiDeleteBinLine className="size-3.5" />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(chat);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 transition-all duration-150"
+                      aria-label={`Delete ${chat.title}`}
+                    >
+                      <RiDeleteBinLine className="size-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
           ))
         )}
-      </div>
+      </nav>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &ldquo;{deleteTarget?.title}&rdquo; and all its messages. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

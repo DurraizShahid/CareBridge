@@ -79,10 +79,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url, fields, key });
   } catch (error: unknown) {
-    const authResponse = authErrorResponse(error);
-    if (authResponse) return authResponse;
-
-    console.error("Error creating presigned upload URL:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return authErrorResponse(error);
   }
 }
