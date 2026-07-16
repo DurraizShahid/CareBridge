@@ -5,6 +5,9 @@ import { useUser } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 import {
   RiSendPlaneFill,
   RiSparkling2Line,
@@ -26,6 +29,8 @@ import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { FacilityResultCard } from "@/components/ai/facility-result-card";
 import { PlacementConfirmationCard } from "@/components/ai/placement-confirmation-card";
 import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
+import { AIHomePageSkeleton } from "@/components/dashboard-skeletons";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { cn } from "@/lib/utils";
 
 import type { Facility } from "@/types";
@@ -57,8 +62,38 @@ const suggestions = [
   },
 ];
 
+function sanitizeStreamingMarkdown(content: string): string {
+  const parts = content.split("```");
+  if (parts.length % 2 === 0) {
+    return parts.slice(0, -1).join("```") + "\n*Generating code...*";
+  }
+  return content.replace(/<!--[\s\S]*?(?:-->|$)/g, (match) => {
+    return match.endsWith("-->") ? match : "";
+  });
+}
+
+function isValidFacility(data: unknown): data is Facility {
+  if (!data || typeof data !== "object") return false;
+  const f = data as Record<string, unknown>;
+  return typeof f.id === "string" && typeof f.name === "string" &&
+    typeof f.rating === "number" && Array.isArray(f.careLevelsOffered);
+}
+
+function isValidPlacementDraft(data: unknown): data is PlacementDraft {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
+  return typeof d.patientName === "string" && typeof d.patientId === "string" &&
+    typeof d.facilityName === "string" && typeof d.facilityId === "string" &&
+    typeof d.careLevel === "string" && typeof d.insuranceMatch === "boolean";
+}
+
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+  pre: ({ children }) => (
+    <pre className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 my-2 text-xs font-mono leading-relaxed">
+      {children}
+    </pre>
+  ),
   ul: ({ children }) => (
     <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>
   ),
@@ -68,6 +103,11 @@ const markdownComponents: Components = {
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   strong: ({ children }) => (
     <strong className="font-semibold">{children}</strong>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-muted-foreground/20 pl-4 my-2 italic text-muted-foreground">
+      {children}
+    </blockquote>
   ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-2 rounded-lg border border-border">
@@ -85,21 +125,31 @@ const markdownComponents: Components = {
   td: ({ children }) => (
     <td className="border-b border-border/50 px-3 py-1.5">{children}</td>
   ),
-  code: ({ children }) => (
-    <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
-      {children}
-    </code>
-  ),
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-health underline underline-offset-2 hover:text-health/80"
-    >
-      {children}
-    </a>
-  ),
+  code: ({ className, children }) => {
+    const isBlock = className?.startsWith("language-");
+    return isBlock ? (
+      <code className={className}>{children}</code>
+    ) : (
+      <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
+        {children}
+      </code>
+    );
+  },
+  a: ({ href, children }) => {
+    const safe = href && /^https?:\/\//i.test(href) ? href : undefined;
+    return safe ? (
+      <a
+        href={safe}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-health underline underline-offset-2 hover:text-health/80"
+      >
+        {children}
+      </a>
+    ) : (
+      <span className="text-foreground">{children}</span>
+    );
+  },
   h1: ({ children }) => (
     <h1 className="text-base font-bold mb-1 mt-2 first:mt-0">{children}</h1>
   ),
@@ -116,9 +166,11 @@ function parseSuggestions(
   content: string,
 ): { cleanContent: string; suggestions: string[] } {
   const match = content.match(
-    /<!--suggestions-->(.*?)<!--\/suggestions-->/,
+    /<!--suggestions-->([\s\S]*?)<!--\/suggestions-->/,
   );
-  if (!match) return { cleanContent: content, suggestions: [] };
+  if (!match) {
+    return { cleanContent: content.replace(/<!--suggestions-->[\s\S]*$/, ""), suggestions: [] };
+  }
 
   try {
     const parsed = JSON.parse(match[1]);
@@ -160,22 +212,31 @@ function processAIBuffer(
       try {
         callbacks.onText(JSON.parse(data));
       } catch {
+        console.warn("Failed to parse SSE text event");
       }
     } else if (eventType === "facilities") {
       try {
-        callbacks.onFacilities(JSON.parse(data));
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          const valid = parsed.filter(isValidFacility);
+          if (valid.length > 0) callbacks.onFacilities(valid);
+        }
       } catch {
+        console.warn("Failed to parse SSE facilities event");
       }
     } else if (eventType === "placement-draft") {
       try {
-        callbacks.onPlacementDraft(JSON.parse(data));
+        const parsed = JSON.parse(data);
+        if (isValidPlacementDraft(parsed)) callbacks.onPlacementDraft(parsed);
       } catch {
+        console.warn("Failed to parse SSE placement-draft event");
       }
     } else if (eventType === "done") {
       callbacks.onDone();
     } else if (eventType === "error") {
       try {
-        callbacks.onError(JSON.parse(data));
+        const parsed = JSON.parse(data);
+        callbacks.onError(typeof parsed === "string" ? parsed : parsed.message || "An error occurred");
       } catch {
         callbacks.onError("An error occurred");
       }
@@ -211,15 +272,33 @@ export default function HomePage() {
   const abortRef = useRef<AbortController | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.innerWidth >= 768;
-  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useEffect(() => {
+    setSidebarOpen(window.innerWidth >= 768);
+    const onResize = () => setSidebarOpen(window.innerWidth >= 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [characterCount, setCharacterCount] = useState(0);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const streamingRef = useRef(false);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  const wasAbortedRef = useRef(false);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Abort active stream on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+    };
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
@@ -265,7 +344,7 @@ export default function HomePage() {
   };
 
   if (!isLoaded) {
-    return null;
+    return <AIHomePageSkeleton />;
   }
 
   const getGreeting = () => {
@@ -321,12 +400,12 @@ export default function HomePage() {
     }
   };
 
-  const handleSuggestionClick = (label: string) => {
-    sendMessage(label);
+  const handleSuggestionClick = async (label: string) => {
+    await sendMessage(label);
   };
 
-  const handleFollowUpClick = (question: string) => {
-    sendMessage(question);
+  const handleFollowUpClick = async (question: string) => {
+    await sendMessage(question);
   };
 
   const handleDismissPlacement = (msgIndex: number) => {
@@ -343,7 +422,7 @@ export default function HomePage() {
   };
 
   const handleRetry = async (text: string) => {
-    sendMessage(text);
+    await sendMessage(text);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -353,11 +432,16 @@ export default function HomePage() {
 
   const handleStopStreaming = () => {
     abortRef.current?.abort();
+    abortRef.current = null;
+    streamingRef.current = false;
+    wasAbortedRef.current = true;
     setIsStreaming(false);
     setMessages((prev) => {
       const last = prev[prev.length - 1];
       if (last?.role === "assistant" && last.isStreaming) {
-        const { cleanContent, suggestions } = parseSuggestions(last.content || "");
+        const content = last.content || "";
+        const displayContent = sanitizeStreamingMarkdown(content);
+        const { cleanContent, suggestions } = parseSuggestions(displayContent);
         return [
           ...prev.slice(0, -1),
           {
@@ -374,77 +458,88 @@ export default function HomePage() {
 
   const sendMessage = async (overrideText: string) => {
     const text = overrideText.trim();
-    if (!text || isStreaming) return;
+    if (!text || streamingRef.current) return;
 
+    streamingRef.current = true;
+    wasAbortedRef.current = false;
     setQuery("");
     setCharacterCount(0);
     setHasStarted(true);
 
-    setMessages((prev) => {
-      const ts = Date.now();
-      const userMsg: ChatMessage = { role: "user", content: text, timestamp: ts };
-      const aiMsg: ChatMessage = {
-        role: "assistant",
-        content: "",
-        isStreaming: true,
-        timestamp: ts,
-      };
-      return [...prev, userMsg, aiMsg];
-    });
+    const ts = Date.now();
+    const userMsg: ChatMessage = { role: "user", content: text, timestamp: ts };
+    const aiMsg: ChatMessage = {
+      role: "assistant",
+      content: "",
+      isStreaming: true,
+      timestamp: ts,
+    };
+    setMessages((prev) => [...prev, userMsg, aiMsg]);
     setIsStreaming(true);
 
-    // Create a new chat if needed
+    // Create a new chat if needed (parallel with AI fetch)
     let chatId = currentChatId;
-    if (!chatId) {
-      try {
-        const response = await fetch("/api/chats", {
+    const chatPromise = !chatId
+      ? fetch("/api/chats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: text.slice(0, 60) }),
-        });
-        if (response.ok) {
-          const chat = await response.json();
-          chatId = chat.id;
-          setCurrentChatId(chatId);
-          setRefreshTrigger((prev) => prev + 1);
-        }
-      } catch (error) {
-        console.error("Error creating chat:", error);
-      }
-    }
-
-    // Save user message to database
-    if (chatId) {
-      saveMessage(chatId, "user", text);
-    }
+        }).then((r) => r.ok ? r.json() : null)
+        .catch(() => null)
+      : Promise.resolve(null);
 
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
-      const history = messages.map((m) => ({
+      const history = messagesRef.current.map((m) => ({
         role: m.role,
         content: m.content,
       }));
       history.push({ role: "user", content: text });
 
-      const response = await fetch("/api/ai/chat", {
+      // Start AI fetch immediately, don't wait for chat creation
+      const responsePromise = fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`);
+      // Resolve chat ID in parallel (won't throw — caught above)
+      const chatResult = await chatPromise;
+      if (chatResult) {
+        chatId = chatResult.id;
+        setCurrentChatId(chatId);
+        setRefreshTrigger((prev) => prev + 1);
       }
 
+      const response = await responsePromise;
+
+      if (!response.ok) {
+        let errorMsg: string;
+        try {
+          const body = await response.json();
+          errorMsg = body?.error || `Request failed (${response.status})`;
+        } catch {
+          errorMsg = `Request failed (${response.status})`;
+        }
+        throw new Error(errorMsg);
+      }
+
+      // Save user message to database (fire-and-forget)
+      if (chatId) {
+        saveMessage(chatId, "user", text);
+      }
+
+      const requestId = response.headers.get("X-Request-Id") || crypto.randomUUID();
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No response stream");
 
       const decoder = new TextDecoder();
       let buffer = "";
       let fullResponse = "";
+      let ttft: number | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -453,13 +548,18 @@ export default function HomePage() {
         buffer += decoder.decode(value, { stream: true });
         buffer = processAIBuffer(buffer, {
           onText: (token) => {
+            if (ttft === null) {
+              ttft = Date.now() - ts;
+              console.debug(`[${requestId}] TTFT: ${ttft}ms`);
+            }
             fullResponse += token;
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               if (last?.role === "assistant" && last.isStreaming) {
+                const newContent = last.content + token;
                 return [
                   ...prev.slice(0, -1),
-                  { ...last, content: last.content + token },
+                  { ...last, content: newContent },
                 ];
               }
               return prev;
@@ -515,6 +615,10 @@ export default function HomePage() {
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
+        console.error("sendMessage error:", err.name, err.message);
+        const userMessage = err.message.includes("429") || err.message.includes("too many")
+          ? err.message
+          : "Sorry, something went wrong. Please try again.";
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           if (last?.role === "assistant" && last.isStreaming) {
@@ -522,7 +626,7 @@ export default function HomePage() {
               ...prev.slice(0, -1),
               {
                 ...last,
-                content: "Sorry, something went wrong. Please try again.",
+                content: userMessage,
                 isStreaming: false,
                 isError: true,
               },
@@ -532,13 +636,16 @@ export default function HomePage() {
         });
       }
     } finally {
+      streamingRef.current = false;
+      abortRef.current = null;
       setIsStreaming(false);
       setMessages((prev) => {
         const last = prev[prev.length - 1];
-        if (last?.role !== "assistant") return prev;
+        if (last?.role !== "assistant" || !last.isStreaming) return prev;
 
-        const rawContent = last.content;
-        const { cleanContent, suggestions } = parseSuggestions(rawContent);
+        const rawContent = last.content || "";
+        const displayContent = sanitizeStreamingMarkdown(rawContent);
+        const { cleanContent, suggestions } = parseSuggestions(displayContent);
 
         return [
           ...prev.slice(0, -1),
@@ -555,8 +662,8 @@ export default function HomePage() {
 
   return (
     <div
-      className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-2 flex overflow-hidden"
-      style={{ height: 'calc(100dvh - 3.5rem - 2rem)' }}
+      className="-mt-2 flex overflow-hidden"
+      style={{ height: 'calc(100dvh - 3.5rem - 4rem)' }}
     >
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
@@ -569,7 +676,7 @@ export default function HomePage() {
       {/* Chat History Sidebar */}
       <div
         className={cn(
-          "shrink-0 border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out relative z-[var(--z-sidebar)]",
+          "shrink-0 border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out",
           sidebarOpen ? "w-64" : "w-0"
         )}
         aria-hidden={!sidebarOpen}
@@ -593,7 +700,7 @@ export default function HomePage() {
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="size-8"
+              className="size-8 min-h-[44px]"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
               <RiMenuLine className="size-4" />
@@ -605,7 +712,7 @@ export default function HomePage() {
               variant="secondary"
               size="sm"
               onClick={handleNewChat}
-              className="gap-1.5 rounded-full h-8 text-xs"
+              className="gap-1.5 rounded-full min-h-[44px] text-xs"
               aria-label="Start a new chat"
             >
               <RiCloseLine className="size-3.5" />
@@ -687,9 +794,21 @@ export default function HomePage() {
                               {msg.content ? (
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[
+                                    [rehypeSanitize, {
+                                      ...defaultSchema,
+                                      attributes: {
+                                        ...defaultSchema.attributes,
+                                        "*:all": ["className"],
+                                        code: ["className"],
+                                        span: ["className", "style"],
+                                      },
+                                    }],
+                                    rehypeHighlight,
+                                  ]}
                                   components={markdownComponents}
                                 >
-                                  {msg.content}
+                                  {msg.isStreaming ? sanitizeStreamingMarkdown(msg.content) : msg.content}
                                 </ReactMarkdown>
                               ) : msg.isStreaming ? null : (
                                 <span className="text-muted-foreground italic">
@@ -699,21 +818,25 @@ export default function HomePage() {
                             </BubbleContent>
                           </Bubble>
                           {msg.facilities && msg.facilities.length > 0 && (
-                            <div className="grid gap-2 px-0.5 mt-2 sm:grid-cols-2">
-                              {msg.facilities.map((facility) => (
-                                <FacilityResultCard
-                                  key={facility.id}
-                                  facility={facility}
-                                />
-                              ))}
-                            </div>
+                            <ErrorBoundary>
+                              <div className="grid gap-2 px-0.5 mt-2 sm:grid-cols-2">
+                                {msg.facilities.map((facility) => (
+                                  <FacilityResultCard
+                                    key={facility.id}
+                                    facility={facility}
+                                  />
+                                ))}
+                              </div>
+                            </ErrorBoundary>
                           )}
                           {msg.placementDraft && !msg.isStreaming && (
-                            <PlacementConfirmationCard
-                              draft={msg.placementDraft}
-                              onConfirmed={handlePlacementConfirmed}
-                              onDismiss={() => handleDismissPlacement(i)}
-                            />
+                            <ErrorBoundary>
+                              <PlacementConfirmationCard
+                                draft={msg.placementDraft}
+                                onConfirmed={handlePlacementConfirmed}
+                                onDismiss={() => handleDismissPlacement(i)}
+                              />
+                            </ErrorBoundary>
                           )}
                           {msg.isStreaming && (
                             <div className="mt-1.5">
@@ -732,8 +855,8 @@ export default function HomePage() {
                                     .find((m) => m.role === "user");
                                   if (prevUserMsg) handleRetry(prevUserMsg.content);
                                 }}
-                                className="gap-1.5 text-xs h-7"
-                                aria-label="Retry sending message"
+                                  className="gap-1.5 text-xs min-h-[44px]"
+                                  aria-label="Retry sending message"
                               >
                                 <RiArrowGoBackLine className="size-3.5" />
                                 Retry
@@ -752,7 +875,7 @@ export default function HomePage() {
                                     onClick={() =>
                                       handleFollowUpClick(suggestion)
                                     }
-                                    className="text-xs px-3 py-1.5 rounded-full border border-border/50 bg-muted/30 text-muted-foreground hover:bg-health/10 hover:text-foreground hover:border-health/30 active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                                    className="text-xs px-3 min-h-[44px] rounded-full border border-border/50 bg-muted/30 text-muted-foreground hover:bg-health/10 hover:text-foreground hover:border-health/30 active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                                   >
                                     {suggestion}
                                   </button>
@@ -766,7 +889,7 @@ export default function HomePage() {
                                 <button
                                   type="button"
                                   onClick={() => copyMessage(msg.content, i)}
-                                  className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  className="flex items-center gap-1 rounded-md px-1.5 min-h-[44px] text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                   aria-label={copiedMessageIndex === i ? "Copied" : "Copy message"}
                                 >
                                   {copiedMessageIndex === i ? (
@@ -840,7 +963,7 @@ export default function HomePage() {
                       variant="outline"
                       size="sm"
                       onClick={handleStopStreaming}
-                      className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10 active:scale-95"
+                      className="gap-1.5 text-xs min-h-[44px] text-destructive border-destructive/30 hover:bg-destructive/10 active:scale-95"
                       aria-label="Stop generating response"
                     >
                       <RiStopCircleLine className="size-4" />
@@ -874,7 +997,7 @@ export default function HomePage() {
                     disabled={!query.trim() || isStreaming}
                     aria-label={query.trim() ? "Send message" : "Type a message to send"}
                     className={cn(
-                      "size-9 rounded-full motion-safe:transition-all motion-safe:duration-300",
+                      "size-9 min-h-[44px] min-w-[44px] rounded-full motion-safe:transition-all motion-safe:duration-300",
                       query.trim() && !isStreaming
                         ? "bg-health text-white hover:bg-health/90 active:scale-95"
                         : "bg-muted text-muted-foreground",

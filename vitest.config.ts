@@ -5,7 +5,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["src/**/*.edge-cases.test.ts"],
+    include: [
+      "src/**/*.edge-cases.test.ts",
+      "src/**/*.security.test.ts",
+      "src/**/__tests__/*.test.ts",
+    ],
   },
   resolve: {
     alias: {

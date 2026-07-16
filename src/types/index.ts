@@ -295,6 +295,116 @@ export interface Referral {
   insuranceInfo: string;
 }
 
+// ── HIPAA Documentation Vault Types ──
+
+export type DocumentCategory =
+  | "patient-records"
+  | "medical-documentation"
+  | "consent-forms"
+  | "insurance-documents"
+  | "compliance-documents"
+  | "policies"
+  | "procedures"
+  | "audit-documents"
+  | "employee-training-records"
+  | "business-associate-agreements"
+  | "security-documentation"
+  | "privacy-documentation"
+  | "other";
+
+export type DocumentAccessAction =
+  | "VIEW"
+  | "DOWNLOAD"
+  | "UPLOAD"
+  | "UPDATE"
+  | "DELETE"
+  | "SHARE"
+  | "EXPORT"
+  | "ARCHIVE"
+  | "RESTORE";
+
+export interface Document {
+  id: string;
+  organizationId: string;
+  uploadedById: string;
+  title: string;
+  description?: string;
+  category: DocumentCategory;
+  tags: string[];
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  storageKey: string;
+  storageBucket: string;
+  storageEndpoint: string;
+  encryptionKey?: string;
+  encryptionIv?: string;
+  checksum?: string;
+  mimeType: string;
+  version: number;
+  isArchived: boolean;
+  isOnLegalHold: boolean;
+  retentionDate?: string;
+  notes?: string;
+  expiresAt?: string;
+  deletedAt?: string;
+  uploadedBy?: { firstName: string; lastName: string; email: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentAccessLog {
+  id: string;
+  documentId: string;
+  userId: string;
+  action: DocumentAccessAction;
+  timestamp: string;
+  ipAddress?: string;
+  userAgent?: string;
+  success: boolean;
+  details?: string;
+  user?: { firstName: string; lastName: string; email: string };
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: number;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  storageKey: string;
+  storageBucket: string;
+  checksum?: string;
+  uploadedById: string;
+  changeNotes?: string;
+  uploadedBy?: { firstName: string; lastName: string; email: string };
+  createdAt: string;
+}
+
+export interface DocumentSearchParams {
+  query?: string;
+  category?: DocumentCategory;
+  tags?: string[];
+  uploadedById?: string;
+  isArchived?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export type DocumentStats = {
+  totalDocuments: number;
+  totalSize: number;
+  byCategory: Record<string, number>;
+  recentUploads: number;
+  expiringSoon: number;
+  archivedCount: number;
+};
+
 export interface ActivityEvent {
   id: string;
   type: "placement" | "assessment" | "admission" | "discharge" | "note" | "milestone";

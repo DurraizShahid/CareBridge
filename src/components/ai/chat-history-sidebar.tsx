@@ -129,7 +129,7 @@ export function ChatHistorySidebar({
   return (
     <div className="flex h-full flex-col bg-sidebar">
       {/* New Chat Button */}
-      <div className="px-3 pt-3 pb-2">
+      <div className="px-2 pt-2 pb-1">
         <Button
           variant="outline"
           size="sm"
@@ -142,7 +142,7 @@ export function ChatHistorySidebar({
       </div>
 
       {/* Chat List */}
-      <nav className="flex-1 overflow-y-auto px-2 pb-3" aria-label="Chat history">
+      <nav className="flex-1 overflow-y-auto px-1 pb-2" aria-label="Chat history">
         {isLoading ? (
           <div className="space-y-1 px-1">
             {[1, 2, 3].map((i) => (
@@ -164,8 +164,8 @@ export function ChatHistorySidebar({
           </div>
         ) : (
           groupedChats.map((group) => (
-            <div key={group.label} className="mb-3">
-              <div className="px-2 py-1">
+            <div key={group.label} className="mb-2">
+              <div className="px-2 py-0.5">
                 <span className="text-xs font-medium text-muted-foreground">
                   {group.label}
                 </span>
@@ -175,7 +175,7 @@ export function ChatHistorySidebar({
                   <div
                     key={chat.id}
                     className={cn(
-                      "group relative flex items-center gap-2 rounded-lg px-2 py-1.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-1",
+                      "group relative flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-1",
                       currentChatId === chat.id
                         ? "bg-accent/50 text-accent-foreground"
                         : "hover:bg-accent/30 text-muted-foreground hover:text-foreground"

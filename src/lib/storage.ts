@@ -36,6 +36,10 @@ export function getBucketName(): string {
   return getStorageConfig().bucket;
 }
 
+export function hasS3Config(): boolean {
+  return !!(process.env.S3_ENDPOINT && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY);
+}
+
 export function getEndpoint(): string {
   return getStorageConfig().endpoint;
 }

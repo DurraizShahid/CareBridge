@@ -67,7 +67,7 @@ export const AI_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "searchFacilities",
-      description: "Search for facilities across ALL organizations in the network. Can filter by location, insurance accepted, care levels offered, availability, facility type, and specialties. Use this when the user asks about placement options or finding facilities — this is the primary tool for facility discovery.",
+      description: "Search for facilities across ALL organizations in the network. All parameters are optional — calling with no parameters returns all facilities. Can filter by location, insurance accepted, care levels offered, availability, facility type, and specialties. Use this when the user asks about placement options or finding facilities — this is the primary tool for facility discovery. Always call this tool immediately when the user asks about facilities; do not ask the user for additional information first.",
       parameters: {
         type: "object",
         properties: {

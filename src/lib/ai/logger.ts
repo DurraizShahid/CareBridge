@@ -10,6 +10,8 @@ interface AILogEvent {
   organizationId?: string;
   model?: string;
   provider?: string;
+  source?: string;
+  retryAfter?: number;
   promptTokens?: number;
   completionTokens?: number;
   totalTokens?: number;
@@ -19,12 +21,16 @@ interface AILogEvent {
   errorMessage?: string;
   messageCount?: number;
   round?: number;
+  rawArguments?: string;
 }
 
 const PII_FIELDS = new Set([
   "content", "messages", "args", "arguments", "query",
   "patientName", "patientId", "mrn", "diagnosis",
   "firstName", "lastName", "email", "phone",
+  "ssn", "address", "dateOfBirth", "dob", "zip",
+  "insuranceId", "medication", "chiefComplaint",
+  "rawArguments",
 ]);
 
 function sanitize(obj: Record<string, unknown>): Record<string, unknown> {
@@ -85,4 +91,49 @@ export function logAIError(
     errorMessage: errMsg,
     ...context,
   });
+}
+
+export function logToolCall(
+  toolName: string,
+  duration: number,
+  context: Partial<AILogEvent> = {},
+): void {
+  logAIEvent("tool_call", {
+    level: "info",
+    toolName,
+    duration,
+    ...context,
+  });
+}
+
+export function logRateLimit(
+  userId: string,
+  retryAfter: number,
+  context: Partial<AILogEvent> = {},
+): void {
+  logAIEvent("rate_limit", {
+    level: "warn",
+    userId,
+    retryAfter,
+    ...context,
+  });
+}
+
+export function createTokenTracker() {
+  let promptTokens = 0;
+  let completionTokens = 0;
+
+  return {
+    add(usage: { promptTokens?: number; completionTokens?: number }) {
+      if (usage.promptTokens) promptTokens += usage.promptTokens;
+      if (usage.completionTokens) completionTokens += usage.completionTokens;
+    },
+    snapshot() {
+      return {
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+      };
+    },
+  };
 }

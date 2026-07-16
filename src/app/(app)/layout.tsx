@@ -9,13 +9,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { OrganizationProvider } from "@/hooks/use-organization";
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { GooeyLoader } from "@/components/ui/loader-10";
 
 const HOSPITAL_ROLES = ["social-worker", "discharge-planner", "administrator"];
 
+function redirect(to: string) {
+  window.location.href = to;
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [hasOrg, setHasOrg] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/me');
         if (!res.ok) {
           console.error('GET /api/me failed:', res.status, await res.text());
-          router.push('/onboarding');
+          redirect('/onboarding');
           return;
         }
         const data = await res.json();
@@ -36,18 +38,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           setHasOrg(true);
           setUserRole(data.role ?? null);
         } else {
-          router.push('/onboarding');
+          redirect('/onboarding');
         }
       } catch (err) {
         console.error('Failed to check user:', err);
-        router.push('/onboarding');
+        redirect('/onboarding');
       } finally {
         setIsLoading(false);
       }
     };
 
     checkUser();
-  }, [router]);
+  }, []);
 
   const isHospitalRole = userRole && HOSPITAL_ROLES.includes(userRole);
 

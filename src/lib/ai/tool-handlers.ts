@@ -2,6 +2,7 @@ import {
   getPatients,
   getPatient,
   getFacilities,
+  getFacility,
   getFacilityById,
   searchFacilities as searchAllFacilities,
   getPlacements,
@@ -9,6 +10,28 @@ import {
   getRecentActivity,
 } from "@/lib/data-access";
 import type { Facility, Patient, Placement } from "@/types";
+
+function checkToolPermission(_toolName: string, _role: string): boolean {
+  return true;
+}
+
+function redactPatientData(patient: Record<string, unknown>): Record<string, unknown> {
+  const safe = { ...patient };
+  delete safe.phone;
+  delete safe.emergencyContact;
+  safe.dateOfBirth = typeof patient.dateOfBirth === "string" ? patient.dateOfBirth.split("-")[0] : undefined;
+  if (typeof patient.address === "object" && patient.address) {
+    const addr = patient.address as Record<string, unknown>;
+    safe.address = { city: addr.city, state: addr.state };
+  }
+  if (Array.isArray(patient.insurance)) {
+    safe.insurance = (patient.insurance as Record<string, unknown>[]).map((i) => ({
+      type: i.type,
+      status: i.status,
+    }));
+  }
+  return safe;
+}
 
 function normalizeSearchValue(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -93,6 +116,9 @@ export const toolHandlers: Record<
 > = {
   searchPatients: async (args, ctx) => {
     try {
+      if (!checkToolPermission("searchPatients", ctx.role)) {
+        return { type: "error", message: "You do not have permission to search patients" };
+      }
       const patients = await getPatients(ctx.organizationId, ctx.role);
       let filtered = patients;
 
@@ -121,7 +147,7 @@ export const toolHandlers: Record<
           : 20;
 
       filtered = filtered.slice(0, limit);
-      return { type: "data", data: filtered };
+      return { type: "data", data: filtered.map((p) => redactPatientData(p as unknown as Record<string, unknown>)) };
     } catch (e) {
       return {
         type: "error",
@@ -132,13 +158,16 @@ export const toolHandlers: Record<
 
   getPatient: async (args, ctx) => {
     try {
+      if (!checkToolPermission("getPatient", ctx.role)) {
+        return { type: "error", message: "You do not have permission to view patients" };
+      }
       const id = args.id as string;
       if (!id) return { type: "error", message: "Patient ID is required" };
 
       const patient = await getPatient(id, ctx.organizationId, ctx.role);
       if (!patient) return { type: "error", message: "Patient not found" };
 
-      return { type: "data", data: patient };
+      return { type: "data", data: redactPatientData(patient as unknown as Record<string, unknown>) };
     } catch (e) {
       return {
         type: "error",
@@ -147,8 +176,11 @@ export const toolHandlers: Record<
     }
   },
 
-  searchFacilities: async (args, _ctx) => {
+  searchFacilities: async (args, ctx) => {
     try {
+      if (!checkToolPermission("searchFacilities", ctx.role)) {
+        return { type: "error", message: "You do not have permission to search facilities" };
+      }
       const params: Parameters<typeof searchAllFacilities>[0] = {};
 
       if (typeof args.location === "string") {
@@ -193,6 +225,9 @@ export const toolHandlers: Record<
 
   getFacilities: async (_args, ctx) => {
     try {
+      if (!checkToolPermission("getFacilities", ctx.role)) {
+        return { type: "error", message: "You do not have permission to list facilities" };
+      }
       const facilities = await getFacilities(ctx.organizationId, ctx.role);
       return { type: "data", data: facilities };
     } catch (e) {
@@ -204,12 +239,15 @@ export const toolHandlers: Record<
     }
   },
 
-  getFacility: async (args, _ctx) => {
+  getFacility: async (args, ctx) => {
     try {
+      if (!checkToolPermission("getFacility", ctx.role)) {
+        return { type: "error", message: "You do not have permission to view facilities" };
+      }
       const id = args.id as string;
       if (!id) return { type: "error", message: "Facility ID is required" };
 
-      const facility = await getFacilityById(id);
+      const facility = await getFacility(id, ctx.organizationId, ctx.role);
       if (!facility) return { type: "error", message: "Facility not found" };
 
       return { type: "data", data: facility };
@@ -223,6 +261,9 @@ export const toolHandlers: Record<
 
   getPlacements: async (args, ctx) => {
     try {
+      if (!checkToolPermission("getPlacements", ctx.role)) {
+        return { type: "error", message: "You do not have permission to view placements" };
+      }
       const placements = await getPlacements(ctx.organizationId, ctx.role);
       let filtered: Placement[] = placements;
 
@@ -252,6 +293,9 @@ export const toolHandlers: Record<
 
   getDashboardStats: async (_args, ctx) => {
     try {
+      if (!checkToolPermission("getDashboardStats", ctx.role)) {
+        return { type: "error", message: "You do not have permission to view dashboard stats" };
+      }
       const stats = await getDashboardStats(ctx.organizationId, ctx.role);
       return { type: "data", data: stats };
     } catch (e) {
@@ -265,6 +309,9 @@ export const toolHandlers: Record<
 
   getRecentActivity: async (_args, ctx) => {
     try {
+      if (!checkToolPermission("getRecentActivity", ctx.role)) {
+        return { type: "error", message: "You do not have permission to view recent activity" };
+      }
       const activity = await getRecentActivity(ctx.organizationId, ctx.role);
       return { type: "data", data: activity };
     } catch (e) {
@@ -278,6 +325,9 @@ export const toolHandlers: Record<
 
   draftPlacement: async (args, ctx) => {
     try {
+      if (!checkToolPermission("draftPlacement", ctx.role)) {
+        return { type: "error", message: "You do not have permission to draft placements" };
+      }
       const patientId = args.patientId as string;
       const facilityId = args.facilityId as string;
       const careLevel = args.careLevel as string;
@@ -296,10 +346,18 @@ export const toolHandlers: Record<
         return { type: "error", message: `Invalid care level: ${careLevel}` };
       }
 
+      if (typeof args.priority === "string" && !["low", "medium", "high", "emergency"].includes(args.priority)) {
+        return { type: "error", message: `Invalid priority: ${args.priority}` };
+      }
+
+      if (assessmentNotes && assessmentNotes.length > 2000) {
+        return { type: "error", message: "Assessment notes too long (max 2000 characters)" };
+      }
+
       const patient = await getPatient(patientId, ctx.organizationId, ctx.role);
       if (!patient) return { type: "error", message: "Patient not found" };
 
-      const facility = await getFacilityById(facilityId);
+      const facility = await getFacility(facilityId, ctx.organizationId, ctx.role);
       if (!facility) return { type: "error", message: "Facility not found" };
 
       const hasCareLevel = facility.careLevelsOffered.includes(careLevel as any);

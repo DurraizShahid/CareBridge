@@ -42,6 +42,12 @@ export const PERMISSIONS = [
   // ── System ──
   "settings:read",
   "settings:write",
+  // ── Documents (HIPAA Vault) ──
+  "documents:read",
+  "documents:create",
+  "documents:update",
+  "documents:delete",
+  "documents:audit",
   // ── Audit ──
   "audit:view",
 ] as const satisfies `${string}:${string}`[];

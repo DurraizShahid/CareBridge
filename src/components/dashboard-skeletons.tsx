@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -861,4 +862,151 @@ export function PatientMatchingPageSkeleton() {
     </div>
   );
 }
+
+export function DocumentVaultStatsSkeleton() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Card key={i} className="relative overflow-hidden">
+          <CardContent className="flex flex-col gap-3 p-5">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-9 w-9 rounded-xl" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <Skeleton className="h-7 w-16 align-middle" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function DocumentTableSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-9 w-full rounded-lg" />
+      <Card className="overflow-hidden py-0 shadow-sm">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4 border-b border-border px-4 py-3">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className={cn("h-4", i === 0 ? "w-8" : i === 1 ? "w-36 flex-1" : i === 2 ? "w-24" : i === 3 ? "w-20" : i === 4 ? "w-28" : i === 5 ? "w-20" : "w-8")} />
+            ))}
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 border-b border-border px-4 py-3.5 last:border-0">
+              <Skeleton className="h-4 w-4 rounded-[4px]" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-28 rounded-md" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-48" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function DocumentDetailPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-9 w-9 rounded-lg" />
+        <div className="flex flex-col gap-1">
+          <Skeleton className="h-6 w-64" />
+          <Skeleton className="h-3.5 w-40" />
+        </div>
+      </div>
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="flex flex-col gap-6 xl:col-span-2">
+          <Card>
+            <CardContent className="flex flex-col gap-4 p-6">
+              <Skeleton className="h-5 w-32" />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-4 w-44" />
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              </div>
+              <Skeleton className="h-px w-full" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-32 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-px w-full" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex gap-2 border-b border-border">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-28 rounded-t-lg rounded-b-none" />
+            ))}
+          </div>
+          <Card>
+            <CardContent className="flex flex-col gap-3 p-6">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardContent className="flex flex-col gap-3 p-6">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-9 w-full rounded-lg" />
+              <Skeleton className="h-9 w-full rounded-lg" />
+              <Skeleton className="h-9 w-full rounded-lg" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex flex-col gap-3 p-6">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-40" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function DocumentVaultPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeaderSkeleton />
+      <DocumentVaultStatsSkeleton />
+      <DocumentTableSkeleton />
+    </div>
+  );
+}
+
+export const DocumentsPageSkeleton = DocumentVaultPageSkeleton;
 

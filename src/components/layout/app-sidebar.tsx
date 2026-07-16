@@ -8,6 +8,7 @@ import {
   Users,
   BuildingOffice,
   HouseSimple,
+  FileText,
   ChartBar,
   Info,
 } from "@phosphor-icons/react";
@@ -35,6 +36,7 @@ const mainNavItems: NavItem[] = [
   { href: "/patients", label: "Patients", icon: Users },
   { href: "/facilities", label: "Facilities", icon: BuildingOffice },
   { href: "/placements", label: "Placements", icon: HouseSimple },
+  { href: "/dashboard/documents", label: "Documentation Vault", icon: FileText },
   { href: "/users", label: "Users", icon: Users },
   { href: "/dashboard/facility-network", label: "Facility Network", icon: ChartBar },
 ];

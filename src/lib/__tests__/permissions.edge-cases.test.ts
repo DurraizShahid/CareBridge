@@ -46,13 +46,13 @@ describe("normalizeRole", () => {
 describe("getFallbackRole", () => {
   it("never returns superadmin", () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    (process.env as any).NODE_ENV = "development";
     expect(getFallbackRole()).not.toBe("superadmin");
-    process.env.NODE_ENV = "production";
+    (process.env as any).NODE_ENV = "production";
     expect(getFallbackRole()).not.toBe("superadmin");
-    process.env.NODE_ENV = "test";
+    (process.env as any).NODE_ENV = "test";
     expect(getFallbackRole()).not.toBe("superadmin");
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV = originalEnv;
   });
 
   it("always returns customer", () => {

@@ -42,7 +42,7 @@ const bubbleVariants = cva(
   }
 )
 
-function Bubble({
+const Bubble = React.memo(function Bubble({
   variant = "default",
   align = "start",
   className,
@@ -60,7 +60,7 @@ function Bubble({
       {...props}
     />
   )
-}
+})
 
 function BubbleContent({
   className,

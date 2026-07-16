@@ -127,6 +127,7 @@ model Organization {
   inviteCodes   InviteCode[]
   joinRequests  JoinRequest[]
   chats         Chat[]
+  documents     Document[]
 }
 
 model InviteCode {
@@ -190,6 +191,9 @@ model User {
   reviewedJoinRequests   JoinRequest[]    @relation("JoinRequestReviewedBy")
   joinRequest            JoinRequest?     @relation("JoinRequestUser")
   chats                  Chat[]
+  documents              Document[]           @relation("DocumentUploader")
+  documentAccessLogs     DocumentAccessLog[]
+  documentVersions       DocumentVersion[]    @relation("VersionUploader")
 }
 
 model Patient {
@@ -323,6 +327,119 @@ model Placement {
   patient              Patient         @relation(fields: [patientId], references: [id])
   facility             Facility?       @relation(fields: [facilityId], references: [id])
   socialWorker         User            @relation(fields: [socialWorkerId], references: [id])
+}
+
+// ── HIPAA Documentation Vault Models ──
+
+enum DocumentCategory {
+  patient_records
+  medical_documentation
+  consent_forms
+  insurance_documents
+  compliance_documents
+  policies
+  procedures
+  audit_documents
+  employee_training_records
+  business_associate_agreements
+  security_documentation
+  privacy_documentation
+  other
+}
+
+enum DocumentAccessAction {
+  VIEW
+  DOWNLOAD
+  UPLOAD
+  UPDATE
+  DELETE
+  SHARE
+  EXPORT
+  ARCHIVE
+  RESTORE
+}
+
+model Document {
+  id               String             @id @default(cuid())
+  organizationId   String
+  uploadedById     String
+  title            String
+  description      String?
+  category         DocumentCategory   @default(other)
+  tags             String[]
+  fileName         String
+  fileType         String
+  fileSize         Int
+  storageKey       String
+  storageBucket    String
+  storageEndpoint  String
+  encryptionKey    String?            // Envelope encryption key (encrypted with master key)
+  encryptionIv     String?            // Initialization vector
+  checksum         String?            // SHA-256 hash for integrity verification
+  mimeType         String
+  version          Int                @default(1)
+  isArchived       Boolean            @default(false)
+  isOnLegalHold    Boolean            @default(false)
+  retentionDate    DateTime?
+  notes            String?
+  expiresAt        DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  organization     Organization       @relation(fields: [organizationId], references: [id])
+  uploadedBy       User               @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  accessLogs       DocumentAccessLog[]
+  versions         DocumentVersion[]
+
+  @@index([organizationId])
+  @@index([uploadedById])
+  @@index([category])
+  @@index([isArchived])
+  @@index([deletedAt])
+  @@index([title])
+}
+
+model DocumentAccessLog {
+  id             String               @id @default(cuid())
+  documentId     String
+  userId         String
+  action         DocumentAccessAction
+  timestamp      DateTime             @default(now())
+  ipAddress      String?
+  userAgent      String?
+  success        Boolean              @default(true)
+  details        String?              // Additional context (e.g., "Download expired", "Permission denied")
+
+  document       Document             @relation(fields: [documentId], references: [id])
+  user           User                 @relation(fields: [userId], references: [id])
+
+  @@index([documentId])
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@index([success])
+}
+
+model DocumentVersion {
+  id             String      @id @default(cuid())
+  documentId     String
+  version        Int
+  fileName       String
+  fileType       String
+  fileSize       Int
+  storageKey     String
+  storageBucket  String
+  checksum       String?
+  uploadedById   String
+  changeNotes    String?
+  createdAt      DateTime    @default(now())
+
+  document       Document    @relation(fields: [documentId], references: [id])
+  uploadedBy     User        @relation("VersionUploader", fields: [uploadedById], references: [id])
+
+  @@index([documentId])
+  @@index([version])
 }
 
 model ActivityEvent {

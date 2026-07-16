@@ -45,6 +45,12 @@ export const PERMISSION_CATALOG: {
   // System
   { key: "settings:read", label: "View Settings", description: "View system settings", resource: "settings" },
   { key: "settings:write", label: "Edit Settings", description: "Modify system settings", resource: "settings" },
+  // Documents (HIPAA Vault)
+  { key: "documents:read", label: "View Documents", description: "View documents in the documentation vault", resource: "documents" },
+  { key: "documents:create", label: "Upload Documents", description: "Upload new documents to the vault", resource: "documents" },
+  { key: "documents:update", label: "Update Documents", description: "Edit document metadata and content", resource: "documents" },
+  { key: "documents:delete", label: "Delete Documents", description: "Archive or delete documents from the vault", resource: "documents" },
+  { key: "documents:audit", label: "Document Audit", description: "View document access logs and audit trail", resource: "documents" },
   // Audit
   { key: "audit:view", label: "View Audit Log", description: "View audit trail and system logs", resource: "audit" },
 ];
@@ -65,6 +71,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "hospitals:manage",
     "users:read", "users:read-org", "users:create", "users:update", "users:delete", "users:manage-roles",
     "dashboard:overview", "dashboard:staff", "dashboard:facility", "dashboard:admin",
+    "documents:read", "documents:create", "documents:update", "documents:delete", "documents:audit",
     "settings:read", "settings:write",
     "audit:view",
   ],
@@ -76,6 +83,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "hospitals:manage",
     "users:read", "users:read-org", "users:create", "users:update",
     "dashboard:overview", "dashboard:staff", "dashboard:admin",
+    "documents:read", "documents:create", "documents:update", "documents:delete", "documents:audit",
     "settings:read", "settings:write",
   ],
 
@@ -85,6 +93,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "placements:read", "placements:create", "placements:update",
     "users:read-org",
     "dashboard:overview", "dashboard:staff",
+    "documents:read", "documents:create",
   ],
 
   // ── Discharge Planner ──
@@ -93,6 +102,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "placements:read", "placements:create", "placements:update", "placements:approve",
     "users:read-org",
     "dashboard:overview", "dashboard:staff",
+    "documents:read", "documents:create",
   ],
 
   // ── Facility Coordinator ──
@@ -102,6 +112,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "facilities:read", "facilities:create", "facilities:update",
     "users:read", "users:read-org", "users:create", "users:update",
     "dashboard:overview", "dashboard:staff", "dashboard:facility",
+    "documents:read", "documents:create", "documents:update",
     "settings:read", "settings:write",
   ],
 
@@ -224,6 +235,14 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
   "/facilities/new": {
     permissions: ["facilities:create"],
     redirect: "/facilities",
+  },
+  "/dashboard/documents": {
+    permissions: ["documents:read"],
+    redirect: "/dashboard",
+  },
+  "/dashboard/documents/[id]": {
+    permissions: ["documents:read"],
+    redirect: "/dashboard/documents",
   },
   "/placements": {
     permissions: ["placements:read"],
