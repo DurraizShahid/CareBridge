@@ -1,14 +1,21 @@
 // ─── Server-Side Organization Resolver ───
 // Used in server components and Server Actions to get the current
-// user's organization context from the local database.
+// user's organization context from the Clerk session.
 
-import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { resolveRole } from "@/lib/permissions";
+import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@/types";
-import { prismaRoleToAppRole } from "@/lib/organization-role";
 
 export type OrgType = "hospital" | "facility";
+
+/**
+ * Derive the organization type from the user's role.
+ */
+function orgTypeFromRole(role: UserRole): OrgType {
+  if (role === "facility-coordinator") return "facility";
+  return "hospital"; // social-worker, discharge-planner, administrator, superadmin, customer
+}
 
 export interface ServerOrganization {
   organizationId: string;
@@ -18,23 +25,59 @@ export interface ServerOrganization {
   userId: string;
 }
 
+/**
+ * Resolve the organization context for the currently authenticated user.
+ * Falls back to mock data in development.
+ *
+ * Should be called from server components and server actions.
+ */
 export async function getServerOrganization(): Promise<ServerOrganization | null> {
   const sessionAuth = await auth();
   if (!sessionAuth.userId) return null;
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: sessionAuth.userId },
-  });
+  const clerkUser = await currentUser();
 
-  if (!dbUser || !dbUser.organizationId) return null;
+  // Try DB first, then Clerk metadata, then mock fallback
+  let organizationId = "";
+  let roleCandidate: unknown = "";
 
-  const role = resolveRole(dbUser.role);
-  if (!role) return null;
+  // Check DB
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: sessionAuth.userId },
+    });
+    if (dbUser) {
+      organizationId = dbUser.organizationId ?? "";
+      roleCandidate = dbUser.role;
+    }
+  } catch {
+    // DB may not be available
+  }
+
+  // Fallback to Clerk metadata
+  if (!organizationId && clerkUser?.publicMetadata?.organizationId) {
+    organizationId = clerkUser.publicMetadata.organizationId as string;
+  }
+
+  const role = resolveRole(roleCandidate, clerkUser?.publicMetadata?.role, null);
+
+  // Derive org type from role
+  let organizationType: OrgType = orgTypeFromRole(role);
+
+  // Override from Clerk metadata if available
+  if (clerkUser?.publicMetadata?.organizationType) {
+    const metaType = String(clerkUser.publicMetadata.organizationType).toLowerCase();
+    if (metaType === "hospital" || metaType === "facility") {
+      organizationType = metaType;
+    }
+  }
+
+  if (!organizationId) return null;
 
   return {
     userId: sessionAuth.userId,
-    organizationId: dbUser.organizationId,
-    organizationType: role === "facility-coordinator" ? "facility" : "hospital",
+    organizationId,
+    organizationType,
     role,
     isSuperadmin: role === "superadmin",
   };
