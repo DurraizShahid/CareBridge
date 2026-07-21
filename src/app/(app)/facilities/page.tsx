@@ -120,7 +120,7 @@ export default async function FacilitiesPage() {
   const facilities = generateFacilities();
 
   return (
-    <div className="space-y-6">
+    <div className="-mx-4 -my-10 sm:-mx-6 lg:-mx-8 px-4 py-10 sm:px-6 lg:px-8 bg-muted/30 min-h-full space-y-6">
       <PageHeader
         title=""
         description="Browse and discover care settings for your patients."

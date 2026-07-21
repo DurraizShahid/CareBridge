@@ -23,6 +23,7 @@ import {
   isToday,
 } from "date-fns";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
 
 const TEAL = "#277979";
 const DARK_TEXT = "#155F60";
