@@ -24,33 +24,33 @@ const iconStyles: Record<string, string> = {
 };
 
 const trendStyles = {
-  positive: "text-health",
-  negative: "text-destructive",
+  positive: "text-health bg-[var(--stat-health-bg)]",
+  negative: "text-destructive bg-[var(--destructive)]/10",
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
     <Card hoverable className="bg-card">
-      <CardContent className="flex flex-col gap-5">
+      <CardContent className="flex flex-col gap-6">
         <div className="flex items-start justify-between">
-          <span className="text-sm font-medium text-muted-foreground">{title}</span>
+          <span className="text-sm font-semibold text-muted-foreground">{title}</span>
           <div
             className={cn(
-              "flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-200 group-hover:scale-105",
+              "flex size-14 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-md",
               iconStyles[variant],
             )}
           >
-            <Icon className="size-6" />
+            <Icon className="size-7" />
           </div>
         </div>
-        <div className="flex items-baseline gap-3">
-          <span className="font-heading text-3xl font-semibold tracking-tight text-foreground tabular-nums">
+        <div className="flex items-baseline gap-4">
+          <span className="font-heading text-4xl font-bold tracking-tight text-foreground tabular-nums">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 text-sm font-semibold px-3 py-1 rounded-full bg-background/50",
+                "inline-flex items-center gap-1.5 text-sm font-bold px-4 py-1.5 rounded-full",
                 trend.positive ? trendStyles.positive : trendStyles.negative,
               )}
             >

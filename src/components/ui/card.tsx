@@ -13,13 +13,13 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden bg-card text-sm text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
-        "rounded-3xl", // Large rounded corners
-        "shadow-[0_1px_1px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_1px_rgba(0,0,0,0.2),0_4px_12px_rgba(0,0,0,0.25)]", // Soft layered shadows
-        "ring-1 ring-foreground/5 dark:ring-white/5", // Subtle border
-        "bg-gradient-to-b from-card to-card/80 dark:from-card dark:to-card/90", // Soft gradient
-        "transition-all duration-200 ease-out",
-        hoverable && "hover:-translate-y-1 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.35)] hover:ring-foreground/10 dark:hover:ring-white/10",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden bg-card text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
+        "rounded-3xl",
+        "shadow-[0_1px_1px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_1px_rgba(0,0,0,0.25),0_4px_24px_rgba(0,0,0,0.3)]",
+        "ring-1 ring-foreground/5 dark:ring-white/5",
+        "bg-gradient-to-b from-card to-card/90 dark:from-card dark:to-card/85",
+        "transition-all duration-250 ease-out",
+        hoverable && "hover:-translate-y-1.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:ring-foreground/10 dark:hover:ring-white/10",
         className
       )}
       {...props}
@@ -32,7 +32,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-2 px-(--card-spacing) pt-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing) border-border/30",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-3 px-(--card-spacing) pt-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing) border-border/30",
         className
       )}
       {...props}
@@ -44,7 +44,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("font-heading text-lg font-semibold tracking-tight text-foreground", className)}
+      className={cn("font-heading text-xl font-bold tracking-tight text-foreground", className)}
       {...props}
     />
   )
@@ -54,7 +54,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground leading-relaxed", className)}
+      className={cn("text-base text-muted-foreground leading-relaxed", className)}
       {...props}
     />
   )
