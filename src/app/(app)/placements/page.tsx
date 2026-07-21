@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
+import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -121,21 +122,23 @@ export default async function PlacementsPage() {
 
       {/* Placement cards */}
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 px-6 py-16 text-center">
-          <p className="text-lg font-semibold text-card-foreground">No placements yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create a new placement to start tracking patient transfers.
-          </p>
-          {canCreate && (
-            <Link
-              href="/placements/new"
-              className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-            >
-              <Plus className="h-4 w-4" />
-              New Placement
-            </Link>
-          )}
-        </div>
+        <Card className="border-dashed bg-card/50">
+          <CardContent className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <p className="text-lg font-semibold text-card-foreground">No placements yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create a new placement to start tracking patient transfers.
+            </p>
+            {canCreate && (
+              <Link
+                href="/placements/new"
+                className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
+              >
+                <Plus className="h-4 w-4" />
+                New Placement
+              </Link>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {!isEmpty && (
@@ -149,8 +152,10 @@ export default async function PlacementsPage() {
             <Link
               key={plc.id}
               href={`/placements/${plc.id}`}
-              className="block rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md"
+              className="block transition-all duration-200 hover:shadow-md"
             >
+              <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+              <CardContent className="p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex items-center gap-3">
@@ -252,6 +257,8 @@ export default async function PlacementsPage() {
                   {plc.notes}
                 </p>
               )}
+              </CardContent>
+              </Card>
             </Link>
           );
         })}

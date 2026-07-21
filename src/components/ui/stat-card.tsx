@@ -50,12 +50,12 @@ const trendStyles = {
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
-    <Card
-      className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 bg-card/70 backdrop-blur-xl border-l-2",
-        bgStyles[variant],
-        variantStyles[variant],
-      )}
+      <Card
+        className={cn(
+          "group relative overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md bg-card/70 backdrop-blur-xl border-l-2",
+          bgStyles[variant],
+          variantStyles[variant],
+        )}
     >
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between">

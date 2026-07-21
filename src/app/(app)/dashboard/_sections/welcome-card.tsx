@@ -8,7 +8,7 @@ export default function WelcomeCard() {
   const { user } = useUser();
 
   return (
-    <Card className="shadow-sm rounded-2xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white overflow-hidden relative h-full min-h-[400px]">
+    <Card className="rounded-2xl border-border/10 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white overflow-hidden relative h-full min-h-[400px] shadow-sm">
       <CardContent className="p-6 h-full flex flex-col justify-between relative z-10">
         <div>
           <div className="flex items-center justify-between mb-4">

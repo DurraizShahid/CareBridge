@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Search } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
+import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { getUsers } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -41,7 +42,7 @@ export default async function UsersPage() {
         />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <Card className="p-0">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-muted/50">
@@ -97,7 +98,7 @@ export default async function UsersPage() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       <p className="text-xs text-muted-foreground">
         Showing {users.length} users

@@ -4,6 +4,7 @@ import { Plus, Search } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { roleHasPermission } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPatients } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -68,7 +69,7 @@ export default async function PatientsPage() {
         />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <Card className="p-0">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-muted/50">
@@ -148,7 +149,7 @@ export default async function PatientsPage() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       <p className="text-xs text-muted-foreground">
         Showing {patients.length} patients

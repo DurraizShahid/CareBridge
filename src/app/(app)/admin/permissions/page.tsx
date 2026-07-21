@@ -48,7 +48,7 @@ export default function PermissionsOverviewPage() {
       </PageHeader>
 
       {/* Responsive permission matrix */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card shadow-sm">
         <table className="w-full min-w-[800px] text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
@@ -120,7 +120,7 @@ export default function PermissionsOverviewPage() {
           const display = roleDisplayConfig[role] ?? { label: role, color: "" };
           const perms = getRolePermissions(role);
           return (
-            <div key={role} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div key={role} className="rounded-2xl border border-border/50 bg-card p-5 shadow-sm transition-all duration-200 hover:shadow-md">
               <div className="flex items-center justify-between">
                 <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", display.color)}>
                   {display.label}
