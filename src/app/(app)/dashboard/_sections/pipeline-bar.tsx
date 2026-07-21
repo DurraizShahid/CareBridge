@@ -20,8 +20,8 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
   const dThisMonth = hasRealData ? thisMonth : 18;
 
   const segments = [
-    { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#277979]", textColor: "text-white", bg: "#277979" },
-    { label: "Active", value: dActive, flex: dActive, color: "bg-[#bab9c4]", textColor: "text-[#1a1a1a]", bg: "#bab9c4" },
+    { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#277979] dark:bg-[#3A9D9D]", textColor: "text-white", bg: "#277979", darkBg: "#3A9D9D" },
+    { label: "Active", value: dActive, flex: dActive, color: "bg-[#bab9c4] dark:bg-[#6B6B7B]", textColor: "text-[#1a1a1a] dark:text-white", bg: "#bab9c4", darkBg: "#6B6B7B" },
     { label: "Total", value: dTotal, flex: dTotal, color: "hatched", textColor: "text-foreground", bg: "transparent" },
     { label: "This month", value: dThisMonth, flex: dThisMonth, color: "bordered", textColor: "text-foreground", bg: "transparent" },
   ];

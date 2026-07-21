@@ -100,7 +100,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                     <div className="relative">
                       <item.icon className={cn(
                         "size-5 transition-colors",
-                        isActive ? "!text-white" : "!text-[#202022] opacity-60"
+                        isActive ? "text-white" : "text-foreground/60"
                       )} />
                       {item.hasDot && (
                         <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
@@ -131,7 +131,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                 )}
               >
                 <div className="relative">
-                  <item.icon className="size-5 !text-[#202022] opacity-60" />
+                  <item.icon className="size-5 text-foreground/60" />
                   {item.hasDot && (
                     <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
                   )}
