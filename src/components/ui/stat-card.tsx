@@ -13,26 +13,6 @@ interface StatCardProps {
   variant?: "default" | "health" | "info" | "purple" | "pink" | "orange" | "facility";
 }
 
-const variantStyles: Record<string, string> = {
-  default: "border-l-[var(--stat-default)]",
-  health: "border-l-[var(--stat-health)]",
-  info: "border-l-[var(--stat-info)]",
-  purple: "border-l-[var(--stat-purple)]",
-  pink: "border-l-[var(--stat-pink)]",
-  orange: "border-l-[var(--stat-orange)]",
-  facility: "border-l-[var(--stat-facility)]",
-};
-
-const bgStyles: Record<string, string> = {
-  default: "bg-[var(--stat-default-bg)]",
-  health: "bg-[var(--stat-health-bg)]",
-  info: "bg-[var(--stat-info-bg)]",
-  purple: "bg-[var(--stat-purple-bg)]",
-  pink: "bg-[var(--stat-pink-bg)]",
-  orange: "bg-[var(--stat-orange-bg)]",
-  facility: "bg-[var(--stat-facility-bg)]",
-};
-
 const iconStyles: Record<string, string> = {
   default: "text-[var(--stat-default)] bg-[var(--stat-default-bg)]",
   health: "text-[var(--stat-health)] bg-[var(--stat-health-bg)]",
@@ -50,37 +30,31 @@ const trendStyles = {
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
-      <Card
-        className={cn(
-          "group relative overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md bg-card/70 backdrop-blur-xl border-l-2",
-          bgStyles[variant],
-          variantStyles[variant],
-        )}
-    >
-      <CardContent className="flex flex-col gap-3 p-5">
+    <Card hoverable className="bg-card">
+      <CardContent className="flex flex-col gap-5">
         <div className="flex items-start justify-between">
-          <span className="text-xs font-medium text-muted-foreground">{title}</span>
+          <span className="text-sm font-medium text-muted-foreground">{title}</span>
           <div
             className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-200",
+              "flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-200 group-hover:scale-105",
               iconStyles[variant],
             )}
           >
-            <Icon className="size-[18px]" />
+            <Icon className="size-6" />
           </div>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="font-heading text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+        <div className="flex items-baseline gap-3">
+          <span className="font-heading text-3xl font-semibold tracking-tight text-foreground tabular-nums">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
-                "text-xs font-medium",
+                "inline-flex items-center gap-1 text-sm font-semibold px-3 py-1 rounded-full bg-background/50",
                 trend.positive ? trendStyles.positive : trendStyles.negative,
               )}
             >
-              {trend.positive ? "+" : ""}
+              {trend.positive ? "↑" : "↓"}
               {trend.value}
             </span>
           )}
