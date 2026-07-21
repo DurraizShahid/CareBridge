@@ -124,6 +124,8 @@ export default async function FacilitiesPage() {
         title=""
         description="Browse and discover care settings for your patients."
         userName={userName}
+        welcomePrefix="Explore"
+        welcomeName="Facilities"
         breadcrumbs={[{ label: "Facilities" }]}
       >
         {canCreate && (
