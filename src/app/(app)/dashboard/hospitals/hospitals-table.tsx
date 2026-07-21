@@ -402,7 +402,7 @@ export function HospitalsTable({
         description="Manage hospital records for your organization."
       />
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center bg-card/70 backdrop-blur-xl rounded-xl border-border/60 shadow-sm p-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center bg-card/70 backdrop-blur-sm rounded-xl border border-border/60 shadow-sm p-3 md:p-4 transition-all duration-200">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -413,39 +413,41 @@ export function HospitalsTable({
               setGlobalFilter(event.target.value);
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
-            className="h-9 pl-9"
+            className="h-10 pl-9"
           />
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" className="h-9" />
-            }
-          >
-            <Settings2 data-icon="inline-start" />
-            Columns
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {table
-              .getAllLeafColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(checked) => column.toggleVisibility(checked)}
-                >
-                  {COLUMN_LABELS[column.id] ?? column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button onClick={openCreateDialog}>
-          <Plus data-icon="inline-start" />
-          Add Hospital
-        </Button>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" size="sm" />
+              }
+            >
+              <Settings2 data-icon="inline-start" />
+              Columns
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table
+                .getAllLeafColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(checked) => column.toggleVisibility(checked)}
+                  >
+                    {COLUMN_LABELS[column.id] ?? column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button onClick={openCreateDialog}>
+            <Plus data-icon="inline-start" />
+            Add Hospital
+          </Button>
+        </div>
       </div>
 
       {actionState.status === "error" && !dialogOpen && !deleteDialogOpen && (
