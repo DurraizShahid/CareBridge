@@ -17,7 +17,11 @@ const ChatSidebarContext = createContext<ChatSidebarContextValue | null>(null);
 export function ChatSidebarProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
-  const [newChatHandler, setNewChatHandler] = useState<() => void>(() => () => {});
+  const [newChatHandler, setRawNewChatHandler] = useState<() => void>(() => () => {});
+
+  const setNewChatHandler = useCallback((handler: () => void) => {
+    setRawNewChatHandler(() => handler);
+  }, []);
 
   const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
 
