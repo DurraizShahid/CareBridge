@@ -231,6 +231,15 @@
   .grid-auto-flow-dense {
     grid-auto-flow: dense;
   }
+  .card-base {
+    @apply rounded-xl border border-border/50 bg-card shadow-sm;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+  }
+  .card-base-hover {
+    @apply rounded-xl border border-border/50 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

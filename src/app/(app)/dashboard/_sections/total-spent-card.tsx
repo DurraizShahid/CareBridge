@@ -22,7 +22,7 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
 
   if (error) {
     return (
-      <Card className="rounded-xl border-border/60 shadow-sm h-full bg-card font-body">
+      <Card className="rounded-2xl border-border/50 shadow-sm h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
           <p className="text-sm text-muted-foreground">Placement value data unavailable</p>
         </CardContent>
@@ -31,7 +31,7 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
   }
 
   return (
-    <Card className="rounded-xl border-border/60 shadow-sm h-full bg-card font-body transition-all duration-300 hover:shadow-lg">
+    <Card className="rounded-2xl border-border/50 shadow-sm h-full bg-card transition-all duration-200 hover:shadow-md">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Total Placement Value</h3>

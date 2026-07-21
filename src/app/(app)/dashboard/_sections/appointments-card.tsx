@@ -23,6 +23,7 @@ import {
   isToday,
 } from "date-fns";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
 
 const TEAL = "#277979";
 const DARK_TEXT = "#155F60";
@@ -597,7 +598,7 @@ export function AppointmentsCard() {
 
   return (
     <div
-      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-xl shadow-sm bg-card transition-all duration-300 hover:shadow-lg"
+      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-xl border border-border/50 shadow-sm bg-card transition-all duration-200 hover:shadow-md"
     >
       {/* Header */}
       <div className="shrink-0 p-5 pb-4">

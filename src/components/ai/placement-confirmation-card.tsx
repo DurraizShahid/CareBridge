@@ -74,7 +74,7 @@ export function PlacementConfirmationCard({
 
   if (isDone) {
     return (
-      <Card size="sm" className="border-health/30 bg-health/5">
+      <Card size="sm" className="rounded-2xl border-health/30 bg-health/5">
         <CardContent className="flex items-center gap-3">
           <RiCheckboxCircleLine className="size-6 text-health shrink-0" />
           <div className="min-w-0 flex-1">
@@ -96,7 +96,7 @@ export function PlacementConfirmationCard({
   }
 
   return (
-    <Card size="sm" className="border-health/20">
+    <Card size="sm" className="rounded-2xl border-border/50">
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">

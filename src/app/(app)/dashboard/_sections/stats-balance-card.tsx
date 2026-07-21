@@ -13,7 +13,7 @@ export default function StatsBalanceCard() {
   const tetherPercentage = 28;
 
   return (
-    <Card className="shadow-sm rounded-2xl h-full transition-all duration-300 hover:shadow-md">
+    <Card className="rounded-2xl border-border/50 shadow-sm h-full transition-all duration-200 hover:shadow-md">
       <CardContent className="p-[18px]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-muted-foreground">Virtual cards</h3>

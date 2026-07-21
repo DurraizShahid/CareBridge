@@ -48,7 +48,7 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
 
   if (error) {
     return (
-      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-white font-body">
+      <Card className="rounded-xl border-border/50 shadow-sm h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-40 text-center">
           <p className="text-sm text-muted-foreground">Placement data unavailable</p>
         </CardContent>
@@ -57,7 +57,7 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
   }
 
   return (
-    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-white font-body overflow-hidden">
+    <Card className="rounded-xl border-border/50 shadow-sm h-full bg-card overflow-hidden transition-all duration-200 hover:shadow-md">
       <CardContent className="flex h-full p-6 gap-4">
         {loading ? (
           <div className="flex gap-4 w-full">

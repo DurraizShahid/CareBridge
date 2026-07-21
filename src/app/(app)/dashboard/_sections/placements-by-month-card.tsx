@@ -87,7 +87,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   }, []);
 
   return (
-    <Card className={cn("rounded-xl shadow-sm h-full overflow-hidden transition-all duration-300 hover:shadow-lg", className)}>
+    <Card className={cn("rounded-2xl border-border/50 shadow-sm h-full overflow-hidden transition-all duration-200 hover:shadow-md", className)}>
       <CardContent className="flex flex-col h-full p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -118,8 +118,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
           <div className="flex items-center gap-2">
             {/* Year Dropdown */}
             <button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-white/80"
-              style={{ backgroundColor: "#FFFFFF" }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-muted/50 bg-muted/30"
             >
               2024
               <ChevronDown className="size-4" />
@@ -128,11 +127,10 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
             {/* Arrow Button */}
             <button
               aria-label="View full statistics"
-              className="flex items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center rounded-full transition-all duration-200 hover:scale-105 active:scale-95 bg-muted/30 hover:bg-muted/50"
               style={{
                 width: "32px",
                 height: "32px",
-                backgroundColor: "#FFFFFF",
               }}
             >
               <ArrowUpRight className="size-4 text-foreground/60" />
