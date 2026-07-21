@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   LineChart,
   Line,
@@ -86,13 +87,8 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col rounded-[28px] shadow-sm h-full overflow-hidden !bg-white",
-        className
-      )}
-    >
-      <div className="flex flex-col h-full p-6">
+    <Card className={cn("rounded-xl shadow-sm h-full overflow-hidden transition-all duration-300 hover:shadow-lg", className)}>
+      <CardContent className="flex flex-col h-full p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-6">
@@ -193,7 +189,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

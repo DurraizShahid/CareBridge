@@ -84,7 +84,7 @@ export function ProgressCard() {
         }
       `}</style>
 
-      <Card className="rounded-[28px] border-border/40 shadow-sm h-full bg-white font-body overflow-hidden transition-shadow duration-300 hover:shadow-md">
+      <Card className="rounded-xl border-border/40 shadow-sm h-full bg-card font-body overflow-hidden transition-all duration-300 hover:shadow-lg">
         <CardContent className="flex flex-col h-full p-5">
           {/* Header */}
           <div className="flex items-start justify-between">
@@ -103,12 +103,10 @@ export function ProgressCard() {
             </div>
             <button
               aria-label="View full progress"
-              className="flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:shadow-md active:scale-95"
+              className="flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md active:scale-95 bg-card shadow-sm"
               style={{
                 width: "32px",
                 height: "32px",
-                backgroundColor: "#FFFFFF",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
               }}
             >
               <ArrowUpRight className="size-3.5 transition-colors duration-200" style={{ color: TEAL }} />

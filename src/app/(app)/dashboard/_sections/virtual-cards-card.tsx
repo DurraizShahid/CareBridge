@@ -73,7 +73,7 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
 
   if (error) {
     return (
-      <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-white font-body">
+      <Card className="rounded-xl border-border/60 shadow-sm h-full bg-card font-body">
         <CardContent className="p-6 flex flex-col items-center justify-center h-48 text-center">
           <p className="text-sm text-muted-foreground">Facility data unavailable</p>
         </CardContent>
@@ -82,7 +82,7 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
   }
 
   return (
-    <Card className="rounded-[28px] border-border/60 shadow-sm h-full bg-white font-body">
+    <Card className="rounded-xl border-border/60 shadow-sm h-full bg-card font-body transition-all duration-300 hover:shadow-lg">
       <CardContent className="p-0">
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Hospitals & Facilities</h3>
@@ -106,13 +106,13 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
                   onClick={() => toggleCategory(category.id)}
                   className={cn(
                     "w-full flex items-center justify-between py-3.5 px-2 transition-colors rounded-md",
-                    isOpen && "bg-[#277979]/5"
+                    isOpen && "bg-primary/5"
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "size-8 rounded-lg flex items-center justify-center shrink-0",
-                      isOpen ? "bg-[#277979]/10 text-[#277979]" : "bg-muted/40 text-muted-foreground"
+                      isOpen ? "bg-primary/10 text-primary" : "bg-muted/40 text-muted-foreground"
                     )}>
                       <Icon className="size-4" />
                     </div>
