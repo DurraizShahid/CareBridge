@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 
 interface ChatSidebarContextValue {
   sidebarOpen: boolean;
@@ -17,22 +17,22 @@ const ChatSidebarContext = createContext<ChatSidebarContextValue | null>(null);
 export function ChatSidebarProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
-  const [newChatHandler, setNewChatHandler] = useState<() => void>(() => {});
+  const [newChatHandler, setNewChatHandler] = useState<() => void>(() => () => {});
 
   const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
 
+  const value = useMemo(() => ({
+    sidebarOpen,
+    setSidebarOpen,
+    toggleSidebar,
+    showNewChat,
+    setShowNewChat,
+    newChatHandler,
+    setNewChatHandler,
+  }), [sidebarOpen, showNewChat, newChatHandler, toggleSidebar, setShowNewChat, setNewChatHandler]);
+
   return (
-    <ChatSidebarContext.Provider
-      value={{
-        sidebarOpen,
-        setSidebarOpen,
-        toggleSidebar,
-        showNewChat,
-        setShowNewChat,
-        newChatHandler,
-        setNewChatHandler,
-      }}
-    >
+    <ChatSidebarContext.Provider value={value}>
       {children}
     </ChatSidebarContext.Provider>
   );
