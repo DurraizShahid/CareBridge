@@ -129,7 +129,7 @@ export function ChatHistorySidebar({
   return (
     <div className="flex h-full flex-col bg-sidebar">
       {/* New Chat Button */}
-      <div className="px-2 pt-2 pb-1">
+      <div className="px-2 pt-[10px] pb-1">
         <Button
           variant="outline"
           size="sm"
