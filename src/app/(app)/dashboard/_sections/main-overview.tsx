@@ -33,19 +33,19 @@ export default async function MainOverview({ organizationId, role }: SectionProp
           return (
             <Card
               key={plc.id}
-              className="group rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              hoverable
             >
-              <CardContent className="flex items-start justify-between gap-4 p-4">
+              <CardContent className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-card-foreground">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="truncate text-base font-semibold text-card-foreground">
                       {patient?.firstName} {patient?.lastName}
                     </span>
                     <Badge variant="secondary" className={cn(status.className)}>
                       {status.label}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     {plc.careLevel.replace("-", " ")} &middot;{" "}
                     {facility ? facility.name : "Matching in progress"}
                   </p>

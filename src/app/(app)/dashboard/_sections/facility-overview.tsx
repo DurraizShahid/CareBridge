@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -60,25 +60,25 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             return (
               <Card
                 key={ref.id}
-                className="group rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                hoverable
               >
-                <CardContent className="min-w-0 flex-1 p-4">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-card-foreground">{ref.patientName}</span>
-                    <span className="text-xs text-muted-foreground">{ref.patientAge} yrs</span>
+                <CardContent className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="truncate text-base font-semibold text-card-foreground">{ref.patientName}</span>
+                    <span className="text-sm text-muted-foreground">{ref.patientAge} yrs</span>
                   </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{ref.diagnosis}</p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <p className="mt-1.5 text-sm text-muted-foreground">{ref.diagnosis}</p>
+                  <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                     <span>{ref.referringHospital}</span>
                     <span className="text-border">&middot;</span>
                     <span className="capitalize">{ref.careLevel.replace(/-/g, " ")}</span>
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary" className={cn("gap-1", config.className)}>
-                      <StatusIcon className="h-3 w-3" />
+                      <StatusIcon className="h-4 w-4" />
                       {config.label}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{formatRelativeTime(ref.referredAt)}</span>
+                    <span className="text-sm text-muted-foreground">{formatRelativeTime(ref.referredAt)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -94,15 +94,15 @@ export default async function FacilityOverview({ organizationId, role, userId }:
               <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
               My Facility
             </h2>
-            <Card className="rounded-2xl border-l-2 border-l-health/60 shadow-sm">
-              <CardContent className="p-[18px]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-heading text-base font-bold text-card-foreground">{operatorFacility.name}</h3>
-                  <p className="text-xs text-muted-foreground">
+            <Card>
+              <CardContent>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-heading text-lg font-bold text-card-foreground truncate">{operatorFacility.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {facilityTypeLabels[operatorFacility.type] ?? operatorFacility.type}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {operatorFacility.address.city}, {operatorFacility.address.state}
                   </p>
                 </div>
@@ -122,17 +122,17 @@ export default async function FacilityOverview({ organizationId, role, userId }:
                 </Badge>
               </div>
 
-              <div className="mt-4 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
+              <div className="mt-6 flex flex-col gap-3">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Occupancy</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-semibold text-foreground">
                     {scopedStats.currentOccupancy} / {scopedStats.totalCapacity} beds
                   </span>
                 </div>
                 <Progress
                   value={scopedStats.occupancyRate}
                   className={cn(
-                    "[&_[data-slot=progress-track]]:h-2",
+                    "[&_[data-slot=progress-track]]:h-3",
                     scopedStats.occupancyRate > 90
                       ? "[&_[data-slot=progress-indicator]]:bg-warmth"
                       : scopedStats.occupancyRate > 75
@@ -142,20 +142,20 @@ export default async function FacilityOverview({ organizationId, role, userId }:
                 />
               </div>
 
-              <Separator className="my-4" />
+              <Separator className="my-6" />
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
-                  <p className="text-lg font-bold text-foreground">{operatorFacility.rating}</p>
-                  <p className="text-xs text-muted-foreground">Rating</p>
+                  <p className="text-2xl font-bold text-foreground">{operatorFacility.rating}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Rating</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-bold text-foreground">{scopedStats.upcomingDischarges}</p>
-                  <p className="text-xs text-muted-foreground">Discharges</p>
+                  <p className="text-2xl font-bold text-foreground">{scopedStats.upcomingDischarges}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Discharges</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-bold text-foreground">{scopedStats.pendingAdmissions}</p>
-                  <p className="text-xs text-muted-foreground">Admissions</p>
+                  <p className="text-2xl font-bold text-foreground">{scopedStats.pendingAdmissions}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Admissions</p>
                 </div>
               </div>
               </CardContent>
@@ -172,12 +172,12 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             {scopedFacilities.slice(0, 4).map((fac) => (
               <Card
                 key={fac.id}
-                className="rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                hoverable
               >
-                <CardContent className="flex items-center justify-between gap-3 p-3">
+                <CardContent className="flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-card-foreground">{fac.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="truncate text-base font-medium text-card-foreground">{fac.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {fac.currentOccupancy}/{fac.capacity} beds &middot; {facilityTypeLabels[fac.type] ?? fac.type}
                   </p>
                 </div>
