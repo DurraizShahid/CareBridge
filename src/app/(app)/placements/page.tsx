@@ -111,6 +111,8 @@ export default async function PlacementsPage() {
         title=""
         description="Track and manage active patient placements."
         userName={userName}
+        welcomePrefix="Track"
+        welcomeName="Placements"
         breadcrumbs={[{ label: "Placements" }]}
       >
         {canCreate && (

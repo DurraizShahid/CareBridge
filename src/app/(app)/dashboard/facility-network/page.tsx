@@ -35,5 +35,5 @@ export default async function FacilityNetworkPage() {
     }
   }
 
-  return <FacilityNetworkClient defaultLocation={defaultLocation} />;
+  return <FacilityNetworkClient defaultLocation={defaultLocation} role={org.role} />;
 }
