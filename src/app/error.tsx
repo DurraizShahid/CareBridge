@@ -34,7 +34,7 @@ export default function Error({
         <button
           type="button"
           onClick={() => unstable_retry()}
-          className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
+          className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:scale-105 hover:bg-primary/90 active:scale-95"
         >
           <RefreshCw className="h-4 w-4" />
           Try Again

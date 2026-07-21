@@ -145,7 +145,7 @@ export function FacilityNetworkClient({
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="pl-9"
+            className="h-10 pl-9 transition-all duration-200 focus-visible:ring-2"
           />
         </div>
         <div className="flex gap-2">

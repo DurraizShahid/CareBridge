@@ -254,11 +254,11 @@ export function DocumentsPageClient({
             placeholder="Search documents by title, description, or tags..."
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9 h-9"
+            className="pl-9 h-10 transition-all duration-200 focus-visible:ring-2"
           />
         </div>
         <Select value={category} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="h-9 w-full md:w-56">
+          <SelectTrigger className="h-10 w-full md:w-56 transition-all duration-200">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -269,12 +269,12 @@ export function DocumentsPageClient({
             ))}
           </SelectContent>
         </Select>
-        <Button
-          variant={archived ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setArchived((v) => !v); setPage(1); }}
-          className="h-9 gap-2"
-        >
+          <Button
+            variant={archived ? "default" : "outline"}
+            size="sm"
+            className="h-10 gap-2"
+            onClick={() => { setArchived((v) => !v); setPage(1); }}
+          >
           <RiArchiveLine className="size-4" />
           {archived ? "Showing Archived" : "Show Archived"}
         </Button>
@@ -282,7 +282,7 @@ export function DocumentsPageClient({
           variant="ghost"
           size="icon"
           onClick={() => { fetchDocs(); fetchStats(); }}
-          className="h-9 w-9 shrink-0"
+          className="h-10 w-10 shrink-0 transition-all duration-200 hover:scale-105 active:scale-95"
           aria-label="Refresh"
         >
           <RiRefreshLine className="size-4" />
