@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { Plus, Search } from "lucide-react";
 import { roleHasPermission } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { getPatients } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 
@@ -58,11 +60,11 @@ export default async function PatientsPage() {
       </PageHeader>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
+        <Input
           type="text"
           placeholder="Search patients by name, MRN, or diagnosis..."
-          className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
+          className="pl-10"
         />
       </div>
 
@@ -135,11 +137,9 @@ export default async function PatientsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <Link href={`/patients/${patient.id}`} className="block">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[patient.status] ?? ""}`}
-                    >
+                    <Badge variant="secondary" className={statusStyles[patient.status] ?? ""}>
                       {statusLabels[patient.status] ?? patient.status}
-                    </span>
+                    </Badge>
                   </Link>
                 </td>
               </tr>
