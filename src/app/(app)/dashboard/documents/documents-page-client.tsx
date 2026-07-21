@@ -166,8 +166,10 @@ export function DocumentsPageClient({
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Documentation Vault"
+        title=""
         description="HIPAA-compliant document storage and management for your organization."
+        welcomePrefix="Documentation"
+        welcomeName="Vault"
       >
         {canUpload && (
           <Button onClick={() => setUploadOpen(true)}>

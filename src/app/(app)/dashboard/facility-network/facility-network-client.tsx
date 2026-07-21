@@ -70,10 +70,12 @@ const COMMON_INSURANCE = [
 
 interface FacilityNetworkClientProps {
   defaultLocation: string;
+  role: string;
 }
 
 export function FacilityNetworkClient({
   defaultLocation,
+  role,
 }: FacilityNetworkClientProps) {
   const [location, setLocation] = useState(defaultLocation);
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -129,12 +131,21 @@ export function FacilityNetworkClient({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Facility Network
-        </h1>
-        <p className="text-muted-foreground">
-          Discover and explore facilities in your area
-        </p>
+        {role === "superadmin" ? (
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground leading-none">
+            <span className="font-light">Facility</span>{" "}
+            <span className="font-semibold">Network</span>
+          </h1>
+        ) : (
+          <>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Facility Network
+            </h1>
+            <p className="text-muted-foreground">
+              Discover and explore facilities in your area
+            </p>
+          </>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end bg-card/70 backdrop-blur-xl rounded-xl border-border/60 shadow-sm p-4">

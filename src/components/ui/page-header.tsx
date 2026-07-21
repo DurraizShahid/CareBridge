@@ -12,12 +12,13 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   userName?: string;
-  greeting?: string;
   breadcrumbs?: BreadcrumbItem[];
   children?: React.ReactNode;
+  welcomePrefix?: string;
+  welcomeName?: string;
 }
 
-export function PageHeader({ title, description, userName, greeting, breadcrumbs, children }: PageHeaderProps) {
+export function PageHeader({ title, description, userName, breadcrumbs, children, welcomePrefix, welcomeName }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-4 mb-6">
       {/* Breadcrumb */}
@@ -43,15 +44,11 @@ export function PageHeader({ title, description, userName, greeting, breadcrumbs
 
       {/* Welcome & Title */}
       <div className="flex flex-col gap-1">
-        {greeting ? (
+        {(userName || welcomePrefix) && (
           <h1 className="text-2xl sm:text-[40px] font-semibold tracking-tight text-foreground leading-none">
-            {greeting}
+            <span className="font-thin">{welcomePrefix ?? "Welcome,"}</span> <span className="font-normal">{welcomeName ?? userName}.</span>
           </h1>
-        ) : userName ? (
-          <h1 className="text-2xl sm:text-[40px] font-semibold tracking-tight text-foreground leading-none">
-            <span className="font-thin">Welcome,</span> <span className="font-normal">{userName}.</span>
-          </h1>
-        ) : null}
+        )}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
