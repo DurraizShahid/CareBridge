@@ -99,6 +99,7 @@ export default function Page() {
                       type="text"
                       placeholder="City, state, or ZIP code"
                       className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none"
+                      suppressHydrationWarning
                     />
                   </div>
 
@@ -108,6 +109,7 @@ export default function Page() {
                     <select
                       defaultValue=""
                       className="w-full appearance-none bg-transparent text-sm text-white outline-none [&>option]:bg-[#134675] [&>option]:text-white"
+                      suppressHydrationWarning
                     >
                       <option value="" disabled className="text-white/40">
                         Care level needed
@@ -125,6 +127,7 @@ export default function Page() {
                   <button
                     type="button"
                     className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
+                    suppressHydrationWarning
                   >
                     <Search className="h-4 w-4" />
                     <span>Find Facilities</span>
