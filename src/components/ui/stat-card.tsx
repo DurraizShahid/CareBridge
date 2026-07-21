@@ -24,13 +24,13 @@ const iconStyles: Record<string, string> = {
 };
 
 const trendStyles = {
-  positive: "text-health bg-[var(--stat-health-bg)]",
-  negative: "text-destructive bg-[var(--destructive)]/10",
+  positive: "text-[var(--stat-health)] bg-[var(--stat-health-bg)]",
+  negative: "text-destructive bg-destructive/10",
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
-    <Card hoverable className="bg-card">
+    <Card hoverable glass className="bg-card">
       <CardContent className="flex flex-col gap-6">
         <div className="flex items-start justify-between">
           <span className="text-sm font-semibold text-muted-foreground">{title}</span>
@@ -44,14 +44,14 @@ export function StatCard({ title, value, icon: Icon, trend, variant = "default" 
           </div>
         </div>
         <div className="flex items-baseline gap-4">
-          <span className="font-heading text-4xl font-bold tracking-tight text-foreground tabular-nums">
+          <span className="font-heading text-4xl font-bold tracking-tight tabular-nums">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 text-sm font-bold px-4 py-1.5 rounded-full",
-                trend.positive ? trendStyles.positive : trendStyles.negative,
+                trendStyles[trend.positive ? "positive" : "negative"],
               )}
             >
               {trend.positive ? "↑" : "↓"}

@@ -6,20 +6,29 @@ function Card({
   className,
   size = "default",
   hoverable = false,
+  glass = false,
+  accent = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm", hoverable?: boolean }) {
+}: React.ComponentProps<"div"> & { 
+  size?: "default" | "sm", 
+  hoverable?: boolean,
+  glass?: boolean,
+  accent?: boolean
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden bg-card text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
         "rounded-3xl",
-        "shadow-[0_1px_1px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_1px_rgba(0,0,0,0.25),0_4px_24px_rgba(0,0,0,0.3)]",
         "ring-1 ring-foreground/5 dark:ring-white/5",
         "bg-gradient-to-b from-card to-card/90 dark:from-card dark:to-card/85",
-        "transition-all duration-250 ease-out",
-        hoverable && "hover:-translate-y-1.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:ring-foreground/10 dark:hover:ring-white/10",
+        "shadow-[0_1px_1px_rgba(0,0,0,0.02),0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_1px_rgba(0,0,0,0.3),0_4px_30px_rgba(0,0,0,0.4)]",
+        "transition-all duration-300 ease-out",
+        hoverable && "hover:-translate-y-1.5 hover:shadow-[0_8px_40px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_8px_40px_rgba(0,0,0,0.5)] hover:ring-foreground/10 dark:hover:ring-white/10",
+        glass && "glass-card",
+        accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className
       )}
       {...props}
@@ -44,7 +53,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("font-heading text-xl font-bold tracking-tight text-foreground", className)}
+      className={cn("font-heading text-xl font-bold tracking-tight", className)}
       {...props}
     />
   )
