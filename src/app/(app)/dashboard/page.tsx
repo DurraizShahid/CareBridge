@@ -23,7 +23,9 @@ export default async function DashboardPage() {
   const user = await currentUser();
   const organizationId = org?.organizationId ?? "";
   const role = org?.role ?? "customer";
-  const userName = user?.firstName ?? user?.username ?? "Admin";
+  const userName = user?.firstName
+    ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)
+    : (user?.username ?? "Admin");
 
   // Hospital roles see the AI home page instead of the dashboard
   if (HOSPITAL_ROLES.includes(role as any)) {
