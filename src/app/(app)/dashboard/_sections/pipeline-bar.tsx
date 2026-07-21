@@ -33,10 +33,10 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
         {segments.map((seg, i) => (
           <span
             key={i}
-            className="text-[11px] font-medium text-muted-foreground truncate text-center transition-colors duration-200"
+            className="text-xs font-medium text-muted-foreground truncate text-center transition-all duration-300"
             style={{
               flex: `${seg.flex} 1 0`,
-              color: hoveredIndex === i ? "#155F60" : undefined,
+              color: hoveredIndex === i ? "var(--stat-health)" : undefined,
             }}
           >
             {seg.label}
@@ -45,7 +45,7 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
       </div>
 
       {/* Pills */}
-      <div className="flex items-center gap-1.5 h-12">
+      <div className="flex items-center gap-1.5 h-10">
         {segments.map((seg, i) => {
           const isHovered = hoveredIndex === i;
           const isOtherHovered = hoveredIndex !== null && hoveredIndex !== i;
@@ -54,24 +54,24 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
             return (
               <div
                 key={i}
-                className="h-full rounded-full flex items-center justify-start pl-3 text-[11px] font-medium relative overflow-hidden bg-background cursor-pointer transition-all duration-200"
+                className="h-full rounded-xl flex items-center justify-start pl-3 text-xs font-medium relative overflow-hidden bg-background cursor-pointer transition-all duration-300"
                 style={{
                   flex: `${seg.flex} 1 0`,
-                  transform: isHovered ? "scaleY(1.1)" : "scaleY(1)",
+                  transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
                   opacity: isOtherHovered ? 0.6 : 1,
                 }}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 <div
-                  className="absolute inset-0 opacity-40 transition-opacity duration-200"
+                  className="absolute inset-0 transition-opacity duration-300"
                   style={{
                     backgroundImage:
                       "repeating-linear-gradient(45deg, transparent, transparent 3px, oklch(0.78 0.02 250) 3px, oklch(0.78 0.02 250) 4px)",
                     opacity: isHovered ? 0.6 : 0.4,
                   }}
                 />
-                <span className={`relative z-10 ${seg.textColor} transition-all duration-200`}>{seg.value}</span>
+                <span className="relative z-10 transition-all duration-200">{seg.value}</span>
               </div>
             );
           }
@@ -80,18 +80,18 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
             return (
               <div
                 key={i}
-                className="h-full rounded-full border border-border flex items-center justify-start pl-3 text-[11px] font-medium bg-background cursor-pointer transition-all duration-200"
+                className="h-full rounded-xl border border-border flex items-center justify-start pl-3 text-xs font-medium bg-background cursor-pointer transition-all duration-300"
                 style={{
                   flex: `${seg.flex} 1 0`,
-                  transform: isHovered ? "scaleY(1.1)" : "scaleY(1)",
+                  transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
                   opacity: isOtherHovered ? 0.6 : 1,
-                  borderColor: isHovered ? "#277979" : undefined,
-                  boxShadow: isHovered ? "0 0 0 1px rgba(39,121,121,0.2)" : undefined,
+                  borderColor: isHovered ? "var(--stat-health)" : undefined,
+                  boxShadow: isHovered ? "0 0 0 1px var(--stat-health)/20" : undefined,
                 }}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                <span className={`${seg.textColor} transition-colors duration-200`} style={{ color: isHovered ? "#155F60" : undefined }}>{seg.value}</span>
+                <span className="transition-colors duration-200" style={{ color: isHovered ? "var(--stat-health)" : undefined }}>{seg.value}</span>
               </div>
             );
           }
@@ -99,12 +99,12 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
           return (
             <div
               key={i}
-              className={`h-full rounded-full flex items-center justify-start pl-3 text-[11px] font-medium cursor-pointer transition-all duration-200`}
+              className="h-full rounded-xl flex items-center justify-start pl-3 text-xs font-medium cursor-pointer transition-all duration-300"
               style={{
                 flex: `${seg.flex} 1 0`,
                 backgroundColor: seg.bg,
-                color: seg.textColor === "text-white" ? "#FFFFFF" : "#1a1a1a",
-                transform: isHovered ? "scaleY(1.1)" : "scaleY(1)",
+                color: seg.textColor === "text-white" ? "#FFFFFF" : "var(--foreground)",
+                transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
                 opacity: isOtherHovered ? 0.6 : 1,
                 boxShadow: isHovered ? `0 4px 12px ${seg.bg}40` : undefined,
               }}

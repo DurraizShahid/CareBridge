@@ -50,38 +50,37 @@ export function ActivityCard({ error }: ActivityCardProps) {
 
   if (error) {
     return (
-      <Card className="rounded-[28px] border-border/60 shadow-sm h-full !bg-[#277979] font-body">
+      <Card className="rounded-xl border-border/60 shadow-sm h-full bg-primary/90">
         <CardContent className="p-6 flex flex-col items-center justify-center h-48 text-center">
-          <p className="text-sm text-white/80">Activity data unavailable</p>
+          <p className="text-sm text-primary-foreground/80">Activity data unavailable</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="rounded-[28px] border-border/60 shadow-sm h-full !bg-[#277979] font-body transition-shadow duration-300 hover:shadow-xl">
+    <Card className="rounded-xl border-border/60 shadow-sm h-full bg-primary/90 transition-all duration-300 hover:shadow-xl">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold tracking-widest text-white uppercase">Placement Activity</h3>
+          <h3 className="text-sm font-bold tracking-widest text-primary-foreground uppercase">Placement Activity</h3>
           <div className="flex items-center gap-1">
             <button
               aria-label="Chart view"
               className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-95"
             >
-              <ChartNoAxesColumnIncreasing className="size-4 text-white/70" />
+              <ChartNoAxesColumnIncreasing className="size-4 text-primary-foreground/70" />
             </button>
             <button
               aria-label="More"
               className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-95"
             >
-              <MoreHorizontal className="size-4 text-white/70" />
+              <MoreHorizontal className="size-4 text-primary-foreground/70" />
             </button>
           </div>
         </div>
 
         <div className="flex flex-col items-center">
           <svg viewBox="0 0 200 200" className="w-56 h-56">
-            {/* Referrals segment */}
             <circle
               cx="100" cy="100" r={radius}
               fill="none"
@@ -98,7 +97,6 @@ export function ActivityCard({ error }: ActivityCardProps) {
               onMouseEnter={() => setHoveredSegment("referrals")}
               onMouseLeave={() => setHoveredSegment(null)}
             />
-            {/* Matches segment */}
             <circle
               cx="100" cy="100" r={radius}
               fill="none"
@@ -115,11 +113,10 @@ export function ActivityCard({ error }: ActivityCardProps) {
               onMouseEnter={() => setHoveredSegment("matches")}
               onMouseLeave={() => setHoveredSegment(null)}
             />
-            {/* Center text */}
-            <text x="100" y="92" textAnchor="middle" dominantBaseline="middle" className="fill-white text-[40px] font-medium tabular-nums leading-none">
+            <text x="100" y="92" textAnchor="middle" dominantBaseline="middle" className="fill-primary-foreground text-[40px] font-medium tabular-nums leading-none">
               {animatedTotal}
             </text>
-            <text x="100" y="120" textAnchor="middle" dominantBaseline="middle" className="fill-white/70 text-[12px]">
+            <text x="100" y="120" textAnchor="middle" dominantBaseline="middle" className="fill-primary-foreground/70 text-[12px]">
               Total Referrals
             </text>
           </svg>
@@ -131,9 +128,9 @@ export function ActivityCard({ error }: ActivityCardProps) {
             onMouseEnter={() => setHoveredSegment("referrals")}
             onMouseLeave={() => setHoveredSegment(null)}
           >
-            <span className={`size-3 rounded-full bg-white transition-transform duration-200 ${hoveredSegment === "referrals" ? "scale-125" : ""}`} />
-            <span className="text-xs text-white/70">Referrals</span>
-            <span className="text-xs font-semibold text-white">{referrals}</span>
+            <span className={`size-3 rounded-full bg-primary-foreground transition-transform duration-200 ${hoveredSegment === "referrals" ? "scale-125" : ""}`} />
+            <span className="text-xs text-primary-foreground/70">Referrals</span>
+            <span className="text-xs font-semibold text-primary-foreground">{referrals}</span>
           </button>
           <button
             className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
@@ -141,8 +138,8 @@ export function ActivityCard({ error }: ActivityCardProps) {
             onMouseLeave={() => setHoveredSegment(null)}
           >
             <span className={`size-3 rounded-full bg-[#A0E0E0] transition-transform duration-200 ${hoveredSegment === "matches" ? "scale-125" : ""}`} />
-            <span className="text-xs text-white/70">Matches</span>
-            <span className="text-xs font-semibold text-white">{matches}</span>
+            <span className="text-xs text-primary-foreground/70">Matches</span>
+            <span className="text-xs font-semibold text-primary-foreground">{matches}</span>
           </button>
         </div>
       </CardContent>

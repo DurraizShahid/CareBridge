@@ -10,25 +10,37 @@ interface StatCardProps {
     value: string;
     positive: boolean;
   };
-  variant?: "default" | "health" | "info" | "purple" | "pink" | "orange";
+  variant?: "default" | "health" | "info" | "purple" | "pink" | "orange" | "facility";
 }
 
-const variantStyles = {
-  default: "border-border bg-[#29678d]/15 dark:bg-[#29678d]/25",
-  health: "border-l-2 border-l-[#516ba1]/60 border-border bg-[#516ba1]/15 dark:bg-[#516ba1]/25",
-  info: "border-l-2 border-l-[#269ab7]/60 border-border bg-[#269ab7]/15 dark:bg-[#269ab7]/25",
-  purple: "border-border bg-[#195595]/15 dark:bg-[#195595]/25",
-  pink: "border-border bg-[#569ad3]/15 dark:bg-[#569ad3]/25",
-  orange: "border-border bg-[#83dfd3]/15 dark:bg-[#83dfd3]/25",
+const variantStyles: Record<string, string> = {
+  default: "border-l-[var(--stat-default)]",
+  health: "border-l-[var(--stat-health)]",
+  info: "border-l-[var(--stat-info)]",
+  purple: "border-l-[var(--stat-purple)]",
+  pink: "border-l-[var(--stat-pink)]",
+  orange: "border-l-[var(--stat-orange)]",
+  facility: "border-l-[var(--stat-facility)]",
 };
 
-const iconContainerStyles = {
-  default: "bg-[#29678d]/20 text-[#29678d] dark:bg-[#29678d]/30",
-  health: "bg-[#516ba1]/20 text-[#516ba1] dark:bg-[#516ba1]/30",
-  info: "bg-[#269ab7]/20 text-[#269ab7] dark:bg-[#269ab7]/30",
-  purple: "bg-[#195595]/20 text-[#195595] dark:bg-[#195595]/30",
-  pink: "bg-[#569ad3]/20 text-[#569ad3] dark:bg-[#569ad3]/30",
-  orange: "bg-[#83dfd3]/20 text-[#83dfd3] dark:bg-[#83dfd3]/30",
+const bgStyles: Record<string, string> = {
+  default: "bg-[var(--stat-default-bg)]",
+  health: "bg-[var(--stat-health-bg)]",
+  info: "bg-[var(--stat-info-bg)]",
+  purple: "bg-[var(--stat-purple-bg)]",
+  pink: "bg-[var(--stat-pink-bg)]",
+  orange: "bg-[var(--stat-orange-bg)]",
+  facility: "bg-[var(--stat-facility-bg)]",
+};
+
+const iconStyles: Record<string, string> = {
+  default: "text-[var(--stat-default)] bg-[var(--stat-default-bg)]",
+  health: "text-[var(--stat-health)] bg-[var(--stat-health-bg)]",
+  info: "text-[var(--stat-info)] bg-[var(--stat-info-bg)]",
+  purple: "text-[var(--stat-purple)] bg-[var(--stat-purple-bg)]",
+  pink: "text-[var(--stat-pink)] bg-[var(--stat-pink-bg)]",
+  orange: "text-[var(--stat-orange)] bg-[var(--stat-orange-bg)]",
+  facility: "text-[var(--stat-facility)] bg-[var(--stat-facility-bg)]",
 };
 
 const trendStyles = {
@@ -40,24 +52,25 @@ export function StatCard({ title, value, icon: Icon, trend, variant = "default" 
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 bg-card/70 backdrop-blur-xl",
+        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 bg-card/70 backdrop-blur-xl border-l-2",
+        bgStyles[variant],
         variantStyles[variant],
       )}
     >
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between">
-          <span className="text-[21px] font-medium leading-none text-muted-foreground">{title}</span>
+          <span className="text-xs font-medium text-muted-foreground">{title}</span>
           <div
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-200",
-              iconContainerStyles[variant],
+              iconStyles[variant],
             )}
           >
             <Icon className="size-[18px]" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="font-heading text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          <span className="font-heading text-2xl font-semibold tracking-tight text-foreground tabular-nums">
             {value}
           </span>
           {trend && (

@@ -103,6 +103,21 @@
   --foreground: oklch(0.147 0.004 250);
   --card-glass: oklch(0.94 0.035 240);
   --card-glass-border: oklch(0.84 0.035 240 / 0.4);
+  /* StatCard variant tokens */
+  --stat-default: oklch(0.45 0.12 255);
+  --stat-default-bg: oklch(0.45 0.12 255 / 0.12);
+  --stat-health: oklch(0.5 0.12 265);
+  --stat-health-bg: oklch(0.5 0.12 265 / 0.12);
+  --stat-info: oklch(0.58 0.1 225);
+  --stat-info-bg: oklch(0.58 0.1 225 / 0.12);
+  --stat-purple: oklch(0.4 0.12 265);
+  --stat-purple-bg: oklch(0.4 0.12 265 / 0.12);
+  --stat-pink: oklch(0.6 0.12 250);
+  --stat-pink-bg: oklch(0.6 0.12 250 / 0.12);
+  --stat-orange: oklch(0.75 0.1 190);
+  --stat-orange-bg: oklch(0.75 0.1 190 / 0.12);
+  --stat-facility: oklch(0.5 0.1 260);
+  --stat-facility-bg: oklch(0.5 0.1 260 / 0.12);
 }
 
 .dark {
@@ -144,6 +159,21 @@
   --surface: oklch(0.03 0.008 250);
   --card-glass: oklch(0.06 0.01 250 / 0.5);
   --card-glass-border: oklch(0.12 0.015 250 / 0.3);
+  /* StatCard variant tokens (dark) */
+  --stat-default: oklch(0.6 0.12 255);
+  --stat-default-bg: oklch(0.6 0.12 255 / 0.15);
+  --stat-health: oklch(0.65 0.12 265);
+  --stat-health-bg: oklch(0.65 0.12 265 / 0.15);
+  --stat-info: oklch(0.7 0.1 225);
+  --stat-info-bg: oklch(0.7 0.1 225 / 0.15);
+  --stat-purple: oklch(0.55 0.12 265);
+  --stat-purple-bg: oklch(0.55 0.12 265 / 0.15);
+  --stat-pink: oklch(0.7 0.12 250);
+  --stat-pink-bg: oklch(0.7 0.12 250 / 0.15);
+  --stat-orange: oklch(0.8 0.1 190);
+  --stat-orange-bg: oklch(0.8 0.1 190 / 0.15);
+  --stat-facility: oklch(0.65 0.1 260);
+  --stat-facility-bg: oklch(0.65 0.1 260 / 0.15);
 }
 
 @layer base {

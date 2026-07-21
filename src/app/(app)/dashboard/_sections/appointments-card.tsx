@@ -109,9 +109,9 @@ function EventDetailPanel({ appointment, onClose }: { appointment: Appointment; 
   const colors = typeColors[appointment.type] ?? typeColors.meeting;
 
   return (
-    <div
-      className="absolute inset-0 z-20 flex flex-col overflow-hidden rounded-[30px]"
-      style={{ backgroundColor: "#FFFFFF", animation: "slide-in-bottom 0.25s cubic-bezier(0.16,1,0.3,1) forwards" }}
+        <div
+          className="absolute inset-0 z-20 flex flex-col overflow-hidden rounded-xl bg-card"
+          style={{ animation: "slide-in-bottom 0.25s cubic-bezier(0.16,1,0.3,1) forwards" }}
     >
       <div className="flex items-center justify-between px-6 py-5 shrink-0" style={{ borderBottom: "1px solid rgba(204,215,211,0.4)" }}>
         <div className="flex items-center gap-3 min-w-0">
@@ -597,8 +597,7 @@ export function AppointmentsCard() {
 
   return (
     <div
-      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-[30px] shadow-sm"
-      style={{ backgroundColor: "#FFFFFF" }}
+      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-xl shadow-sm bg-card transition-all duration-300 hover:shadow-lg"
     >
       {/* Header */}
       <div className="shrink-0 p-5 pb-4">
@@ -607,9 +606,9 @@ export function AppointmentsCard() {
             Schedule
           </h3>
           <button
-            aria-label="View full calendar"
-            className="flex items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-lg hover:rotate-12 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ width: "48px", height: "48px", backgroundColor: "#FFFFFF", boxShadow: "0 2px 12px rgba(39,121,121,0.12)" }}
+              aria-label="View full calendar"
+              className="flex items-center justify-center rounded-xl shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-lg hover:rotate-12 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 bg-card"
+              style={{ width: "48px", height: "48px", boxShadow: "0 2px 12px rgba(39,121,121,0.12)" }}
             onClick={() => document.getElementById("appointments-card-body")?.scrollIntoView({ behavior: "smooth" })}
           >
             <ArrowUpRight className="size-5 transition-transform duration-200" style={{ color: TEAL }} />
