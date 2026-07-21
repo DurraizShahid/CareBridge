@@ -370,14 +370,14 @@ export default function HomePage() {
     }
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     abortRef.current?.abort();
     setMessages([]);
     setHasStarted(false);
     setIsStreaming(false);
     setCurrentChatId(null);
     setRefreshTrigger((prev) => prev + 1);
-  };
+  }, []);
 
   const handleChatSelect = async (chatId: string) => {
     abortRef.current?.abort();
