@@ -35,7 +35,7 @@ export function FacilityResultCard({ facility }: FacilityResultCardProps) {
   return (
     <Link
       href={`/dashboard/facility-network/${facility.id}`}
-      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
       aria-label={`View ${facility.name} details`}
     >
       <Card className="group rounded-2xl border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]">

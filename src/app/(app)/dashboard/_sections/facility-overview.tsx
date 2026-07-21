@@ -60,7 +60,7 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             return (
               <Card
                 key={ref.id}
-                className="group shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                className="group rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <CardContent className="min-w-0 flex-1 p-4">
                   <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default async function FacilityOverview({ organizationId, role, userId }:
               <span className="h-0.5 w-4 shrink-0 rounded-full bg-health/60" />
               My Facility
             </h2>
-            <Card className="border-l-2 border-l-health/60 shadow-sm">
+            <Card className="rounded-2xl border-l-2 border-l-health/60 shadow-sm">
               <CardContent className="p-[18px]">
               <div className="flex items-start justify-between">
                 <div>
@@ -172,7 +172,7 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             {scopedFacilities.slice(0, 4).map((fac) => (
               <Card
                 key={fac.id}
-                className="shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                className="rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <CardContent className="flex items-center justify-between gap-3 p-3">
                 <div className="min-w-0 flex-1">

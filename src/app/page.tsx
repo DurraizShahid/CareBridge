@@ -18,6 +18,7 @@ import {
   Search,
 } from "lucide-react";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 
@@ -544,65 +545,62 @@ export default function Page() {
         <section id="contact" className="bg-muted/30 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-heading text-3xl font-bold tracking-tight text-[#134675] sm:text-4xl">
+              <h2 className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Go further with CareBridge
               </h2>
             </div>
             <div className="mx-auto mt-12 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <a
-                href="/sign-up"
-                className="group rounded-xl border border-border bg-card p-8 shadow-sm transition-all hover:shadow-md"
-              >
+              <Card className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <a href="/sign-up" className="block p-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#44BEAF]/10">
                   <ArrowUpRight className="h-6 w-6 text-[#44BEAF]" />
                 </div>
-                <h3 className="mt-4 font-heading text-lg font-bold text-[#134675]">
+                <h3 className="mt-4 font-heading text-lg font-bold text-card-foreground">
                   Start a free trial
                 </h3>
                 <p className="mt-2 text-sm text-foreground/60">
                   Try our 30-day free trial to explore some product capabilities
                   in your own time.
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#134675] group-hover:underline">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-card-foreground group-hover:underline">
                   Start a free trial <ArrowRight className="h-4 w-4" />
                 </span>
-              </a>
-              <a
-                href="#resources"
-                className="group rounded-xl border border-border bg-card p-8 shadow-sm transition-all hover:shadow-md"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#134675]/10">
-                  <BookOpen className="h-6 w-6 text-[#134675]" />
+                </a>
+              </Card>
+              <Card className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <a href="#resources" className="block p-8">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#44BEAF]/10">
+                  <BookOpen className="h-6 w-6 text-[#44BEAF]" />
                 </div>
-                <h3 className="mt-4 font-heading text-lg font-bold text-[#134675]">
+                <h3 className="mt-4 font-heading text-lg font-bold text-card-foreground">
                   Expert resources
                 </h3>
                 <p className="mt-2 text-sm text-foreground/60">
                   Stay up to date on the latest patient placement and care
                   coordination innovations.
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#134675] group-hover:underline">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-card-foreground group-hover:underline">
                   Explore resources <ArrowRight className="h-4 w-4" />
                 </span>
-              </a>
-              <a
-                href="#"
-                className="group rounded-xl border border-border bg-card p-8 shadow-sm transition-all hover:shadow-md"
-              >
+                </a>
+              </Card>
+              <Card className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <a href="#" className="block p-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#44BEAF]/10">
                   <Phone className="h-6 w-6 text-[#44BEAF]" />
                 </div>
-                <h3 className="mt-4 font-heading text-lg font-bold text-[#134675]">
+                <h3 className="mt-4 font-heading text-lg font-bold text-card-foreground">
                   Talk to an expert
                 </h3>
                 <p className="mt-2 text-sm text-foreground/60">
                   Submit a contact form to get connected with our team of
                   healthcare placement experts.
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#134675] group-hover:underline">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-card-foreground group-hover:underline">
                   Talk to an expert <ArrowRight className="h-4 w-4" />
                 </span>
-              </a>
+                </a>
+              </Card>
             </div>
           </div>
         </section>

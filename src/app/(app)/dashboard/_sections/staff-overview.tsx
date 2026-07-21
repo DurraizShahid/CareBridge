@@ -47,7 +47,7 @@ export default async function StaffOverview({ organizationId, role, userId }: St
             return (
               <Card
                 key={patient.id}
-                className="group shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                className="group rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <CardContent className="flex items-start justify-between gap-4 p-4">
                   <div className="min-w-0 flex-1">
@@ -105,7 +105,7 @@ export default async function StaffOverview({ organizationId, role, userId }: St
                 return (
                   <Card
                     key={plc.id}
-                    className="group shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    className="group rounded-2xl border-border/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <CardContent className="flex items-start justify-between gap-4 p-4">
                       <div className="min-w-0 flex-1">
@@ -128,7 +128,7 @@ export default async function StaffOverview({ organizationId, role, userId }: St
               })}
             </div>
           ) : (
-            <Card className="border-dashed bg-card/50">
+            <Card className="rounded-2xl border-dashed bg-card/50">
               <CardContent className="flex items-center justify-center p-8">
                 <p className="text-sm text-muted-foreground">No pending approvals</p>
               </CardContent>

@@ -5,7 +5,7 @@ import { TrendingUp } from "lucide-react";
 
 export default function VisaCard() {
   return (
-    <Card className="shadow-sm rounded-2xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white overflow-hidden relative h-full min-h-[200px]">
+    <Card className="rounded-2xl border-border/10 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white overflow-hidden relative h-full min-h-[200px] shadow-sm">
       <CardContent className="p-6 h-full flex flex-col justify-between relative z-10">
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold tracking-wider">VISA</span>
