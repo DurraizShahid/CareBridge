@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -65,9 +66,9 @@ export function DeletePlacementDialog({ placementId, patientName }: Props) {
         </DialogHeader>
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         <DialogFooter>
@@ -82,6 +83,7 @@ export function DeletePlacementDialog({ placementId, patientName }: Props) {
             variant="destructive"
             onClick={handleDelete}
             disabled={deleting}
+            className="transition-all duration-200 hover:scale-105 active:scale-95"
           >
             {deleting ? "Deleting..." : "Delete"}
           </Button>

@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Loader2,
   Search,
   Settings2,
@@ -29,6 +31,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -349,7 +352,7 @@ export function JoinRequestsTab({
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
             placeholder="Search join requests..."
-            className="h-9 pl-9"
+            className="h-10 pl-9 transition-all duration-200 focus-visible:ring-2"
           />
         </div>
         <DropdownMenu>
@@ -382,12 +385,13 @@ export function JoinRequestsTab({
         </Badge>
       )}
 
-      <Card className="overflow-hidden py-0 shadow-sm">
-        <CardHeader>
-          <CardTitle>Join Requests</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
+        <Card className="overflow-hidden py-0 shadow-sm">
+          <CardHeader>
+            <CardTitle>Join Requests</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ScrollArea className="w-full">
+            <Table className="min-w-[700px]">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -442,10 +446,11 @@ export function JoinRequestsTab({
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() ? "selected" : undefined}
-                  >
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                      className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted/30"
+                    >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4 py-3">
                         {flexRender(
@@ -458,38 +463,83 @@ export function JoinRequestsTab({
                 ))
               )}
             </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </Table>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </CardContent>
+          </Card>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {firstVisible} to {lastVisible} of {filteredCount} join requests
-        </p>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-xs"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-          <Badge variant="outline" className="min-w-16 justify-center">
-            {pagination.pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
-          </Badge>
-          <Button
-            variant="outline"
-            size="icon-xs"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            aria-label="Next page"
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {firstVisible} to {lastVisible} of {filteredCount} join requests
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+              aria-label="First page"
+              className="transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              aria-label="Previous page"
+              className="transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <div className="flex items-center gap-1 px-2">
+              {Array.from({ length: Math.min(table.getPageCount(), 5) }, (_, i) => {
+                const pageNum = (() => {
+                  const pc = table.getPageCount();
+                  const cp = pagination.pageIndex;
+                  if (pc <= 5) return i;
+                  if (cp <= 2) return i;
+                  if (cp >= pc - 3) return pc - 5 + i;
+                  return cp - 2 + i;
+                })();
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pagination.pageIndex === pageNum ? "default" : "outline"}
+                    size="icon-xs"
+                    onClick={() => table.setPageIndex(pageNum)}
+                    aria-label={`Page ${pageNum + 1}`}
+                    className="transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    {pageNum + 1}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              aria-label="Next page"
+              className="transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+              aria-label="Last page"
+              className="transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
-      </div>
     </div>
   );
 }

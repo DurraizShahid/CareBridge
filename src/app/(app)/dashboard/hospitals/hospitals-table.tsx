@@ -420,7 +420,7 @@ export function HospitalsTable({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" size="sm" />
+                <Button variant="outline" size="sm" className="h-10" />
               }
             >
               <Settings2 data-icon="inline-start" />
@@ -535,6 +535,7 @@ export function HospitalsTable({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() ? "selected" : undefined}
+                      className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted/30"
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
@@ -564,6 +565,7 @@ export function HospitalsTable({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
                 aria-label="First page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronsLeft className="h-3.5 w-3.5" />
               </Button>
@@ -573,6 +575,7 @@ export function HospitalsTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
                 aria-label="Previous page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
@@ -595,6 +598,7 @@ export function HospitalsTable({
                       size="icon-xs"
                       onClick={() => table.setPageIndex(pageNum)}
                       aria-label={`Page ${pageNum + 1}`}
+                      className="transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       {pageNum + 1}
                     </Button>
@@ -607,6 +611,7 @@ export function HospitalsTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
                 aria-label="Next page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
@@ -616,6 +621,7 @@ export function HospitalsTable({
                 onClick={() => table.setPageIndex(pageCount - 1)}
                 disabled={!table.getCanNextPage()}
                 aria-label="Last page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronsRight className="h-3.5 w-3.5" />
               </Button>

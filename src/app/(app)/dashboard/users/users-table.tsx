@@ -614,7 +614,7 @@ export function UsersTable({
               setGlobalFilter(event.target.value);
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
-            className="h-9 pl-9"
+            className="h-10 pl-9 transition-all duration-200 focus-visible:ring-2"
           />
         </div>
         <Select
@@ -626,7 +626,7 @@ export function UsersTable({
             setPagination((prev) => ({ ...prev, pageIndex: 0 }));
           }}
         >
-          <SelectTrigger className="h-9 w-full md:w-56">
+          <SelectTrigger className="h-10 w-full md:w-56 transition-all duration-200">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
@@ -641,7 +641,7 @@ export function UsersTable({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="outline" className="h-9" />
+              <Button variant="outline" className="h-10" />
             }
           >
             <Settings2 data-icon="inline-start" />
@@ -754,6 +754,7 @@ export function UsersTable({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() ? "selected" : undefined}
+                      className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted/30"
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
@@ -787,6 +788,7 @@ export function UsersTable({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
                 aria-label="First page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronsLeft className="h-3.5 w-3.5" />
               </Button>
@@ -796,6 +798,7 @@ export function UsersTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
                 aria-label="Previous page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
@@ -818,6 +821,7 @@ export function UsersTable({
                       size="icon-xs"
                       onClick={() => table.setPageIndex(pageNum)}
                       aria-label={`Page ${pageNum + 1}`}
+                      className="transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       {pageNum + 1}
                     </Button>
@@ -830,6 +834,7 @@ export function UsersTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
                 aria-label="Next page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
@@ -839,6 +844,7 @@ export function UsersTable({
                 onClick={() => table.setPageIndex(pageCount - 1)}
                 disabled={!table.getCanNextPage()}
                 aria-label="Last page"
+                className="transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <ChevronsRight className="h-3.5 w-3.5" />
               </Button>

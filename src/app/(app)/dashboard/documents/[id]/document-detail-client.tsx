@@ -447,7 +447,7 @@ export function DocumentDetailClient({
                 </TableHeader>
                 <TableBody>
                   {versionTable.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow key={row.id} className="transition-colors hover:bg-muted/50">
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
                           {flexRender(
@@ -500,7 +500,7 @@ export function DocumentDetailClient({
                     </TableHeader>
                     <TableBody>
                       {logTable.getRowModel().rows.map((row) => (
-                        <TableRow key={row.id}>
+                        <TableRow key={row.id} className="transition-colors hover:bg-muted/50">
                           {row.getVisibleCells().map((cell) => (
                             <TableCell key={cell.id} className="px-4 py-3">
                               {flexRender(
