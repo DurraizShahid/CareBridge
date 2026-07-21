@@ -29,7 +29,7 @@ async function DefaultStatsGrid({ organizationId, role }: SectionProps) {
   const scopedStats = await getDashboardStats(organizationId, role);
 
   return (
-    <div className="grid gap-[19px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       <StatCard title="Active Patients" value={scopedStats.activePatients} icon={Users} variant="default" />
       <StatCard
         title="Active Placements"
@@ -50,7 +50,7 @@ async function FacilityStatsGrid({ organizationId, role }: SectionProps) {
   const scopedStats = await getFacilityDashboardStats(organizationId, role);
 
   return (
-    <div className="grid gap-[19px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       <StatCard title="Current Occupancy" value={scopedStats.currentOccupancy} icon={Users} variant="default" />
       <StatCard
         title="Available Beds"

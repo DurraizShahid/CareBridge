@@ -44,53 +44,63 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <div className="flex flex-col gap-[27px]">
-      <DashboardHeader
-        userName={userName}
-        totalPlacements={totalPlacements}
-        completedPlacements={completedPlacements}
-        activePlacements={activePlacements}
-        placementsThisMonth={placementsThisMonth}
-      />
+    <div className="flex flex-col gap-10">
+      <section>
+        <DashboardHeader
+          userName={userName}
+          totalPlacements={totalPlacements}
+          completedPlacements={completedPlacements}
+          activePlacements={activePlacements}
+          placementsThisMonth={placementsThisMonth}
+        />
+      </section>
 
-      {role === "superadmin" && <AdminOverview />}
-
-      {role !== "superadmin" && (
-        <Suspense fallback={<StatsGridSkeleton />}>
-          <StatsGrid organizationId={organizationId} role={role} />
-        </Suspense>
+      {role === "superadmin" && (
+        <section>
+          <AdminOverview />
+        </section>
       )}
 
       {role !== "superadmin" && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-[23px] auto-rows-min">
-          <div className="md:col-span-5 md:row-span-2">
-            <AppointmentsCard />
-          </div>
+        <section>
+          <Suspense fallback={<StatsGridSkeleton />}>
+            <StatsGrid organizationId={organizationId} role={role} />
+          </Suspense>
+        </section>
+      )}
 
-          <div className="md:col-span-7">
-            <TotalSpentCard />
-          </div>
+      {role !== "superadmin" && (
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min">
+            <div className="md:col-span-5 md:row-span-2">
+              <AppointmentsCard />
+            </div>
 
-          <div className="md:col-span-4">
-            <ActivityCard />
-          </div>
+            <div className="md:col-span-7">
+              <TotalSpentCard />
+            </div>
 
-          <div className="md:col-span-3">
-            <ProgressCard />
-          </div>
+            <div className="md:col-span-4">
+              <ActivityCard />
+            </div>
 
-          <div className="md:col-span-4">
-            <VirtualCardsCard />
-          </div>
+            <div className="md:col-span-3">
+              <ProgressCard />
+            </div>
 
-          <div className="md:col-span-4">
-            <ContractTypeCard />
-          </div>
+            <div className="md:col-span-4">
+              <VirtualCardsCard />
+            </div>
 
-          <div className="md:col-span-4">
-            <AdvantagesCard />
+            <div className="md:col-span-4">
+              <ContractTypeCard />
+            </div>
+
+            <div className="md:col-span-4">
+              <AdvantagesCard />
+            </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

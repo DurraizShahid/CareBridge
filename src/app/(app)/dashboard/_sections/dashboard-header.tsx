@@ -21,25 +21,27 @@ export default function DashboardHeader({
   placementsThisMonth,
 }: DashboardHeaderProps) {
   return (
-    <div className="flex flex-col gap-[19px] mb-2">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-light text-muted-foreground">
+    <div className="flex flex-col gap-8">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link href="/" className="hover:text-foreground transition-colors">
           Home Page
         </Link>
         <ChevronRight className="size-3.5" />
-        <span className="text-foreground">Dashboard</span>
+        <span className="text-foreground font-medium">Dashboard</span>
       </nav>
 
-      <div className="flex flex-col gap-[19px]">
-        <h1 className="text-2xl sm:text-[40px] font-semibold tracking-tight text-foreground leading-none">
-          <span className="font-thin">Welcome,</span> <span className="font-normal">{userName}.</span>
-        </h1>
-        <p className="text-[10px] font-light text-muted-foreground max-w-sm -mt-2">
-          Here's what's happening with your placements today.
-        </p>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground leading-none">
+            <span className="font-light">Welcome,</span> <span className="font-semibold">{userName}.</span>
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-lg">
+            Here&apos;s what&apos;s happening with your placements today.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-4 gap-1 items-end">
-          <div className="col-span-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="w-full sm:max-w-md">
             <PipelineBar
               total={totalPlacements}
               completed={completedPlacements}
@@ -48,57 +50,25 @@ export default function DashboardHeader({
             />
           </div>
 
-          <div className="col-span-2 flex items-center gap-2.5 flex-wrap justify-end">
-            <Button
-            variant="secondary"
-            size="icon-sm"
-            aria-label="Search"
-            className="size-12 rounded-full text-foreground"
-            style={{ backgroundColor: 'oklch(0.939 0.007 295)' }}
-          >
-            <Search className="size-3.5" />
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="icon-sm"
-            aria-label="Filters"
-            className="size-12 rounded-full text-foreground"
-            style={{ backgroundColor: 'oklch(0.939 0.007 295)' }}
-          >
-            <SlidersHorizontal className="size-3.5" />
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            aria-label="Date range"
-            className="gap-2 px-4 h-12 rounded-full text-foreground"
-            style={{ backgroundColor: 'oklch(0.939 0.007 295)' }}
-          >
-            <CalendarDays className="size-3.5" />
-            <span className="text-[10px] font-normal">20-27 Jan, 2025</span>
-            <ChevronDown className="size-3 text-muted-foreground" />
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            className="gap-2 px-5 h-12 rounded-full text-foreground"
-            style={{ backgroundColor: 'oklch(0.939 0.007 295)' }}
-          >
-            <Plus className="size-3.5" />
-            <span className="text-[10px] font-normal">Add Widget</span>
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            className="px-5 h-12 rounded-full text-foreground"
-            style={{ backgroundColor: 'oklch(0.939 0.007 295)' }}
-          >
-            <span className="text-[10px] font-normal">Create a Report</span>
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="secondary" size="icon" aria-label="Search" className="rounded-xl bg-muted">
+              <Search className="size-4" />
+            </Button>
+            <Button variant="secondary" size="icon" aria-label="Filters" className="rounded-xl bg-muted">
+              <SlidersHorizontal className="size-4" />
+            </Button>
+            <Button variant="secondary" size="sm" aria-label="Date range" className="gap-2 rounded-xl bg-muted">
+              <CalendarDays className="size-4" />
+              <span className="text-xs font-normal">20-27 Jan, 2025</span>
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            </Button>
+            <Button variant="secondary" size="sm" className="gap-2 rounded-xl bg-muted">
+              <Plus className="size-4" />
+              <span className="text-xs font-normal">Add Widget</span>
+            </Button>
+            <Button variant="secondary" size="sm" className="rounded-xl bg-muted">
+              <span className="text-xs font-normal">Create a Report</span>
+            </Button>
           </div>
         </div>
       </div>
