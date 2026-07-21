@@ -15,14 +15,13 @@ import {
   RiUserHeartLine,
   RiStethoscopeLine,
   RiSparklingFill,
-  RiCloseLine,
-  RiMenuLine,
   RiStopCircleLine,
   RiArrowGoBackLine,
   RiFileCopyLine,
   RiCheckLine,
   RiTimeLine,
 } from "@remixicon/react";
+import { SidebarToggleIcon } from "@/components/ui/sidebar-toggle-icon";
 import { Button } from "@/components/ui/button";
 import { Message, MessageContent, MessageFooter } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
@@ -32,6 +31,7 @@ import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
 import { AIHomePageSkeleton } from "@/components/dashboard-skeletons";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { cn } from "@/lib/utils";
+import { useChatSidebar } from "@/hooks/use-chat-sidebar";
 
 import type { Facility } from "@/types";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
@@ -272,13 +272,17 @@ export default function HomePage() {
   const abortRef = useRef<AbortController | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen, setShowNewChat, setNewChatHandler } = useChatSidebar();
   useEffect(() => {
     setSidebarOpen(window.innerWidth >= 768);
     const onResize = () => setSidebarOpen(window.innerWidth >= 768);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, []);
+  }, [setSidebarOpen]);
+  useEffect(() => {
+    setShowNewChat(hasStarted);
+    setNewChatHandler(handleNewChat);
+  }, [hasStarted, setShowNewChat, setNewChatHandler]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [characterCount, setCharacterCount] = useState(0);
@@ -662,8 +666,8 @@ export default function HomePage() {
 
   return (
     <div
-      className="-mt-2 flex overflow-hidden"
-      style={{ height: 'calc(100dvh - 3.5rem - 4rem)' }}
+      className="flex overflow-hidden relative"
+      style={{ height: 'calc(100dvh - 4rem)' }}
     >
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
@@ -676,9 +680,10 @@ export default function HomePage() {
       {/* Chat History Sidebar */}
       <div
         className={cn(
-          "shrink-0 border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out",
+          "border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out fixed top-0 left-0 z-20",
           sidebarOpen ? "w-64" : "w-0"
         )}
+        style={{ height: 'calc(100dvh - 4rem)' }}
         aria-hidden={!sidebarOpen}
       >
         <div className="w-64 h-full">
@@ -692,34 +697,18 @@ export default function HomePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col min-w-0">
-        {/* Header */}
-        <header className="relative z-[var(--z-header)] flex shrink-0 items-center justify-between border-b border-border/30 bg-background px-6 py-3.5">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="size-8 min-h-[44px]"
-              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-            >
-              <RiMenuLine className="size-4" />
-            </Button>
-
-          </div>
-          {hasStarted && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleNewChat}
-              className="gap-1.5 rounded-full min-h-[44px] text-xs"
-              aria-label="Start a new chat"
-            >
-              <RiCloseLine className="size-3.5" />
-              New Chat
-            </Button>
-          )}
-        </header>
+      <div className={cn("relative flex flex-1 flex-col min-w-0", sidebarOpen ? "pl-64" : "pl-0")}>
+        <div className={cn("fixed top-0 z-30", sidebarOpen ? "left-64" : "left-0")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="size-8 min-h-[44px] text-muted-foreground hover:text-foreground"
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            <SidebarToggleIcon className="size-4" sidebarOpen={sidebarOpen} />
+          </Button>
+        </div>
 
         {/* Content */}
         <div

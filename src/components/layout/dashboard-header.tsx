@@ -1,12 +1,21 @@
 "use client";
 
-import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine, RiSidebarFoldLine, RiSidebarUnfoldLine } from "@remixicon/react";
+import { RiNotificationLine, RiSearchLine, RiSunLine, RiMoonLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiChatNewLine } from "@remixicon/react";
 import { useTheme } from "@/hooks/use-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 
-export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSidebarControls }: { sidebarLocked: boolean; onToggleSidebarLock: () => void; hideSidebarControls?: boolean }) {
+interface DashboardHeaderProps {
+  sidebarLocked: boolean;
+  onToggleSidebarLock: () => void;
+  hideSidebarControls?: boolean;
+  showNewChat?: boolean;
+  onNewChat?: () => void;
+}
+
+export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSidebarControls, showNewChat, onNewChat }: DashboardHeaderProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -29,6 +38,18 @@ export function DashboardHeader({ sidebarLocked, onToggleSidebarLock, hideSideba
       </div>
 
       <div className="flex items-center gap-1">
+        {showNewChat && onNewChat && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onNewChat}
+            className={cn("gap-1.5 rounded-full min-h-[44px] text-xs mr-1")}
+            aria-label="Start a new chat"
+          >
+            <RiChatNewLine className="size-3.5" />
+            New Chat
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"

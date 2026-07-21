@@ -32,7 +32,6 @@ interface DockItem {
 const primaryItems: DockItem[] = [
   { href: "/dashboard/home", label: "Home", icon: RiHomeLine },
   { href: "/dashboard/facility-network", label: "Explore", icon: RiMapPinLine },
-  { href: "/dashboard", label: "Dashboard", icon: RiDashboardLine },
   { href: "/patients", label: "Patients", icon: RiGroupLine },
 ];
 
