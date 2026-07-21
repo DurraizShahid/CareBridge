@@ -35,7 +35,7 @@ export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
 
   if (error) {
     return (
-      <Card className="rounded-2xl border-border/50 shadow-sm h-full bg-card">
+      <Card hoverable className="h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
           <p className="text-sm text-muted-foreground">Care level data unavailable</p>
         </CardContent>
@@ -52,7 +52,7 @@ export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
   });
 
   return (
-    <Card className="rounded-2xl border-border/50 shadow-sm h-full bg-card transition-all duration-200 hover:shadow-md">
+    <Card hoverable className="h-full bg-card">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Placement by Care Level</h3>

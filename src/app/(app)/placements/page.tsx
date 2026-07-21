@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -112,13 +114,10 @@ export default async function PlacementsPage() {
         breadcrumbs={[{ label: "Placements" }]}
       >
         {canCreate && (
-          <Link
-            href="/placements/new"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-          >
+          <Button render={<Link href="/placements/new" />}>
             <Plus className="h-4 w-4" />
             New Placement
-          </Link>
+          </Button>
         )}
       </PageHeader>
 
@@ -131,13 +130,10 @@ export default async function PlacementsPage() {
               Create a new placement to start tracking patient transfers.
             </p>
             {canCreate && (
-              <Link
-                href="/placements/new"
-                className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:translate-y-px"
-              >
+              <Button render={<Link href="/placements/new" />} className="mt-4">
                 <Plus className="h-4 w-4" />
                 New Placement
-              </Link>
+              </Button>
             )}
           </CardContent>
         </Card>
@@ -154,9 +150,9 @@ export default async function PlacementsPage() {
             <Link
               key={plc.id}
               href={`/placements/${plc.id}`}
-              className="block transition-all duration-200 hover:shadow-md"
+              className="block"
             >
-              <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+              <Card hoverable className="transition-all duration-200 hover:-translate-y-0.5">
               <CardContent className="p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-2">
@@ -164,22 +160,18 @@ export default async function PlacementsPage() {
                     <h3 className="font-heading text-lg font-bold text-card-foreground">
                       {getPatientName(plc.patientId)}
                     </h3>
-                    <span
-                      className={`inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${config.color}`}
-                    >
+                    <Badge variant="secondary" className={config.color}>
                       {config.label}
-                    </span>
-                    <span
-                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        plc.priority === "high" || plc.priority === "emergency"
-                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                          : plc.priority === "medium"
-                          ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
+                    </Badge>
+                    <Badge variant="secondary" className={
+                      plc.priority === "high" || plc.priority === "emergency"
+                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        : plc.priority === "medium"
+                        ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
+                        : "bg-muted text-muted-foreground"
+                    }>
                       {plc.priority} priority
-                    </span>
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {getPatientDiagnosis(plc.patientId)}

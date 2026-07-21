@@ -4,6 +4,7 @@ import { Search, Plus } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import { FacilityCard } from "@/components/facility-card";

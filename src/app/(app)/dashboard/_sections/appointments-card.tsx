@@ -596,11 +596,10 @@ export function AppointmentsCard() {
   if (hasError) return <FacilityCalendarErrorState onRetry={() => setHasError(false)} />;
 
   return (
-    <div
-      className="flex max-h-[480px] min-h-0 flex-col overflow-hidden rounded-xl border border-border/50 shadow-sm bg-card transition-all duration-200 hover:shadow-md"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-5 pb-4">
+    <Card hoverable className="flex max-h-[480px] min-h-0 flex-col overflow-hidden">
+      <CardContent className="p-0 flex flex-col h-full">
+        {/* Header */}
+        <div className="shrink-0 p-5 pb-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
             Schedule
@@ -725,6 +724,7 @@ export function AppointmentsCard() {
       </div>
 
       {selectedEvent && <EventDetailPanel appointment={selectedEvent} onClose={() => setSelectedEvent(null)} />}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
