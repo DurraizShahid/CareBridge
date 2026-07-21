@@ -14,6 +14,14 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+function applyThemeToDocument(theme: Theme) {
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
 function readStoredTheme(): Theme {
   if (typeof window === "undefined") return "light";
 
@@ -53,8 +61,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    document.documentElement.classList.remove("dark");
-  }, []);
+    applyThemeToDocument(theme);
+  }, [theme]);
 
   const setTheme = useCallback((nextTheme: Theme) => {
     try {
@@ -62,6 +70,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Storage unavailable; session-only fallback handled by document class.
     }
+    applyThemeToDocument(nextTheme);
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }, []);
 
@@ -76,9 +85,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={value}>
-      <div id="dashboard-root" className={theme === "dark" ? "dark" : ""}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }
