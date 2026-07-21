@@ -76,17 +76,15 @@ function DockButton({
 export function HospitalDock() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const { can, role } = usePermissions();
-
-  const isAdmin = role === "administrator";
+  const { can } = usePermissions();
 
   const visiblePrimary = primaryItems.filter(
-    (item) => !(isAdmin && item.href === "/dashboard/facility-network"),
+    (item) => item.href !== "/dashboard/facility-network",
   );
 
   const visibleOverflow = overflowItems.filter(
     (item) => {
-      if (isAdmin && item.href === "/dashboard/facility-network") return false;
+      if (item.href === "/dashboard/facility-network") return false;
       return !item.permission || can(item.permission as any);
     },
   );

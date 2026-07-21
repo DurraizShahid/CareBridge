@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -49,7 +50,17 @@ export function AppSidebar({ locked }: { locked: boolean }) {
   const pathname = usePathname();
   const { setOpen } = useSidebar();
   const { theme } = useTheme();
+  const { role } = usePermissions();
   const isDark = theme === "dark";
+
+  const isFacilityAccount = role === "facility-coordinator";
+  const isSuperadmin = role === "superadmin";
+
+  const filteredMainNav = mainNavItems.filter((item) => {
+    if (item.href === "/dashboard/facility-network" && !isSuperadmin) return false;
+    if (item.href === "/users" && isFacilityAccount) return false;
+    return true;
+  });
 
   return (
     <Sidebar
@@ -78,7 +89,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         {/* Centered main nav zone */}
         <div className="flex flex-1 flex-col justify-center">
           <SidebarMenu className="gap-3">
-            {mainNavItems.map((item) => {
+            {filteredMainNav.map((item) => {
               const isActive = item.href === "/dashboard"
                 ? pathname === item.href
                 : pathname === item.href || pathname.startsWith(item.href + "/");
