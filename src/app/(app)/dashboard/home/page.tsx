@@ -724,7 +724,7 @@ export default function HomePage() {
             <div className="flex min-h-full flex-col items-center justify-center px-6 py-24">
               <div className="text-center max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-700 fill-mode-both">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-[1.05] text-balance">
-                  {getGreeting()}, {user?.firstName ?? "there"}
+                  {getGreeting()}, {user?.firstName ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1) : "there"}
                 </h1>
                 <p className="text-base sm:text-lg font-medium text-muted-foreground mt-3 leading-snug">
                   What can I help you find today?

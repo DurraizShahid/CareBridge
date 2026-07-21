@@ -60,7 +60,9 @@ export default async function PlacementsPage() {
   if (!org) redirect("/onboarding");
   const organizationId = org.organizationId;
   const role = org.role;
-  const userName = user?.firstName ?? user?.username ?? "Admin";
+  const userName = user?.firstName
+    ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)
+    : (user?.username ?? "Admin");
 
   let placements: Placement[] = [];
   let patients: Patient[] = [];
