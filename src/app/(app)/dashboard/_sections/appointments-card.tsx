@@ -597,7 +597,7 @@ export function AppointmentsCard() {
   if (hasError) return <FacilityCalendarErrorState onRetry={() => setHasError(false)} />;
 
   return (
-    <Card hoverable className="flex max-h-[480px] min-h-0 flex-col overflow-hidden">
+    <Card hoverable className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardContent className="p-0 flex flex-col h-full">
         {/* Header */}
         <div className="shrink-0 p-5 pb-4">
