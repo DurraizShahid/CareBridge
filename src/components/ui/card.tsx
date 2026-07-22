@@ -18,11 +18,10 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
+        "group/card flex flex-col gap-(--card-spacing) text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
         "rounded-2xl",
-        "bg-card dark:bg-card",
-        "shadow-[0_4px_12px_-1px_rgba(0,0,0,0.25),-4px_0_12px_-1px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_12px_-1px_rgba(0,0,0,0.6),-4px_0_12px_-1px_rgba(0,0,0,0.4)]",
-        "outline-none ring-0 [clip-path:inset(0_0_-20px_-20px_round_2rem)]",
+        "soft-elevated-card",
+        "outline-none ring-0",
         glass && "glass-card",
         accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className

@@ -99,7 +99,7 @@
   --health: oklch(0.58 0.16 212);
   --warmth: oklch(0.74 0.18 280);
   --surface: oklch(0.98 0.002 240);
-  --background: oklch(0.95 0.002 240);
+  --background: #EBEAEA;
   --foreground: oklch(0.18 0.006 245);
   --card-glass: oklch(0.98 0.008 240 / 0.75);
   --card-glass-border: oklch(0.92 0.008 240 / 0.3);
@@ -118,6 +118,17 @@
   --stat-orange-bg: oklch(0.74 0.16 190 / 0.08);
   --stat-facility: oklch(0.52 0.14 260);
   --stat-facility-bg: oklch(0.52 0.14 260 / 0.08);
+  /* Soft elevated card tokens */
+  --page-bg: #ebeaea;
+  --card-top: #f1f0f0;
+  --card-center: #efeeee;
+  --card-bottom: #ecebea;
+  --edge-light: rgba(255, 255, 255, 0.42);
+  --edge-neutral: rgba(255, 255, 255, 0.18);
+  --edge-bottom: rgba(139, 132, 126, 0.1);
+  --shadow-contact: rgba(73, 63, 56, 0.13);
+  --shadow-main: rgba(73, 63, 56, 0.14);
+  --shadow-ambient: rgba(82, 74, 68, 0.08);
 }
 
 .dark {
@@ -173,6 +184,17 @@
   --stat-orange-bg: oklch(0.8 0.18 190 / 0.12);
   --stat-facility: oklch(0.58 0.16 260);
   --stat-facility-bg: oklch(0.58 0.16 260 / 0.12);
+  /* Soft elevated card tokens (dark) */
+  --page-bg: #0c0c0e;
+  --card-top: #1a1a1c;
+  --card-center: #161618;
+  --card-bottom: #131314;
+  --edge-light: rgba(255, 255, 255, 0.06);
+  --edge-neutral: rgba(255, 255, 255, 0.05);
+  --edge-bottom: rgba(0, 0, 0, 0.25);
+  --shadow-contact: rgba(0, 0, 0, 0.4);
+  --shadow-main: rgba(0, 0, 0, 0.35);
+  --shadow-ambient: rgba(0, 0, 0, 0.2);
 }
 
 @layer base {
@@ -180,7 +202,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background: var(--page-bg);
   }
   html {
     @apply font-sans;
@@ -253,19 +276,6 @@
       radial-gradient(ellipse 55% 40% at 50% 50%, oklch(0.7 0.22 220 / 0.08) 0%, transparent 55%);
   }
 
-  .glass-card {
-    background: var(--card-glass);
-    border: 1px solid var(--card-glass-border);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 4px 12px -1px rgba(0,0,0,0.25), -4px 0 12px -1px rgba(0,0,0,0.15);
-    clip-path: inset(0 0 -20px -20px round 2rem);
-  }
-
-  .dark .glass-card {
-    box-shadow: 0 4px 12px -1px rgba(0,0,0,0.6), -4px 0 12px -1px rgba(0,0,0,0.4);
-  }
-
   .accent-gradient-card {
     background: linear-gradient(135deg, oklch(0.58 0.16 212) 0%, oklch(0.64 0.18 220) 50%, oklch(0.7 0.2 232) 100%);
   }
@@ -274,21 +284,214 @@
     color: transparent !important;
     background-color: transparent !important;
   }
-  .hide-card-content * {
+  .hide-card-content > [data-slot="card"] {
+    color: transparent !important;
+  }
+  .hide-card-content > [data-slot="card"] * {
     color: transparent !important;
     background-color: transparent !important;
     border-color: transparent !important;
-    box-shadow: none !important;
   }
   .hide-card-content svg,
-  .hide-card-content [data-slot="card"]::before,
   .hide-card-content img {
     display: none !important;
   }
-  .hide-card-content [data-slot="card"] {
-    background-color: var(--card) !important;
-    box-shadow: 0 25px 80px rgba(0,0,0,0.18), 0 10px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.3), inset 0 1px 0 rgba(255,255,255,0.8) !important;
-  }
+}
+
+/* Card styles — Soft molded card, outside @layer */
+.card-fade-shadow,
+.soft-elevated-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--edge-neutral);
+  background:
+    radial-gradient(
+      ellipse 65% 70% at 82% 12%,
+      rgba(255, 255, 255, 0.16),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--card-top) 0%,
+      var(--card-center) 55%,
+      var(--card-bottom) 100%
+    );
+  box-shadow:
+    0 5px 8px -4px var(--shadow-contact),
+    0 30px 46px -22px var(--shadow-main),
+    -8px 34px 58px -34px var(--shadow-ambient),
+    inset 0 1px 1px var(--edge-light),
+    inset 1px 0 1px rgba(255, 255, 255, 0.2),
+    inset -1px 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px var(--edge-bottom);
+}
+.card-fade-shadow::before,
+.soft-elevated-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateY(2px);
+  border-radius: inherit;
+  background: #dedbd9;
+  box-shadow: 0 5px 9px -6px rgba(68, 57, 50, 0.15);
+  pointer-events: none;
+}
+.card-fade-shadow::after,
+.soft-elevated-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  -webkit-mask-image:
+    linear-gradient(
+      155deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.5) 28%,
+      rgba(0, 0, 0, 0.08) 58%,
+      transparent 75%
+    );
+  mask-image:
+    linear-gradient(
+      155deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.5) 28%,
+      rgba(0, 0, 0, 0.08) 58%,
+      transparent 75%
+    );
+}
+
+.dark .card-fade-shadow,
+.dark .soft-elevated-card {
+  border-color: var(--edge-neutral);
+  background:
+    radial-gradient(
+      ellipse 65% 70% at 82% 12%,
+      rgba(255, 255, 255, 0.04),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--card-top) 0%,
+      var(--card-center) 55%,
+      var(--card-bottom) 100%
+    );
+  box-shadow:
+    0 5px 8px -4px var(--shadow-contact),
+    0 30px 46px -22px var(--shadow-main),
+    -8px 34px 58px -34px var(--shadow-ambient),
+    inset 0 1px 1px var(--edge-light),
+    inset 1px 0 1px rgba(255, 255, 255, 0.03),
+    inset -1px 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 -1px 1px var(--edge-bottom);
+}
+.dark .card-fade-shadow::before,
+.dark .soft-elevated-card::before {
+  background: #0a0a0c;
+  box-shadow: 0 5px 9px -6px rgba(0, 0, 0, 0.5);
+}
+.dark .card-fade-shadow::after,
+.dark .soft-elevated-card::after {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.glass-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--edge-neutral);
+  background:
+    radial-gradient(
+      ellipse 65% 70% at 82% 12%,
+      rgba(255, 255, 255, 0.16),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--card-top) 0%,
+      var(--card-center) 55%,
+      var(--card-bottom) 100%
+    ),
+    var(--card-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 5px 8px -4px var(--shadow-contact),
+    0 30px 46px -22px var(--shadow-main),
+    -8px 34px 58px -34px var(--shadow-ambient),
+    inset 0 1px 1px var(--edge-light),
+    inset 1px 0 1px rgba(255, 255, 255, 0.2),
+    inset -1px 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px var(--edge-bottom);
+}
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateY(2px);
+  border-radius: inherit;
+  background: #dedbd9;
+  box-shadow: 0 5px 9px -6px rgba(68, 57, 50, 0.15);
+  pointer-events: none;
+}
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  -webkit-mask-image:
+    linear-gradient(
+      155deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.5) 28%,
+      rgba(0, 0, 0, 0.08) 58%,
+      transparent 75%
+    );
+  mask-image:
+    linear-gradient(
+      155deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.5) 28%,
+      rgba(0, 0, 0, 0.08) 58%,
+      transparent 75%
+    );
+}
+.dark .glass-card {
+  border-color: var(--edge-neutral);
+  background:
+    radial-gradient(
+      ellipse 65% 70% at 82% 12%,
+      rgba(255, 255, 255, 0.04),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--card-top) 0%,
+      var(--card-center) 55%,
+      var(--card-bottom) 100%
+    ),
+    var(--card-glass);
+  box-shadow:
+    0 5px 8px -4px var(--shadow-contact),
+    0 30px 46px -22px var(--shadow-main),
+    -8px 34px 58px -34px var(--shadow-ambient),
+    inset 0 1px 1px var(--edge-light),
+    inset 1px 0 1px rgba(255, 255, 255, 0.03),
+    inset -1px 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 -1px 1px var(--edge-bottom);
+}
+.dark .glass-card::before {
+  background: #0a0a0c;
+  box-shadow: 0 5px 9px -6px rgba(0, 0, 0, 0.5);
+}
+.dark .glass-card::after {
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
