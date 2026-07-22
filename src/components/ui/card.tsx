@@ -21,7 +21,7 @@ function Card({
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
         "rounded-2xl",
         "bg-card dark:bg-card",
-        "shadow-[0_2px_4px_rgba(0,0,0,0.12),-2px_0_4px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.4),-2px_0_4px_rgba(0,0,0,0.25)]",
+        "shadow-[0_8px_20px_-2px_rgba(0,0,0,0.18),-8px_0_20px_-2px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_20px_-2px_rgba(0,0,0,0.5),-8px_0_20px_-2px_rgba(0,0,0,0.35)]",
         glass && "glass-card",
         accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className
