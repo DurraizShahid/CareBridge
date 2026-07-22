@@ -19,9 +19,10 @@ function Card({
       data-size={size}
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
-        "rounded-3xl",
+        "rounded-2xl",
         "bg-card dark:bg-card",
-        "shadow-[0_20px_60px_rgba(0,0,0,0.12),0_8px_20px_rgba(0,0,0,0.06),0_0_0_1px_rgba(255,255,255,0.5)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_8px_20px_rgba(0,0,0,0.2),0_0_0_1px_rgba(255,255,255,0.08)]",
+        "border border-white/60 dark:border-white/10",
+        "shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]",
         glass && "glass-card",
         accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className
