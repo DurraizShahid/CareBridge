@@ -62,7 +62,7 @@ export function FacilityCard({ facility }: { facility: Facility }) {
         </svg>
 
         <div
-          className="relative bg-white dark:bg-zinc-800 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+          className="relative bg-white dark:bg-zinc-800"
           style={{ clipPath: `url(#${clipId})` }}
         >
           <div className="p-5 pb-6">

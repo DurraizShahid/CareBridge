@@ -34,7 +34,7 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-full bg-[#E8F5E9] dark:bg-[#1A3A2A] px-3 py-1.5 text-xs font-semibold text-[#2E7D32] dark:text-[#4ADE80] shadow-sm">
+    <div className="rounded-full bg-white dark:bg-[#1A3A2A] px-3 py-1.5 text-xs font-semibold text-[#048A81] dark:text-[#4ADE80] shadow-sm">
       {payload[0].value} placements
     </div>
   );
@@ -57,7 +57,7 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
   }
 
   return (
-    <Card className="rounded-xl border-border/50 shadow-sm h-full bg-card overflow-hidden transition-all duration-200 hover:shadow-md">
+    <Card className="rounded-xl h-full overflow-hidden" style={{ background: "linear-gradient(135deg, #048A81 0%, #067A72 50%, #056B63 100%)" }}>
       <CardContent className="flex h-full p-6 gap-4">
         {loading ? (
           <div className="flex gap-4 w-full">
@@ -73,28 +73,28 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
             {/* Left side — stats */}
             <div className="flex flex-col justify-between min-w-[140px] shrink-0">
               <div>
-                <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
+                <h3 className="text-sm font-bold tracking-widest text-white uppercase">
                   Placements by Month
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-white/70 mt-0.5">
                   Placements this period
                 </p>
               </div>
 
               <div className="mt-4">
-                <p className="text-4xl font-bold tracking-tight text-foreground">
+                <p className="text-4xl font-bold tracking-tight text-white">
                   {latestMonth.count}
                 </p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span
                     className={cn(
                       "text-xs font-medium",
-                      isPositive ? "text-[#2E7D32]" : "text-red-500"
+                      isPositive ? "text-[#86EFAC]" : "text-red-300"
                     )}
                   >
                     {isPositive ? "↑" : "↓"} {Math.abs(delta)}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-white/60">
                     vs last month
                   </span>
                 </div>
@@ -102,16 +102,16 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
 
               <div className="flex flex-col gap-2 mt-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="text-lg font-bold text-white">
                     {activePlacements}
                   </span>
-                  <span className="text-xs text-muted-foreground">Active</span>
+                  <span className="text-xs text-white/70">Active</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="text-lg font-bold text-white">
                     {completedPlacements}
                   </span>
-                  <span className="text-xs text-muted-foreground">Completed</span>
+                  <span className="text-xs text-white/70">Completed</span>
                 </div>
               </div>
             </div>
@@ -133,7 +133,7 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
                     dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: "#9CA3AF" }}
+                    tick={{ fontSize: 11, fill: "rgba(255,255,255,0.7)" }}
                     dy={8}
                   />
                   <YAxis hide />
@@ -147,8 +147,8 @@ export function BankCardPanel({ loading, error }: BankCardPanelProps) {
                     stroke="#048A81"
                     strokeWidth={2}
                     fill="url(#placementGradient)"
-                    dot={{ r: 3.5, fill: "#1F2937", stroke: "#fff", strokeWidth: 2 }}
-                    activeDot={{ r: 5, fill: "#048A81", stroke: "#fff", strokeWidth: 2 }}
+                    dot={{ r: 3.5, fill: "#ffffff", stroke: "#048A81", strokeWidth: 2 }}
+                    activeDot={{ r: 5, fill: "#ffffff", stroke: "#048A81", strokeWidth: 2 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>

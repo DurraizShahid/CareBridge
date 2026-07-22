@@ -87,7 +87,7 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
   }, []);
 
   return (
-    <Card className={cn("rounded-2xl border-border/50 shadow-sm h-full overflow-hidden transition-all duration-200 hover:shadow-md", className)}>
+    <Card className={cn("rounded-2xl border-border/50 shadow-sm h-full overflow-hidden", className)}>
       <CardContent className="flex flex-col h-full p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

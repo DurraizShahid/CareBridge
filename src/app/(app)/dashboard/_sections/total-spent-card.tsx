@@ -22,7 +22,7 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
 
   if (error) {
     return (
-      <Card hoverable className="h-full bg-card">
+      <Card className="h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
           <p className="text-sm text-muted-foreground">Placement value data unavailable</p>
         </CardContent>
@@ -31,7 +31,7 @@ export function TotalSpentCard({ data = defaultSpending, totalProp, loading, err
   }
 
   return (
-    <Card hoverable className="h-full bg-card">
+    <Card className="h-full bg-card">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Total Placement Value</h3>

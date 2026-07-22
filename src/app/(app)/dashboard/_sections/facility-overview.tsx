@@ -60,7 +60,6 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             return (
               <Card
                 key={ref.id}
-                hoverable
               >
                 <CardContent className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -172,7 +171,6 @@ export default async function FacilityOverview({ organizationId, role, userId }:
             {scopedFacilities.slice(0, 4).map((fac) => (
               <Card
                 key={fac.id}
-                hoverable
               >
                 <CardContent className="flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">

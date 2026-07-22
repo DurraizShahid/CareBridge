@@ -73,7 +73,7 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
 
   if (error) {
     return (
-      <Card hoverable className="h-full bg-card">
+      <Card className="h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-48 text-center">
           <p className="text-sm text-muted-foreground">Facility data unavailable</p>
         </CardContent>
@@ -82,7 +82,7 @@ export function VirtualCardsCard({ error }: VirtualCardsCardProps) {
   }
 
   return (
-    <Card hoverable className="h-full bg-card">
+    <Card className="h-full bg-card">
       <CardContent className="p-0">
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Hospitals & Facilities</h3>
