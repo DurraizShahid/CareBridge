@@ -21,8 +21,7 @@ function Card({
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
         "rounded-2xl",
         "bg-card dark:bg-card",
-        "border border-white/60 dark:border-white/10",
-        "shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.2)]",
+        "shadow-[inset_-2px_-2px_6px_rgba(255,255,255,0.8),inset_2px_2px_6px_rgba(0,0,0,0.15),0_10px_24px_rgba(0,0,0,0.14),-6px_0_18px_rgba(0,0,0,0.08),-4px_8px_20px_rgba(0,0,0,0.10),2px_0_6px_rgba(0,0,0,0.03),0_-2px_4px_rgba(0,0,0,0.02)] dark:shadow-[inset_-2px_-2px_6px_rgba(255,255,255,0.08),inset_2px_2px_6px_rgba(0,0,0,0.4),0_10px_24px_rgba(0,0,0,0.4),-6px_0_18px_rgba(0,0,0,0.25),-4px_8px_20px_rgba(0,0,0,0.3),2px_0_6px_rgba(0,0,0,0.1),0_-2px_4px_rgba(0,0,0,0.08)]",
         glass && "glass-card",
         accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className
