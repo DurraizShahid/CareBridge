@@ -30,13 +30,13 @@ const trendStyles = {
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
-    <Card hoverable glass className="bg-card">
+    <Card glass className="bg-card">
       <CardContent className="flex flex-col gap-6">
         <div className="flex items-start justify-between">
           <span className="text-sm font-semibold text-muted-foreground">{title}</span>
           <div
             className={cn(
-              "flex size-14 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-md",
+              "flex size-14 shrink-0 items-center justify-center rounded-2xl",
               iconStyles[variant],
             )}
           >

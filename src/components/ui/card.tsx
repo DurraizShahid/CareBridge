@@ -5,13 +5,11 @@ import { cn } from "@/lib/utils"
 function Card({
   className,
   size = "default",
-  hoverable = false,
   glass = false,
   accent = false,
   ...props
 }: React.ComponentProps<"div"> & { 
   size?: "default" | "sm", 
-  hoverable?: boolean,
   glass?: boolean,
   accent?: boolean
 }) {
@@ -22,11 +20,8 @@ function Card({
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden text-card-foreground [--card-spacing:--spacing(8)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(6)]",
         "rounded-3xl",
-        "ring-1 ring-foreground/8 dark:ring-white/8",
         "bg-card dark:bg-card",
-        "shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.15)]",
-        "transition-all duration-300 ease-out",
-        hoverable && "hover:-translate-y-1.5 hover:shadow-[0_12px_48px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_48px_rgba(0,0,0,0.4),0_4px_12px_rgba(0,0,0,0.2)] hover:ring-foreground/12 dark:hover:ring-white/12",
+        "shadow-[0_20px_60px_rgba(0,0,0,0.12),0_8px_20px_rgba(0,0,0,0.06),0_0_0_1px_rgba(255,255,255,0.5)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_8px_20px_rgba(0,0,0,0.2),0_0_0_1px_rgba(255,255,255,0.08)]",
         glass && "glass-card",
         accent && "accent-gradient-card text-primary-foreground shadow-[0_10px_40px_rgba(88,140,126,0.3)] dark:shadow-[0_10px_40px_rgba(98,165,148,0.4)]",
         className

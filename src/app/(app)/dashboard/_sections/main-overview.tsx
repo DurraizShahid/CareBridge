@@ -33,7 +33,6 @@ export default async function MainOverview({ organizationId, role }: SectionProp
           return (
             <Card
               key={plc.id}
-              hoverable
             >
               <CardContent className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">

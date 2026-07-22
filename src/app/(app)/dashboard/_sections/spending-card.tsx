@@ -29,7 +29,7 @@ export default function SpendingCard() {
   const areaPath = `${linePath} L ${toX(days.length - 1)} ${chartHeight - padding.bottom} L ${toX(0)} ${chartHeight - padding.bottom} Z`;
 
   return (
-    <Card className="rounded-2xl border-border/50 shadow-sm h-full transition-all duration-200 hover:shadow-md">
+    <Card className="rounded-2xl border-border/50 shadow-sm h-full">
       <CardContent className="p-[18px]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-muted-foreground">Total Spent</h3>

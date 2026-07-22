@@ -84,7 +84,7 @@ export function ProgressCard() {
         }
       `}</style>
 
-      <Card hoverable className="h-full bg-card overflow-hidden">
+      <Card className="h-full bg-card overflow-hidden">
         <CardContent className="flex flex-col h-full p-5">
           {/* Header */}
           <div className="flex items-start justify-between">

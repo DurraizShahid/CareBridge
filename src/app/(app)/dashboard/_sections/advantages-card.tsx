@@ -12,7 +12,7 @@ interface AdvantagesCardProps {
 export function AdvantagesCard({ loading, error }: AdvantagesCardProps) {
   if (error) {
     return (
-      <Card hoverable className="h-full bg-card">
+      <Card className="h-full bg-card">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
           <p className="text-sm text-muted-foreground">Performance data unavailable</p>
         </CardContent>
@@ -21,7 +21,7 @@ export function AdvantagesCard({ loading, error }: AdvantagesCardProps) {
   }
 
   return (
-    <Card hoverable className="h-full bg-card">
+    <Card className="h-full bg-card">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Platform Performance</h3>

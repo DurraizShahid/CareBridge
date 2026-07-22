@@ -38,7 +38,7 @@ export function FacilityResultCard({ facility }: FacilityResultCardProps) {
       className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
       aria-label={`View ${facility.name} details`}
     >
-      <Card className="group rounded-2xl border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]">
+      <Card className="group rounded-2xl border-border/50">
         <CardContent>
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="min-w-0 flex-1">

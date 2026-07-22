@@ -50,7 +50,7 @@ export function ActivityCard({ error }: ActivityCardProps) {
 
   if (error) {
     return (
-      <Card hoverable className="h-full bg-primary/90">
+      <Card className="h-full bg-primary/90">
         <CardContent className="p-6 flex flex-col items-center justify-center h-48 text-center">
           <p className="text-sm text-primary-foreground/80">Activity data unavailable</p>
         </CardContent>
@@ -59,7 +59,7 @@ export function ActivityCard({ error }: ActivityCardProps) {
   }
 
   return (
-    <Card hoverable className="h-full bg-primary/90">
+    <Card className="h-full bg-primary/90">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold tracking-widest text-primary-foreground uppercase">Placement Activity</h3>

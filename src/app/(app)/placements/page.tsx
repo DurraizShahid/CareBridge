@@ -154,7 +154,7 @@ export default async function PlacementsPage() {
               href={`/placements/${plc.id}`}
               className="block"
             >
-              <Card hoverable className="transition-all duration-200 hover:-translate-y-0.5">
+              <Card>
               <CardContent className="p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-2">
