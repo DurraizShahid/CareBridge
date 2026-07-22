@@ -354,12 +354,13 @@ export function FacilityDetailSkeleton() {
   );
 }
 
-export function FacilitiesPageSkeleton({ count = 6 }: { count?: number }) {
+export function FacilitiesPageSkeleton({ count = 10 }: { count?: number }) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeaderSkeleton />
       <Skeleton className="h-10 w-full rounded-lg" />
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <Skeleton className="h-5 w-32" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {Array.from({ length: count }).map((_, i) => (
           <Card key={i} className="overflow-hidden">
             <CardContent className="flex flex-col gap-4 p-0">
