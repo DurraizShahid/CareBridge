@@ -258,11 +258,11 @@
     border: 1px solid var(--card-glass-border);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: inset -1px -1px 4px rgba(255,255,255,0.6), inset 1px 1px 4px rgba(0,0,0,0.1), 0 10px 24px rgba(0,0,0,0.14), -6px 0 18px rgba(0,0,0,0.08), -4px 8px 20px rgba(0,0,0,0.10);
+    box-shadow: inset 1px 1px 4px rgba(0,0,0,0.1), 0 10px 24px rgba(0,0,0,0.14), -6px 0 18px rgba(0,0,0,0.08), -4px 8px 20px rgba(0,0,0,0.10);
   }
 
   .dark .glass-card {
-    box-shadow: inset -1px -1px 4px rgba(255,255,255,0.06), inset 1px 1px 4px rgba(0,0,0,0.3), 0 10px 24px rgba(0,0,0,0.4), -6px 0 18px rgba(0,0,0,0.25), -4px 8px 20px rgba(0,0,0,0.3);
+    box-shadow: inset 1px 1px 4px rgba(0,0,0,0.3), 0 10px 24px rgba(0,0,0,0.4), -6px 0 18px rgba(0,0,0,0.25), -4px 8px 20px rgba(0,0,0,0.3);
   }
 
   .accent-gradient-card {
