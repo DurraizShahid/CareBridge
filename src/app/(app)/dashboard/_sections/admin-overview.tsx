@@ -11,7 +11,7 @@ export default function AdminOverview() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {/* Facility Calendar — tall, spans 2 rows */}
-      <div className="lg:row-span-2">
+      <div className="lg:row-span-2 h-full">
         <AppointmentsCard />
       </div>
 
