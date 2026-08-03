@@ -4,13 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export function PageHeaderSkeleton() {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-7 w-1 rounded-full" />
-          <Skeleton className="h-7 w-48" />
-        </div>
-        <Skeleton className="ml-4 h-3.5 w-72" />
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[38px] w-24 rounded-full" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-[46px] w-72" style={{ borderRadius: "4px" }} />
+        <Skeleton className="h-4 w-56" />
       </div>
     </div>
   );
@@ -18,17 +20,15 @@ export function PageHeaderSkeleton() {
 
 export function StatsGridSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="relative overflow-hidden">
-          <CardContent className="flex flex-col gap-3 p-5">
+        <Card key={i}>
+          <CardContent className="flex flex-col gap-4 p-5">
             <div className="flex items-center justify-between">
-              <Skeleton className="h-3.5 w-28" />
-              <Skeleton className="h-9 w-9 rounded-xl" />
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-9 w-9 rounded-full" />
             </div>
-            <div className="flex items-baseline gap-2">
-              <Skeleton className="h-7 w-16 align-middle" />
-            </div>
+            <Skeleton className="h-7 w-16" />
           </CardContent>
         </Card>
       ))}
@@ -707,44 +707,92 @@ export function FacilityNetworkPageSkeleton() {
 
 export function DashboardPageSkeleton() {
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-8">
-        <Skeleton className="h-4 w-32" />
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-9 w-72" />
-            <Skeleton className="h-4 w-56" />
-          </div>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <Skeleton className="h-12 w-full sm:max-w-md rounded-xl" />
-            <div className="flex items-center gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-9 w-9 rounded-xl" />
-              ))}
-            </div>
-          </div>
+    <div className="flex flex-col gap-8">
+      {/* Top nav pills */}
+      <div className="flex items-center gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[38px] w-24 rounded-full" />
+        ))}
+      </div>
+
+      {/* Welcome hero */}
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-[52px] w-80" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      {/* Pipeline + controls */}
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <Skeleton className="h-11 w-full sm:max-w-md rounded-full" />
+        <div className="flex items-center gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-[48px] w-[48px] rounded-full" />
+          ))}
         </div>
       </div>
+
+      {/* Stats grid */}
       <StatsGridSkeleton />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 lg:row-span-2">
+
+      {/* Card grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div className="md:col-span-5 md:row-span-2">
           <Card>
             <CardContent className="p-5">
               <Skeleton className="h-5 w-24 mb-4" />
-              <Skeleton className="h-72 w-full rounded-xl" />
+              <Skeleton className="h-[400px] w-full rounded-2xl" />
             </CardContent>
           </Card>
         </div>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i}>
-            <Card>
-              <CardContent className="p-5">
-                <Skeleton className="h-5 w-32 mb-4" />
-                <Skeleton className="h-32 w-full rounded-xl" />
-              </CardContent>
-            </Card>
-          </div>
-        ))}
+        <div className="md:col-span-7">
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-5 w-32 mb-4" />
+              <Skeleton className="h-8 w-24 mb-3" />
+              <Skeleton className="h-10 w-full rounded-full" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-4">
+          <Card>
+            <CardContent className="p-5">
+              <Skeleton className="h-5 w-32 mb-4" />
+              <Skeleton className="h-48 w-full rounded-full" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-3">
+          <Card>
+            <CardContent className="p-5">
+              <Skeleton className="h-5 w-20 mb-4" />
+              <Skeleton className="h-32 w-full rounded-2xl" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-4">
+          <Card>
+            <CardContent className="p-5">
+              <Skeleton className="h-5 w-36 mb-4" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-4">
+          <Card>
+            <CardContent className="p-5">
+              <Skeleton className="h-5 w-36 mb-4" />
+              <Skeleton className="h-36 w-full rounded-full" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-4">
+          <Card>
+            <CardContent className="p-5">
+              <Skeleton className="h-5 w-32 mb-4" />
+              <Skeleton className="h-36 w-full rounded-2xl" />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
@@ -804,7 +852,7 @@ export function HospitalDockSkeleton() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center border-t border-border bg-background/95 px-2">
       <div className="flex w-full items-center max-w-lg mx-auto gap-4 px-4">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-0.5">
             <Skeleton className="size-5 rounded" />
             <Skeleton className="h-2.5 w-8" />

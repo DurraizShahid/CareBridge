@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContractTypeCardProps {
   loading?: boolean;
@@ -11,10 +10,10 @@ interface ContractTypeCardProps {
 }
 
 const contractData = [
-  { label: "Skilled Nursing", value: 92, color: "hsl(var(--primary) / 0.7)" },
-  { label: "Assisted Living", value: 48, color: "hsl(var(--primary) / 0.4)" },
-  { label: "Home Health", value: 36, color: "hsl(var(--muted-foreground) / 0.3)" },
-  { label: "Memory Care", value: 24, color: "hsl(var(--muted-foreground) / 0.15)" },
+  { label: "Skilled Nursing", value: 92, color: "#e9edf8" },
+  { label: "Assisted Living", value: 48, color: "#dff1e6" },
+  { label: "Home Health", value: 36, color: "#eef8f6" },
+  { label: "Memory Care", value: 24, color: "#f4f5fb" },
 ];
 
 function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
@@ -29,15 +28,15 @@ function describeArc(cx: number, cy: number, r: number, start: number, end: numb
   return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 0 ${e.x} ${e.y}`;
 }
 
-export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
+export function ContractTypeCard({ error }: ContractTypeCardProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const total = contractData.reduce((a, b) => a + b.value, 0);
 
   if (error) {
     return (
-      <Card className="h-full bg-card">
+      <Card className="h-full">
         <CardContent className="p-6 flex flex-col items-center justify-center h-full text-center">
-          <p className="text-sm text-muted-foreground">Care level data unavailable</p>
+          <p className="text-sm text-[#8d8a98]">Care level data unavailable</p>
         </CardContent>
       </Card>
     );
@@ -52,66 +51,51 @@ export function ContractTypeCard({ loading, error }: ContractTypeCardProps) {
   });
 
   return (
-    <Card className="h-full bg-card">
+    <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">Placement by Care Level</h3>
-          <div className="flex items-center gap-1">
-            <button aria-label="Details" className="p-1.5 rounded-lg hover:bg-muted/60 transition-colors">
-              <ArrowUpRight className="size-4 text-muted-foreground" />
-            </button>
-          </div>
+          <h3 className="text-sm font-semibold tracking-tight text-[#1e1d24]">Placement by Care Level</h3>
+          <button aria-label="Details" className="p-1.5 rounded-lg hover:bg-[#f3f1f8] transition-colors">
+            <ArrowUpRight className="size-4 text-[#8d8a98]" />
+          </button>
         </div>
 
-        {loading ? (
-          <div className="space-y-4 flex flex-col items-center">
-            <Skeleton className="size-32 rounded-full" />
-            <div className="flex gap-6">
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-8 w-16" />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="relative flex items-center justify-center mb-5">
-              <svg viewBox="0 0 120 120" className="w-32 h-32">
-                {segments.map((seg, i) => (
-                  <path
-                    key={seg.label}
-                    d={describeArc(60, 60, 45, seg.start, seg.end)}
-                    fill="none"
-                    stroke={seg.color}
-                    strokeWidth={hoveredIndex === i ? 14 : 12}
-                    className="transition-all duration-200 cursor-pointer"
-                    onMouseEnter={() => setHoveredIndex(i)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  />
-                ))}
-                <text x="60" y="54" textAnchor="middle" className="fill-foreground text-[22px] font-light" dominantBaseline="middle">
-                  {total}
-                </text>
-                <text x="60" y="76" textAnchor="middle" className="fill-muted-foreground text-[5px] font-medium">
-                  Total
-                </text>
-              </svg>
-            </div>
+        <div className="relative flex items-center justify-center mb-5">
+          <svg viewBox="0 0 120 120" className="w-32 h-32">
+            {segments.map((seg, i) => (
+              <path
+                key={seg.label}
+                d={describeArc(60, 60, 45, seg.start, seg.end)}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={hoveredIndex === i ? 14 : 12}
+                className="transition-all duration-200 cursor-pointer"
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              />
+            ))}
+            <text x="60" y="54" textAnchor="middle" className="fill-[#111014] text-[22px] font-light" dominantBaseline="middle">
+              {total}
+            </text>
+            <text x="60" y="76" textAnchor="middle" className="fill-[#8d8a98] text-[5px] font-medium">
+              Total
+            </text>
+          </svg>
+        </div>
 
-            <div className="grid grid-cols-4 gap-2 pt-4 border-t border-border/30">
-              {contractData.map((item, i) => (
-                <div
-                  key={item.label}
-                  className="text-center cursor-pointer transition-all hover:scale-105"
-                  onMouseEnter={() => setHoveredIndex(i)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <p className="text-xl font-light text-foreground tabular-nums">{item.value}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{item.label}</p>
-                </div>
-              ))}
+        <div className="grid grid-cols-4 gap-2 pt-4 border-t border-[#eceaf2]">
+          {contractData.map((item, i) => (
+            <div
+              key={item.label}
+              className="text-center cursor-pointer transition-all hover:scale-105"
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <p className="text-xl font-light text-[#111014] tabular-nums">{item.value}</p>
+              <p className="text-[10px] text-[#8d8a98] mt-0.5">{item.label}</p>
             </div>
-          </>
-        )}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

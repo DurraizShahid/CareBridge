@@ -5,7 +5,7 @@ import { DashboardHeader } from "./dashboard-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { OrganizationProvider } from "@/hooks/use-organization";
-import { ChatSidebarProvider, useChatSidebar } from "@/hooks/use-chat-sidebar";
+import { ChatSidebarProvider } from "@/hooks/use-chat-sidebar";
 import { usePathname } from "next/navigation";
 
 const FULL_WIDTH_ROUTES = ["/dashboard/home"];
@@ -16,7 +16,10 @@ function HospitalShellInner({ children }: { children: React.ReactNode }) {
   const isFullWidth = FULL_WIDTH_ROUTES.includes(pathname);
   const isChatRoute = CHAT_SIDEBAR_ROUTES.includes(pathname);
 
-  const { showNewChat, newChatHandler } = useChatSidebar();
+  // AI Chat page gets its own full-screen layout without header/scrollarea
+  if (isChatRoute) {
+    return <>{children}<HospitalDock /></>;
+  }
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -24,8 +27,8 @@ function HospitalShellInner({ children }: { children: React.ReactNode }) {
         sidebarLocked={false}
         onToggleSidebarLock={() => {}}
         hideSidebarControls
-        showNewChat={isChatRoute ? showNewChat : false}
-        onNewChat={isChatRoute ? newChatHandler : undefined}
+        showNewChat={false}
+        onNewChat={undefined}
       />
       <ScrollArea className="flex-1 min-h-0">
         {isFullWidth ? (

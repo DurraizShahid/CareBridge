@@ -50,41 +50,35 @@ export function ActivityCard({ error }: ActivityCardProps) {
 
   if (error) {
     return (
-      <Card className="h-full bg-primary/90">
+      <Card className="h-full">
         <CardContent className="p-6 flex flex-col items-center justify-center h-48 text-center">
-          <p className="text-sm text-primary-foreground/80">Activity data unavailable</p>
+          <p className="text-sm text-[#8d8a98]">Activity data unavailable</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="h-full bg-primary/90">
-      <CardContent className="p-5">
+    <Card className="h-full">
+      <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold tracking-widest text-primary-foreground uppercase">Placement Activity</h3>
+          <h3 className="text-sm font-semibold tracking-tight text-[#1e1d24]">Placement Activity</h3>
           <div className="flex items-center gap-1">
-            <button
-              aria-label="Chart view"
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-95"
-            >
-              <ChartNoAxesColumnIncreasing className="size-4 text-primary-foreground/70" />
+            <button aria-label="Chart view" className="p-1.5 rounded-lg hover:bg-[#f3f1f8] transition-colors">
+              <ChartNoAxesColumnIncreasing className="size-4 text-[#8d8a98]" />
             </button>
-            <button
-              aria-label="More"
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-95"
-            >
-              <MoreHorizontal className="size-4 text-primary-foreground/70" />
+            <button aria-label="More" className="p-1.5 rounded-lg hover:bg-[#f3f1f8] transition-colors">
+              <MoreHorizontal className="size-4 text-[#8d8a98]" />
             </button>
           </div>
         </div>
 
         <div className="flex flex-col items-center">
-          <svg viewBox="0 0 200 200" className="w-56 h-56">
+          <svg viewBox="0 0 200 200" className="w-48 h-48">
             <circle
               cx="100" cy="100" r={radius}
               fill="none"
-              stroke="#FFFFFF"
+              stroke="#e9edf8"
               strokeWidth={hoveredSegment === "referrals" ? "26" : "22"}
               strokeDasharray={`${referralsLength} ${circumference - referralsLength}`}
               transform="rotate(-90 100 100)"
@@ -100,7 +94,7 @@ export function ActivityCard({ error }: ActivityCardProps) {
             <circle
               cx="100" cy="100" r={radius}
               fill="none"
-              stroke="#A0E0E0"
+              stroke="#dff1e6"
               strokeWidth={hoveredSegment === "matches" ? "26" : "22"}
               strokeDasharray={`${matchesLength} ${circumference - matchesLength}`}
               transform={`rotate(${matchesRotation} 100 100)`}
@@ -113,10 +107,10 @@ export function ActivityCard({ error }: ActivityCardProps) {
               onMouseEnter={() => setHoveredSegment("matches")}
               onMouseLeave={() => setHoveredSegment(null)}
             />
-            <text x="100" y="92" textAnchor="middle" dominantBaseline="middle" className="fill-primary-foreground text-[40px] font-medium tabular-nums leading-none">
+            <text x="100" y="92" textAnchor="middle" dominantBaseline="middle" className="fill-[#111014] text-[40px] font-medium tabular-nums leading-none">
               {animatedTotal}
             </text>
-            <text x="100" y="120" textAnchor="middle" dominantBaseline="middle" className="fill-primary-foreground/70 text-[12px]">
+            <text x="100" y="120" textAnchor="middle" dominantBaseline="middle" className="fill-[#8d8a98] text-[12px]">
               Total Referrals
             </text>
           </svg>
@@ -124,22 +118,22 @@ export function ActivityCard({ error }: ActivityCardProps) {
 
         <div className="flex items-center justify-center gap-8 mt-2">
           <button
-            className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
+            className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-[#f3f1f8] active:scale-95"
             onMouseEnter={() => setHoveredSegment("referrals")}
             onMouseLeave={() => setHoveredSegment(null)}
           >
-            <span className={`size-3 rounded-full bg-primary-foreground transition-transform duration-200 ${hoveredSegment === "referrals" ? "scale-125" : ""}`} />
-            <span className="text-xs text-primary-foreground/70">Referrals</span>
-            <span className="text-xs font-semibold text-primary-foreground">{referrals}</span>
+            <span className={`size-3 rounded-full bg-[#111014] transition-transform duration-200 ${hoveredSegment === "referrals" ? "scale-125" : ""}`} />
+            <span className="text-xs text-[#8d8a98]">Referrals</span>
+            <span className="text-xs font-semibold text-[#111014]">{referrals}</span>
           </button>
           <button
-            className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
+            className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-[#f3f1f8] active:scale-95"
             onMouseEnter={() => setHoveredSegment("matches")}
             onMouseLeave={() => setHoveredSegment(null)}
           >
-            <span className={`size-3 rounded-full bg-[#A0E0E0] transition-transform duration-200 ${hoveredSegment === "matches" ? "scale-125" : ""}`} />
-            <span className="text-xs text-primary-foreground/70">Matches</span>
-            <span className="text-xs font-semibold text-primary-foreground">{matches}</span>
+            <span className={`size-3 rounded-full bg-[#dff1e6] transition-transform duration-200 ${hoveredSegment === "matches" ? "scale-125" : ""}`} />
+            <span className="text-xs text-[#8d8a98]">Matches</span>
+            <span className="text-xs font-semibold text-[#111014]">{matches}</span>
           </button>
         </div>
       </CardContent>

@@ -12,7 +12,6 @@ import {
   ChevronUp as ChevronUpIcon,
   X,
   Plus,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -25,8 +24,8 @@ import {
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
 
-const TEAL = "#277979";
-const DARK_TEXT = "#155F60";
+const TEAL = "#6c7a9a";
+const DARK_TEXT = "#3a3f52";
 
 interface Appointment {
   date: Date;
@@ -602,16 +601,16 @@ export function AppointmentsCard() {
         {/* Header */}
         <div className="shrink-0 p-5 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
+          <h3 className="text-sm font-semibold tracking-tight text-[#1e1d24]">
             Schedule
           </h3>
           <button
               aria-label="View full calendar"
-              className="flex items-center justify-center rounded-xl shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-lg hover:rotate-12 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 bg-card"
-              style={{ width: "48px", height: "48px", boxShadow: "0 2px 12px rgba(39,121,121,0.12)" }}
+              className="flex items-center justify-center rounded-full transition-all duration-200 hover:bg-[#f3f1f8] active:scale-95"
+              style={{ width: "36px", height: "36px" }}
             onClick={() => document.getElementById("appointments-card-body")?.scrollIntoView({ behavior: "smooth" })}
           >
-            <ArrowUpRight className="size-5 transition-transform duration-200" style={{ color: TEAL }} />
+            <ArrowUpRight className="size-4" style={{ color: TEAL }} />
           </button>
         </div>
 
@@ -645,21 +644,21 @@ export function AppointmentsCard() {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => handleDateSelect(date)}
-                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-xl hover:bg-[rgba(39,121,121,0.1)] hover:scale-105 hover:shadow-sm active:scale-95 group/date"
+                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-2xl hover:bg-[#f3f1f8] hover:scale-105 active:scale-95 group/date"
                   style={{
                     minWidth: "52px",
-                    backgroundColor: isSelected ? "rgba(39,121,121,0.12)" : "transparent",
+                    backgroundColor: isSelected ? "#15141b" : "transparent",
                     transform: isSelected ? "scale(1.05)" : "scale(1)",
                   }}
                 >
-                  <span className="text-[13px] font-medium leading-none transition-all duration-200 group-hover/date:text-[#155F60]" style={{ color: isSelected ? DARK_TEXT : "rgba(39,121,121,0.45)" }}>
+                  <span className="text-[13px] font-medium leading-none transition-all duration-200" style={{ color: isSelected ? "#ffffff" : "#8d8a98" }}>
                     {format(date, "EEE")}
                   </span>
-                  <span className="text-2xl leading-tight transition-all duration-200 group-hover/date:font-bold group-hover/date:text-[#277979]" style={{ color: isSelected ? TEAL : "rgba(39,121,121,0.45)", fontWeight: isSelected ? 700 : 500 }}>
+                  <span className="text-2xl leading-tight transition-all duration-200 font-[500]" style={{ color: isSelected ? "#ffffff" : "#6c6a78" }}>
                     {format(date, "d")}
                   </span>
                   {isTodayDate && !isSelected && (
-                    <span className="size-1.5 rounded-full -mt-1 transition-all duration-200 group-hover/date:scale-150" style={{ backgroundColor: TEAL, animation: "dot-pulse 2s ease-in-out infinite" }} />
+                    <span className="size-1.5 rounded-full -mt-1 transition-all duration-200 group-hover/date:scale-150" style={{ backgroundColor: "#15141b", animation: "dot-pulse 2s ease-in-out infinite" }} />
                   )}
                 </button>
               );
@@ -668,10 +667,8 @@ export function AppointmentsCard() {
           {!isToday(selectedDay) && (
             <button
               onClick={() => handleDateSelect(today)}
-              className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 hover:scale-[1.05] hover:shadow-md active:scale-[0.95]"
-              style={{ backgroundColor: TEAL, color: "#FFFFFF", boxShadow: "0 2px 8px rgba(39,121,121,0.2)", animation: "slide-in-bottom 0.2s cubic-bezier(0.16,1,0.3,1) forwards" }}
+              className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] dash-pill dash-pill-active"
             >
-              <Sparkles className="size-3" />
               Today
             </button>
           )}

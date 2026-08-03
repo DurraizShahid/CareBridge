@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 interface PipelineBarProps {
   total: number;
   completed: number;
@@ -10,8 +8,6 @@ interface PipelineBarProps {
 }
 
 export function PipelineBar({ total, completed, active, thisMonth }: PipelineBarProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
   const hasRealData = total > 0 || completed > 0 || active > 0 || thisMonth > 0;
 
   const dTotal = hasRealData ? total : 40;
@@ -20,102 +16,53 @@ export function PipelineBar({ total, completed, active, thisMonth }: PipelineBar
   const dThisMonth = hasRealData ? thisMonth : 18;
 
   const segments = [
-    { label: "Completed", value: dCompleted, flex: dCompleted, color: "bg-[#277979] dark:bg-[#3A9D9D]", textColor: "text-white", bg: "#277979", darkBg: "#3A9D9D" },
-    { label: "Active", value: dActive, flex: dActive, color: "bg-[#bab9c4] dark:bg-[#6B6B7B]", textColor: "text-[#1a1a1a] dark:text-white", bg: "#bab9c4", darkBg: "#6B6B7B" },
-    { label: "Total", value: dTotal, flex: dTotal, color: "hatched", textColor: "text-foreground", bg: "transparent" },
-    { label: "This month", value: dThisMonth, flex: dThisMonth, color: "bordered", textColor: "text-foreground", bg: "transparent" },
+    { label: "Completed", value: dCompleted, color: "#277979" },
+    { label: "Active", value: dActive, color: "#bab9c4" },
+    { label: "Total", value: dTotal, color: "hatched" },
+    { label: "This month", value: dThisMonth, color: "bordered" },
   ];
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      {/* Labels */}
-      <div className="flex items-center gap-1.5">
-        {segments.map((seg, i) => (
-          <span
-            key={i}
-            className="text-xs font-medium text-muted-foreground truncate text-center transition-all duration-300"
-            style={{
-              flex: `${seg.flex} 1 0`,
-              color: hoveredIndex === i ? "var(--stat-health)" : undefined,
-            }}
-          >
-            {seg.label}
-          </span>
-        ))}
-      </div>
-
-      {/* Pills */}
-      <div className="flex items-center gap-1.5 h-10">
-        {segments.map((seg, i) => {
-          const isHovered = hoveredIndex === i;
-          const isOtherHovered = hoveredIndex !== null && hoveredIndex !== i;
-
-          if (seg.color === "hatched") {
-            return (
-              <div
-                key={i}
-                className="h-full rounded-xl flex items-center justify-start pl-3 text-xs font-medium relative overflow-hidden bg-background cursor-pointer transition-all duration-300"
-                style={{
-                  flex: `${seg.flex} 1 0`,
-                  transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
-                  opacity: isOtherHovered ? 0.6 : 1,
-                }}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <div
-                  className="absolute inset-0 transition-opacity duration-300"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(45deg, transparent, transparent 3px, oklch(0.78 0.02 250) 3px, oklch(0.78 0.02 250) 4px)",
-                    opacity: isHovered ? 0.6 : 0.4,
-                  }}
-                />
-                <span className="relative z-10 transition-all duration-200">{seg.value}</span>
-              </div>
-            );
-          }
-
-          if (seg.color === "bordered") {
-            return (
-              <div
-                key={i}
-                className="h-full rounded-xl border border-border flex items-center justify-start pl-3 text-xs font-medium bg-background cursor-pointer transition-all duration-300"
-                style={{
-                  flex: `${seg.flex} 1 0`,
-                  transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
-                  opacity: isOtherHovered ? 0.6 : 1,
-                  borderColor: isHovered ? "var(--stat-health)" : undefined,
-                  boxShadow: isHovered ? "0 0 0 1px var(--stat-health)/20" : undefined,
-                }}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <span className="transition-colors duration-200" style={{ color: isHovered ? "var(--stat-health)" : undefined }}>{seg.value}</span>
-              </div>
-            );
-          }
-
+    <div className="flex items-center gap-2 h-11">
+      {segments.map((seg, i) => {
+        if (seg.color === "hatched") {
           return (
             <div
               key={i}
-              className="h-full rounded-xl flex items-center justify-start pl-3 text-xs font-medium cursor-pointer transition-all duration-300"
+              className="h-full rounded-full flex items-center justify-center text-xs font-medium relative overflow-hidden flex-1"
               style={{
-                flex: `${seg.flex} 1 0`,
-                backgroundColor: seg.bg,
-                color: seg.textColor === "text-white" ? "#FFFFFF" : "var(--foreground)",
-                transform: isHovered ? "scaleY(1.08)" : "scaleY(1)",
-                opacity: isOtherHovered ? 0.6 : 1,
-                boxShadow: isHovered ? `0 4px 12px ${seg.bg}40` : undefined,
+                background: "repeating-linear-gradient(45deg, #f1f0f6, #f1f0f6 4px, #eae8f0 4px, #eae8f0 5px)",
+                color: "#6c6a78",
               }}
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <span className="relative z-10">{seg.value}</span>
+            </div>
+          );
+        }
+        if (seg.color === "bordered") {
+          return (
+            <div
+              key={i}
+              className="h-full rounded-full flex items-center justify-center text-xs font-medium flex-1"
+              style={{
+                border: "1px solid #eceaf2",
+                color: "#6c6a78",
+              }}
             >
               {seg.value}
             </div>
           );
-        })}
-      </div>
+        }
+        return (
+          <div
+            key={i}
+            className="h-full rounded-full flex items-center justify-center text-xs font-medium flex-1 text-white"
+            style={{ backgroundColor: seg.color }}
+          >
+            {seg.value}
+          </div>
+        );
+      })}
     </div>
   );
 }
