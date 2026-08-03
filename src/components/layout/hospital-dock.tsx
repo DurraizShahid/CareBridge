@@ -63,7 +63,7 @@ export function HospitalDock() {
             (item.href === "/dashboard" && pathname === "/dashboard");
 
           return (
-            <Tooltip key={item.href} delay={0}>
+            <Tooltip key={item.href}>
               <TooltipTrigger
                 render={
                   <Link

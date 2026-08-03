@@ -13,14 +13,18 @@ import {
   Info,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/hooks/use-theme";
 import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -37,6 +41,9 @@ const mainNavItems: NavItem[] = [
   { href: "/patients", label: "Patients", icon: Users },
   { href: "/facilities", label: "Facilities", icon: BuildingOffice },
   { href: "/placements", label: "Placements", icon: HouseSimple },
+];
+
+const managementNavItems: NavItem[] = [
   { href: "/dashboard/documents", label: "Documentation Vault", icon: FileText },
   { href: "/users", label: "Users", icon: Users },
   { href: "/dashboard/facility-network", label: "Facility Network", icon: ChartBar },
@@ -49,59 +56,76 @@ const bottomNavItems: NavItem[] = [
 export function AppSidebar({ locked }: { locked: boolean }) {
   const pathname = usePathname();
   const { setOpen } = useSidebar();
-  const { theme } = useTheme();
   const { role } = usePermissions();
-  const isDark = theme === "dark";
 
   const isFacilityAccount = role === "facility-coordinator";
   const isSuperadmin = role === "superadmin";
 
-  const filteredMainNav = mainNavItems.filter((item) => {
+  const filteredManagementNav = managementNavItems.filter((item) => {
     if (item.href === "/dashboard/facility-network" && !isSuperadmin) return false;
     if (item.href === "/users" && isFacilityAccount) return false;
     return true;
   });
 
+  const isActive = (href: string) =>
+    href === "/dashboard"
+      ? pathname === href
+      : pathname === href || pathname.startsWith(href + "/");
+
   return (
     <Sidebar
+      variant="floating"
       collapsible="icon"
       className="bg-transparent"
       style={{ "--sidebar": "transparent" } as React.CSSProperties}
       onMouseEnter={() => { if (!locked) setOpen(true); }}
       onMouseLeave={() => { if (!locked) setOpen(false); }}
     >
-      <SidebarContent className="flex flex-col px-2 py-3">
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 mb-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <Image
-            src="/carebridge.svg"
-            alt="CareBridge"
-            width={32}
-            height={32}
-            className="shrink-0"
-            priority
-          />
-          <span className="text-base font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
-            CareBridge
-          </span>
-        </Link>
+      <SidebarHeader className="px-2 py-3">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link href="/dashboard" />}
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent"
+            >
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <Image
+                  src="/carebridge.svg"
+                  alt="CareBridge"
+                  width={32}
+                  height={32}
+                  className="shrink-0"
+                  priority
+                />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <span className="truncate font-semibold">CareBridge</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {isSuperadmin ? "Platform Admin" : "Workspace"}
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-        {/* Centered main nav zone */}
-        <div className="flex flex-1 flex-col justify-center">
-          <SidebarMenu className="gap-3">
-            {filteredMainNav.map((item) => {
-              const isActive = item.href === "/dashboard"
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(item.href + "/");
-              return (
+      <SidebarContent className="py-1">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+            Main
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     render={<Link href={item.href} />}
-                    isActive={isActive}
+                    isActive={isActive(item.href)}
                     tooltip={item.label}
                     className={cn(
                       "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
-                      isActive
+                      isActive(item.href)
                         ? "!bg-[#202022] dark:!bg-white/10 !text-white font-medium"
                         : "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
                       "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
@@ -111,7 +135,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                     <div className="relative">
                       <item.icon className={cn(
                         "size-5 transition-colors",
-                        isActive ? "text-white" : "text-foreground/60"
+                        isActive(item.href) ? "text-white" : "text-foreground/60"
                       )} />
                       {item.hasDot && (
                         <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
@@ -120,29 +144,73 @@ export function AppSidebar({ locked }: { locked: boolean }) {
                     <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-          {/* Separator */}
-          <div className={cn("my-3 h-px", isDark ? "bg-[#1E293B]" : "bg-gray-200/50")} />
-        </div>
+        {filteredManagementNav.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+              Management
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1.5">
+                {filteredManagementNav.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      render={<Link href={item.href} />}
+                      isActive={isActive(item.href)}
+                      tooltip={item.label}
+                      className={cn(
+                        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+                        isActive(item.href)
+                          ? "!bg-[#202022] dark:!bg-white/10 !text-white font-medium"
+                          : "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
+                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
+                        "group-data-[collapsible=icon]:size-10!"
+                      )}
+                    >
+                      <div className="relative">
+                        <item.icon className={cn(
+                          "size-5 transition-colors",
+                          isActive(item.href) ? "text-white" : "text-foreground/60"
+                        )} />
+                        {item.hasDot && (
+                          <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
+                        )}
+                      </div>
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
 
-        {/* Bottom-pinned nav zone */}
-        <SidebarMenu className="mt-auto gap-3">
+      <SidebarFooter className="py-3">
+        <SidebarMenu className="gap-1.5">
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 render={<Link href={item.href} />}
+                isActive={isActive(item.href)}
                 tooltip={item.label}
                 className={cn(
                   "relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
-                  "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
+                  isActive(item.href)
+                    ? "!bg-[#202022] dark:!bg-white/10 !text-white font-medium"
+                    : "!bg-[#EAE9EF] dark:!bg-white/5 !text-[#202022] dark:!text-white/70 hover:!bg-[#EAE9EF]/80 dark:hover:!bg-white/10",
                   "group-data-[collapsible=icon]:size-10!"
                 )}
               >
                 <div className="relative">
-                  <item.icon className="size-5 text-foreground/60" />
+                  <item.icon className={cn(
+                    "size-5 transition-colors",
+                    isActive(item.href) ? "text-white" : "text-foreground/60"
+                  )} />
                   {item.hasDot && (
                     <span className="absolute -right-1 -top-1 size-2 rounded-full bg-orange-500" />
                   )}
@@ -152,7 +220,8 @@ export function AppSidebar({ locked }: { locked: boolean }) {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarContent>
+      </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

@@ -8,20 +8,21 @@ export function AuthControls() {
   return (
     <>
       <Show when="signed-out">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <SignInButton mode="redirect">
             <button
               type="button"
-              className="rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-full px-5 py-2.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/15 hover:text-white"
             >
               Sign In
             </button>
           </SignInButton>
           <Button
             variant="default"
-            size="lg"
+            size="sm"
             nativeButton={false}
             render={<Link href="/sign-up" />}
+            className="rounded-full bg-white text-[#134675] shadow-[0_2px_10px_rgba(0,0,0,0.3)] hover:bg-white/90"
           >
             Get Started
           </Button>

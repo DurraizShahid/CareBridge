@@ -1,6 +1,6 @@
 'use client';
 
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { HospitalShell } from "@/components/layout/hospital-shell";
@@ -82,21 +82,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <OrganizationProvider>
-        <div className="flex h-screen flex-1">
-          <TooltipProvider delay={0}>
-            <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
-              <AppSidebar locked={sidebarLocked} />
-              <main className={`flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
-                <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
-                <ScrollArea className="flex-1 min-h-0">
-                  <div className="dashboard-canvas">
-                    {children}
-                  </div>
-                </ScrollArea>
-              </main>
-            </SidebarProvider>
-          </TooltipProvider>
-        </div>
+        <TooltipProvider delay={0}>
+          <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
+            <AppSidebar locked={sidebarLocked} />
+            <SidebarInset className={`flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
+              <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="dashboard-canvas">
+                  {children}
+                </div>
+              </ScrollArea>
+            </SidebarInset>
+          </SidebarProvider>
+        </TooltipProvider>
       </OrganizationProvider>
     </ThemeProvider>
   );

@@ -62,6 +62,15 @@
   --z-modal: 50;
   --z-toast: 60;
   --z-tooltip: 70;
+  --animate-ripple: ripple var(--duration,5s) ease calc(var(--i, 0)*.3s) infinite;
+  @keyframes ripple {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    }
+  50% {
+    transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
 }
 
 :root {
@@ -280,7 +289,7 @@
   .card-enter-6 { animation-delay: 500ms; }
   .card-enter-7 { animation-delay: 600ms; }
   .card-enter-8 { animation-delay: 700ms; }
-  
+
   .animate-shimmer {
     position: relative;
     overflow: hidden;
