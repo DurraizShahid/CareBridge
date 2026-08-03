@@ -142,42 +142,38 @@ export default function Page() {
                     </ShimmerButton>
                   </a>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Search Bar - Bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
-            <div className="mx-auto max-w-7xl">
-              <div className="rounded-2xl border border-white/15 bg-white/[0.1] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-6">
-                <div className="flex flex-col items-center gap-4 sm:flex-row">
-                  {/* Location input */}
-                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
-                    <MapPin className="h-5 w-5 shrink-0 text-white/70" />
-                    <input
-                      type="text"
-                      placeholder="City, state, or ZIP code"
-                      className="w-full bg-transparent text-sm text-white placeholder-white/50 outline-none"
+                {/* Search Bar */}
+                <div className="mt-8 rounded-2xl border border-white/15 bg-white/[0.1] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-6">
+                  <div className="flex flex-col items-center gap-4 sm:flex-row">
+                    {/* Location input */}
+                    <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
+                      <MapPin className="h-5 w-5 shrink-0 text-white/70" />
+                      <input
+                        type="text"
+                        placeholder="City, state, or ZIP code"
+                        className="w-full bg-transparent text-sm text-white placeholder-white/50 outline-none"
+                        suppressHydrationWarning
+                      />
+                    </div>
+
+                    {/* Care level select */}
+                    <CareLevelCombobox />
+
+                    {/* Search button */}
+                    <ShimmerButton
+                      shimmerColor="#ffffff"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(68, 190, 175, 1)"
+                      className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
                       suppressHydrationWarning
-                    />
+                    >
+                      <Search className="h-4 w-4" />
+                      <span>Find Facilities</span>
+                    </ShimmerButton>
                   </div>
-
-                  {/* Care level select */}
-                  <CareLevelCombobox />
-
-                  {/* Search button */}
-                  <ShimmerButton
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="100px"
-                    background="rgba(68, 190, 175, 1)"
-                    className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
-                    suppressHydrationWarning
-                  >
-                    <Search className="h-4 w-4" />
-                    <span>Find Facilities</span>
-                  </ShimmerButton>
                 </div>
               </div>
             </div>
