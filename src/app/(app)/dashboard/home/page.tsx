@@ -22,11 +22,6 @@ import { PlacementConfirmationCard } from "@/components/ai/placement-confirmatio
 import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
 import { AIHomePageSkeleton } from "@/components/dashboard-skeletons";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-} from "@/components/ui/sheet";
 import type { Facility } from "@/types";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
 
@@ -69,47 +64,54 @@ function isValidPlacementDraft(data: unknown): data is PlacementDraft {
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
   pre: ({ children }) => (
-    <pre className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 my-2 text-xs font-mono leading-relaxed">
+    <pre className="overflow-x-auto rounded-xl border border-[#e0ebf4] bg-[#f6f9fc] p-4 my-3 text-xs font-mono leading-relaxed shadow-sm">
       {children}
     </pre>
   ),
   ul: ({ children }) => (
-    <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>
+    <ul className="list-none pl-1 mb-2 space-y-1">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>
+    <ol className="list-decimal pl-5 mb-2 space-y-1">{children}</ol>
   ),
-  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  li: ({ children }) => (
+    <li className="leading-relaxed flex items-start gap-1.5">
+      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#3a8bbf]/40" />
+      <span>{children}</span>
+    </li>
+  ),
   strong: ({ children }) => (
-    <strong className="font-semibold">{children}</strong>
+    <strong className="font-semibold text-[#1a2b3d]">{children}</strong>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-muted-foreground/20 pl-4 my-2 italic text-muted-foreground">
+    <blockquote className="border-l-[3px] border-[#3a8bbf]/30 bg-[#f0f6fb] rounded-r-xl pl-4 pr-3 py-2.5 my-3 italic text-[#526273]">
       {children}
     </blockquote>
   ),
   table: ({ children }) => (
-    <div className="overflow-x-auto my-2 rounded-lg border border-border">
+    <div className="overflow-x-auto my-3 rounded-xl border border-[#e0ebf4] bg-white shadow-sm">
       <table className="w-full text-xs border-collapse">{children}</table>
     </div>
   ),
   thead: ({ children }) => (
-    <thead className="bg-muted/50">{children}</thead>
+    <thead className="bg-gradient-to-b from-[#f6f9fc] to-[#f0f4f8]">{children}</thead>
   ),
   th: ({ children }) => (
-    <th className="border-b border-border px-3 py-1.5 text-left font-medium text-muted-foreground">
+    <th className="border-b border-[#e0ebf4] px-3.5 py-2.5 text-left font-semibold text-[#5a6a7a] tracking-wide uppercase text-[10px]">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="border-b border-border/50 px-3 py-1.5">{children}</td>
+    <td className="border-b border-[#e0ebf4]/60 px-3.5 py-2.5 text-[#202936]">
+      {children}
+    </td>
   ),
   code: ({ className, children }) => {
     const isBlock = className?.startsWith("language-");
     return isBlock ? (
       <code className={className}>{children}</code>
     ) : (
-      <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
+      <code className="bg-[#f0f6fb] text-[#3a8bbf] px-1.5 py-0.5 rounded-md text-xs font-mono border border-[#e0ebf4]">
         {children}
       </code>
     );
@@ -121,7 +123,7 @@ const markdownComponents: Components = {
         href={safe}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-health underline underline-offset-2 hover:text-health/80"
+        className="text-[#3a8bbf] underline underline-offset-2 decoration-[#3a8bbf]/30 hover:decoration-[#3a8bbf] hover:text-[#2d6f96] transition-colors"
       >
         {children}
       </a>
@@ -130,15 +132,15 @@ const markdownComponents: Components = {
     );
   },
   h1: ({ children }) => (
-    <h1 className="text-base font-bold mb-1 mt-2 first:mt-0">{children}</h1>
+    <h1 className="text-base font-bold mb-1 mt-3 first:mt-0 text-[#1a2b3d]">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-sm font-bold mb-1 mt-2 first:mt-0">{children}</h2>
+    <h2 className="text-sm font-bold mb-1 mt-3 first:mt-0 text-[#1a2b3d]">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-sm font-semibold mb-1">{children}</h3>
+    <h3 className="text-sm font-semibold mb-1 mt-2 first:mt-0 text-[#202936]">{children}</h3>
   ),
-  hr: () => <hr className="my-3 border-border/50" />,
+  hr: () => <hr className="my-4 border-[#e0ebf4]" />,
 };
 
 function getGreeting(): string {
@@ -258,7 +260,7 @@ export default function HomePage() {
   const abortRef = useRef<AbortController | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyHovered, setHistoryHovered] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
@@ -326,7 +328,6 @@ export default function HomePage() {
     abortRef.current?.abort();
     setCurrentChatId(chatId);
     setIsStreaming(false);
-    setHistoryOpen(false);
 
     try {
       const response = await fetch(`/api/chats/${chatId}`);
@@ -691,27 +692,40 @@ export default function HomePage() {
       style={{ background: "#f9fafc" }}
     >
       <style>{`@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
-      {/* Chat History Drawer */}
-      <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-        <SheetTrigger
-          render={
-            <button
-              className="absolute top-[22px] left-[22px] z-40 flex size-9 items-center justify-center rounded-xl text-[#5a6a7a] hover:bg-black/5 transition-colors"
-              aria-label="Open chat history"
-            >
-              <History className="size-[18px]" />
-            </button>
-          }
-        />
-        <SheetContent side="left" className="w-[300px] p-0" showCloseButton={false}>
+      {/* Chat History Button */}
+      <button
+        type="button"
+        onClick={() => setHistoryHovered((prev) => !prev)}
+        className="absolute top-[22px] left-[22px] z-40 flex size-9 items-center justify-center rounded-xl text-[#5a6a7a] hover:bg-black/5 transition-colors"
+        aria-label="Toggle chat history"
+      >
+        <History className="size-[18px]" />
+      </button>
+
+      {/* Chat History Sidebar - hover triggered from left edge */}
+      <div
+        className="fixed left-0 top-0 z-50 h-full"
+        onMouseEnter={() => setHistoryHovered(true)}
+        onMouseLeave={() => setHistoryHovered(false)}
+      >
+        {/* Sidebar panel */}
+        <div
+          className="h-full w-[300px] transition-transform duration-300 ease-out"
+          style={{
+            transform: historyHovered ? "translateX(0)" : "translateX(-100%)",
+          }}
+        >
           <ChatHistorySidebar
             currentChatId={currentChatId}
-            onChatSelect={handleChatSelect}
+            onChatSelect={(chatId) => {
+              handleChatSelect(chatId);
+              setHistoryHovered(false);
+            }}
             onNewChat={handleNewChat}
             refreshTrigger={refreshTrigger}
           />
-        </SheetContent>
-      </Sheet>
+        </div>
+      </div>
 
       {!hasStarted ? (
         /* ── Empty State ── */

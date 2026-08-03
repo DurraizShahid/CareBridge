@@ -39,18 +39,13 @@ export function HospitalDock() {
 
   return (
     <nav
-      className="fixed z-50"
-      style={{
-        left: "50%",
-        transform: "translateX(-50%)",
-        bottom: "24px",
-      }}
+      className="fixed right-4 top-1/2 z-50 -translate-y-1/2"
+      aria-label="Main navigation"
     >
       <div
-        className="flex items-center justify-center gap-[18px] px-[22px] max-sm:gap-[14px] max-sm:px-[16px] bg-white dark:bg-[#2a201b]"
+        className="flex flex-col items-center gap-2 p-2 bg-white dark:bg-[#2a201b]"
         style={{
-          height: "76px",
-          borderRadius: "999px",
+          borderRadius: "20px",
           border: "1.5px solid var(--border, #e4e4e6)",
           boxShadow:
             "0 14px 30px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
@@ -68,40 +63,40 @@ export function HospitalDock() {
                 render={
                   <Link
                     href={item.href}
-                    className="relative flex items-center justify-center transition-all duration-200 hover:-translate-y-px"
+                    className="relative flex items-center justify-center transition-all duration-200 hover:-translate-x-px"
                     aria-label={item.label}
                   >
                     {isActive ? (
                       <div
                         className="flex items-center justify-center"
                         style={{
-                          width: "56px",
-                          height: "56px",
-                          borderRadius: "999px",
+                          width: "44px",
+                          height: "44px",
+                          borderRadius: "14px",
                           background: "var(--health, #3a8bbf)",
                           border: "2px solid rgba(255,255,255,0.15)",
                           boxShadow:
                             "0 8px 18px rgba(58,139,191,0.3), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 4px rgba(20,60,100,0.2)",
                         }}
                       >
-                        <item.icon className="size-[22px] text-white" />
+                        <item.icon className="size-[20px] text-white" />
                       </div>
                     ) : (
                       <div
-                        className="flex items-center justify-center rounded-full transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+                        className="flex items-center justify-center rounded-xl transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
                         style={{
-                          width: "42px",
-                          height: "42px",
+                          width: "40px",
+                          height: "40px",
                           color: "var(--muted-foreground, #6b7280)",
                         }}
                       >
-                        <item.icon className="size-[22px] transition-colors duration-200" />
+                        <item.icon className="size-[20px] transition-colors duration-200" />
                       </div>
                     )}
                   </Link>
                 }
               />
-              <TooltipContent side="top" sideOffset={10}>
+              <TooltipContent side="left" sideOffset={10}>
                 {item.label}
               </TooltipContent>
             </Tooltip>
