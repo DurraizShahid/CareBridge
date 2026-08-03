@@ -126,8 +126,9 @@ model Organization {
   activities    ActivityEvent[]
   inviteCodes   InviteCode[]
   joinRequests  JoinRequest[]
-  chats         Chat[]
-  documents     Document[]
+  chats                Chat[]
+  documents            Document[]
+  documentUploadTokens DocumentUploadToken[]
 }
 
 model InviteCode {
@@ -150,7 +151,7 @@ model InviteCode {
 
 model JoinRequest {
   id             String           @id @default(cuid())
-  userId         String           @unique
+  userId         String
   organizationId String
   inviteCodeId   String?
   status         JoinRequestStatus @default(pending)
@@ -165,6 +166,9 @@ model JoinRequest {
   user           User             @relation("JoinRequestUser", fields: [userId], references: [id])
   inviteCode     InviteCode?      @relation(fields: [inviteCodeId], references: [id])
   reviewedBy     User?            @relation("JoinRequestReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([userId])
+  @@index([userId, status])
 }
 
 model User {
@@ -189,7 +193,7 @@ model User {
   uploadedDocuments      PatientDocument[] @relation("DocumentUploader")
   createdInviteCodes     InviteCode[]     @relation("InviteCodeCreator")
   reviewedJoinRequests   JoinRequest[]    @relation("JoinRequestReviewedBy")
-  joinRequest            JoinRequest?     @relation("JoinRequestUser")
+  joinRequests           JoinRequest[]    @relation("JoinRequestUser")
   chats                  Chat[]
   documents              Document[]           @relation("DocumentUploader")
   documentAccessLogs     DocumentAccessLog[]
@@ -240,7 +244,9 @@ model Facility {
   contacts           Json
   licensure          String[]
   accreditations     String[]
+  // Constrained to >= 0 by CHECK "Facility_capacity_non_negative" (migration 20260803020000)
   capacity           Int
+  // Derived from confirmed placements; constrained to >= 0 and <= capacity by CHECK constraints (migration 20260803020000)
   currentOccupancy   Int
   insuranceAccepted  String[]
   careLevelsOffered  CareLevel[]
@@ -398,6 +404,28 @@ model Document {
   @@index([isArchived])
   @@index([deletedAt])
   @@index([title])
+}
+
+model DocumentUploadToken {
+  id             String    @id
+  organizationId String
+  key            String
+  fileName       String
+  fileSize       Int
+  mimeType       String
+  checksum       String
+  encryptionKey  String
+  encryptionIv   String
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([key])
+  @@index([expiresAt])
+  @@index([usedAt])
 }
 
 model DocumentAccessLog {

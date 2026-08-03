@@ -1,21 +1,12 @@
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { Prisma } from '@/generated/prisma/client';
 import { UserRole as UserRoleEnum } from '@/generated/prisma/enums';
+import { consumeInviteCodeUse } from '@/lib/invite-codes';
+import { prisma } from '@/lib/prisma';
 import { prismaRoleToAppRole } from '@/lib/organization-role';
 import { getAllowedRoles } from '@/lib/permissions';
-import { authErrorResponse, requireOrgPermission } from '@/lib/server-auth';
-
-function inviteCodeUnavailable(inviteCode: {
-  isActive: boolean;
-  expiresAt: Date | null;
-  maxUses: number | null;
-  usedCount: number;
-}) {
-  return !inviteCode.isActive
-    || (!!inviteCode.expiresAt && new Date() > inviteCode.expiresAt)
-    || (!!inviteCode.maxUses && inviteCode.usedCount >= inviteCode.maxUses);
-}
+import { authErrorResponse, HttpAuthError, requireOrgPermission } from '@/lib/server-auth';
 
 export async function PATCH(
   req: Request,
@@ -41,7 +32,6 @@ export async function PATCH(
     }
 
     if (action === 'approve') {
-      // Update user's organization and role
       const role = joinRequest.inviteCode?.role || UserRoleEnum.customer;
       const appRole = prismaRoleToAppRole(role);
       const allowedRoles = getAllowedRoles(org.role, org.organizationType);
@@ -50,17 +40,45 @@ export async function PATCH(
         return NextResponse.json({ error: 'Requested role is not allowed' }, { status: 403 });
       }
 
-      if (joinRequest.inviteCode && inviteCodeUnavailable(joinRequest.inviteCode)) {
-        return NextResponse.json({ error: 'Invite code is invalid or expired' }, { status: 400 });
-      }
-      
-      await prisma.user.update({
-        where: { id: joinRequest.userId },
-        data: {
-          organizationId: joinRequest.organizationId,
-          role,
+      await prisma.$transaction(
+        async (tx) => {
+          const pending = await tx.joinRequest.findFirst({
+            where: org.isSuperadmin
+              ? { id, status: 'pending' }
+              : { id, organizationId: org.organizationId, status: 'pending' },
+          });
+
+          if (!pending) {
+            throw new HttpAuthError(400, 'Join request already processed');
+          }
+
+          if (pending.inviteCodeId) {
+            const consumed = await consumeInviteCodeUse(tx, pending.inviteCodeId);
+            if (!consumed) {
+              throw new HttpAuthError(400, 'Invite code is invalid or expired');
+            }
+          }
+
+          await tx.user.update({
+            where: { id: pending.userId },
+            data: {
+              organizationId: pending.organizationId,
+              role,
+            },
+          });
+
+          await tx.joinRequest.update({
+            where: { id },
+            data: {
+              status: 'approved',
+              reviewedById: userId,
+              reviewedAt: new Date(),
+              notes: notes || null,
+            },
+          });
         },
-      });
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
 
       await (await clerkClient()).users.updateUserMetadata(joinRequest.userId, {
         publicMetadata: {
@@ -69,25 +87,6 @@ export async function PATCH(
           role: appRole,
         },
       });
-
-      // Update join request
-      await prisma.joinRequest.update({
-        where: { id },
-        data: {
-          status: 'approved',
-          reviewedById: userId,
-          reviewedAt: new Date(),
-          notes: notes || null,
-        },
-      });
-
-      // Increment invite code used count
-      if (joinRequest.inviteCodeId) {
-        await prisma.inviteCode.update({
-          where: { id: joinRequest.inviteCodeId },
-          data: { usedCount: { increment: 1 } },
-        });
-      }
     } else if (action === 'deny') {
       await prisma.joinRequest.update({
         where: { id },

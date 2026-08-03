@@ -179,51 +179,27 @@ export function DocumentUploadDialog({
     setError(null);
 
     try {
-      // Step 1: Get presigned upload URL
+      // Step 1: Upload the file to the server. It is validated, malware-scanned,
+      // encrypted, and stored in private S3. The response contains a one-time
+      // upload token bound to this organization and the generated storage key.
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+
       const uploadRes = await fetch("/api/documents/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          fileSize: file.size,
-        }),
+        body: uploadForm,
       });
 
       if (!uploadRes.ok) {
         const errBody = await uploadRes.json().catch(() => ({}));
-        throw new Error(errBody.error || "Failed to get upload URL");
+        throw new Error(errBody.error || "Failed to upload file");
       }
 
-      const res = await uploadRes.json();
-      const { url, fields, key } = res;
+      const upload = await uploadRes.json();
+      const { uploadToken } = upload;
 
-      // Step 2: Upload to storage
-      if (res._local) {
-        const localForm = new FormData();
-        localForm.append("file", file);
-        const localRes = await fetch(url, { method: "POST", body: localForm });
-        if (!localRes.ok) throw new Error("Failed to upload file to local storage");
-      } else {
-        const formData = new FormData();
-        if (fields) {
-          Object.entries(fields).forEach(([k, v]) => {
-            formData.append(k, v as string);
-          });
-        }
-        formData.append("file", file);
-
-        const s3Res = await fetch(url, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!s3Res.ok) {
-          throw new Error("Failed to upload file to storage");
-        }
-      }
-
-      // Step 3: Create document record
+      // Step 2: Register document metadata. The server only accepts metadata
+      // backed by a valid, unused upload token for this organization.
       const tags = form.tags
         .split(",")
         .map((t) => t.trim())
@@ -240,11 +216,7 @@ export function DocumentUploadDialog({
           notes: form.notes.trim() || undefined,
           retentionDate: form.retentionDate || undefined,
           expiresAt: form.expirationDate || undefined,
-          fileName: file.name,
-          fileType: file.type,
-          mimeType: file.type,
-          fileSize: file.size,
-          storageKey: key,
+          uploadToken,
         }),
       });
 

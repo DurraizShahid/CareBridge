@@ -280,6 +280,62 @@ export interface SuperAdminDashboardStats {
   pendingApprovals: number;
 }
 
+export type ScheduleEventType = "meeting" | "check-in" | "review" | "urgent";
+
+export interface ScheduleEvent {
+  id: string;
+  dateISO: string;
+  time: string;
+  subject: string;
+  details: string;
+  location: string;
+  participants: string;
+  duration: string;
+  type: ScheduleEventType;
+}
+
+export interface FacilityCapacityItem {
+  id: string;
+  name: string;
+  total: number;
+  available: number;
+}
+
+export interface FacilityCategoryData {
+  id: string;
+  label: string;
+  items: FacilityCapacityItem[];
+}
+
+export interface DashboardWidgetData {
+  header: {
+    totalPlacements: number;
+    completedPlacements: number;
+    activePlacements: number;
+    placementsThisMonth: number;
+    placementsCreatedToday: number;
+  };
+  scheduleEvents: ScheduleEvent[];
+  activity: {
+    referrals: number;
+    matches: number;
+  };
+  priorityPlacements: {
+    activePriority: number;
+    urgentThisWeek: number;
+    topCareLevels: string[];
+  };
+  facilitiesByCategory: FacilityCategoryData[];
+  careLevelBreakdown: { label: string; value: number }[];
+  placementsThisWeek: { day: string; count: number; isToday: boolean }[];
+  placementsByMonth: { month: string; created: number; completed: number }[];
+  performance: {
+    averagePlacementTimeDays: number;
+    successRate: number;
+    partnerFacilities: number;
+  };
+}
+
 export interface Referral {
   id: string;
   patientName: string;

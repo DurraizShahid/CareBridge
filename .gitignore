@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# PHI must never be stored under public/ — the web server serves it statically
+/public/uploads/
+
 # clerk configuration (can include secrets)
 /.clerk/
 

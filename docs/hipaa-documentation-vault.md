@@ -11,9 +11,16 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
 
 ### Encryption in Transit
 - **API traffic**: TLS enforced via HSTS header (`max-age=63072000; includeSubDomains; preload`)
-- **File uploads**: Presigned POST URLs (HTTPS, 1-hour expiry)
-- **File downloads**: Presigned GET URLs via `@aws-sdk/s3-request-presigner` (HTTPS, 15-minute expiry)
+- **File uploads**: Server-mediated uploads over HTTPS only. The client posts the file body to the vault API; the server validates, scans, encrypts, and stores it. The browser never holds an S3 URL.
+- **File downloads**: Server-side streaming GET via the vault API (HTTPS). No presigned URLs exposed to the client.
 - **No public URLs**: Files are never accessible via direct S3 public URLs
+
+### Upload Pipeline (Defense in Depth)
+1. **Client sends** file bytes to `POST /api/documents/upload` (HTTPS, authenticated)
+2. **Magic-byte validation**: File content is checked against its declared MIME type (PDF, DOCX, JPEG, PNG, TXT, CSV, etc.). Files whose content does not match the declared type are rejected. ZIP-based office formats are validated by parsing their local file headers.
+3. **Malware scan**: Built-in heuristics scan for executable signatures (PE `MZ` header, ELF magic, `#!` shebang) and embedded script markers. If `MALWARE_SCAN_URL` is configured, the file is also submitted to the external scanner — the upload **fails closed** if the scanner is unavailable or returns a non-OK response.
+4. **Server-side encryption**: The file is encrypted in memory with a per-document AES-256 key (wrapped by the master `DOCUMENT_ENCRYPTION_KEY`), then stored on S3. Plaintext never touches storage.
+5. **Upload token**: A one-time, 15-minute `DocumentUploadToken` (created by the API, linked to org + user) is required to complete the upload; the token row is recorded on the stored document and can never be reused. Client-generated tokens and presigned URLs are not accepted.
 
 ### Access Control (RBAC)
 
@@ -45,10 +52,12 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
 
 ### File Security
 - **MIME validation**: Whitelist of allowed types (PDF, DOCX, JPEG, PNG, TXT, CSV, etc.)
+- **Magic-byte checks**: Declared MIME type must match actual file content; executable signatures (MZ, ELF, shebang) rejected outright
 - **Size limits**: Maximum 50MB per file
 - **Secure naming**: UUID-based storage keys — no original filenames in storage paths
-- **No executable uploads**: MIME whitelist prevents script/executable upload
+- **No executable uploads**: MIME whitelist + magic-byte + heuristic malware scanning prevent script/executable upload
 - **Integrity**: SHA-256 checksums stored for file verification
+- **Fail-closed scanning**: With `MALWARE_SCAN_URL` configured, uploads are rejected if the scanner cannot be reached
 
 ### Retention & Lifecycle
 - **Soft delete**: Documents marked with `deletedAt` timestamp — never hard-deleted from API
@@ -106,12 +115,12 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
 |--------|----------|------------|-------------|
 | `GET` | `/api/documents` | `documents:read` | List/search documents (paginated, filterable) |
 | `POST` | `/api/documents` | `documents:create` | Create document record after upload |
-| `POST` | `/api/documents/upload` | `documents:create` | Generate presigned S3 upload URL |
+| `POST` | `/api/documents/upload` | `documents:create` | Upload file (validate, scan, encrypt, store) and create document record |
 | `GET` | `/api/documents/stats` | `documents:read` | Get vault statistics |
 | `GET` | `/api/documents/[id]` | `documents:read` | Get single document (logs VIEW) |
 | `PATCH` | `/api/documents/[id]` | `documents:update` | Update document metadata |
 | `DELETE` | `/api/documents/[id]` | `documents:delete` | Soft-delete document |
-| `POST` | `/api/documents/[id]/download` | `documents:read` | Generate 15-min expiring download URL |
+| `POST` | `/api/documents/[id]/download` | `documents:read` | Download file (server-side streamed, audit logged) |
 | `GET` | `/api/documents/[id]/versions` | `documents:read` | Get version history |
 | `GET` | `/api/documents/[id]/access-logs` | `documents:audit` | Get paginated access logs |
 
@@ -144,7 +153,7 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
    - Select a **Category** from the dropdown
    - Optionally add **Tags**, **Description**, **Notes**
    - Optionally set **Retention Date** or **Expiration Date**
-4. Click **"Upload"** — file uploads directly to secure S3 storage
+4. Click **"Upload"** — the file is transmitted to the server, which validates content, scans for malware, encrypts with a per-document key, and stores it. The file is not stored until all checks pass.
 5. The document appears in the vault listing immediately
 
 ### Searching Documents
@@ -162,8 +171,8 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
 
 ### Downloading Documents
 1. Click the **Download** button on the document row or detail page
-2. A signed URL is generated (expires in 15 minutes)
-3. The file downloads directly from S3 via the secure temporary URL
+2. The file is streamed from encrypted storage, decrypted server-side, and delivered over HTTPS (audit logged)
+3. The download is delivered through the vault API — no expiring public URLs
 
 ### Archiving / Deleting Documents
 - **Archive**: Update the document and set `isArchived: true` (requires `documents:update`)
@@ -176,25 +185,27 @@ The Documentation Vault implements envelope encryption for PHI documents at rest
 
 ## 5. Testing Report
 
-### Security Tests (43 tests)
+### Security Tests (50 tests)
 - **Permission tests**: 16 tests covering all 5 document permissions across all 6 roles
   - Verified only `superadmin` and `administrator` have `documents:delete`
   - Verified `customer` has only `documents:read`
   - Wildcard matching (`documents:*`) verified for superadmin
-- **API Security tests**: 27 tests covering:
+- **API Security tests**: 34 tests covering:
   - Authentication bypass prevention
   - Authorization checks (wrong org returns null, not data)
   - Soft-delete filtering (deleted docs excluded from list results)
   - Legal hold enforcement (delete throws 409)
   - Pagination clamping (pageSize max 100, page min 1)
-  - Category enum consistency (kebab↔snake round-trip for all 13 categories)
+  - Category enum consistency (kebab–snake round-trip for all 13 categories)
   - Input validation edge cases (empty tags, long titles, minimal payloads)
+  - **Upload token lifecycle**: creation with 15-minute expiry, valid/invalid token lookup (expired, used, wrong-org), single-use consumption (race winner wins, loser gets false)
 
 ### File Validation
 - MIME type whitelist enforced at upload API
 - File size limit (50MB) enforced at upload API
 - Secure filename generation (alphanumeric + uuid prefix)
-- No executable/script uploads allowed
+- No executable/script uploads allowed (magic-byte + heuristic scan)
+- Fail-closed external malware scan when `MALWARE_SCAN_URL` is configured
 
 ### Audit Verification
 - Every VIEW/DOWNLOAD/UPLOAD/UPDATE/DELETE action logged via `logDocumentAccess()`

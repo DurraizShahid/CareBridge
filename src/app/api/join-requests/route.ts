@@ -50,30 +50,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invite code is invalid or expired' }, { status: 400 });
     }
 
-    // Check if user already has a pending request
-    const existingRequest = await prisma.joinRequest.findUnique({
-      where: { userId },
+    // One pending request at a time; denied/approved history does not block re-apply
+    const existingPending = await prisma.joinRequest.findFirst({
+      where: { userId, status: 'pending' },
     });
 
-    if (existingRequest) {
-      return NextResponse.json({ error: 'You already have a join request on file' }, { status: 400 });
+    if (existingPending) {
+      return NextResponse.json({ error: 'You already have a pending join request' }, { status: 400 });
     }
 
-    const [joinRequest] = await prisma.$transaction([
-      prisma.joinRequest.create({
-        data: {
-          id: crypto.randomUUID(),
-          userId,
-          organizationId,
-          inviteCodeId,
-          requestedRole: inviteCode.role,
-        },
-      }),
-      prisma.inviteCode.update({
-        where: { id: inviteCodeId },
-        data: { usedCount: { increment: 1 } },
-      }),
-    ]);
+    // usedCount is incremented only on successful approval, not on submit
+    const joinRequest = await prisma.joinRequest.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId,
+        organizationId,
+        inviteCodeId,
+        requestedRole: inviteCode.role,
+      },
+    });
 
     return NextResponse.json(joinRequest);
   } catch (error: unknown) {

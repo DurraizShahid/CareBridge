@@ -12,7 +12,11 @@ import type {
   Placement,
   PlacementStatus,
   DashboardStats,
+  DashboardWidgetData,
   FacilityDashboardStats,
+  FacilityCategoryData,
+  ScheduleEvent,
+  ScheduleEventType,
   Referral,
   ActivityEvent,
   User,
@@ -30,6 +34,8 @@ import type {
   FacilityMatchResult,
   PatientMatchResult,
 } from "@/types";
+import { Prisma } from "@/generated/prisma/client";
+import { consumeInviteCodeUse } from "@/lib/invite-codes";
 import { prisma } from "@/lib/prisma";
 
 // ── Helpers ──
@@ -128,6 +134,15 @@ const CONFIRMED_PLACEMENT_STATUSES = new Set<PlacementStatus>([
   "in-progress",
   "completed",
 ]);
+
+// Statuses whose placement holds a bed at the assigned facility.
+// Approving a placement reserves the bed; moving it in_progress admits
+// the patient; completed/cancelled release the bed.
+const BED_OCCUPYING_STATUSES = new Set<string>(["approved", "in_progress"]);
+
+function isBedOccupyingStatus(status: string | null | undefined): boolean {
+  return BED_OCCUPYING_STATUSES.has(kebabToSnake(status ?? ""));
+}
 
 function uniqueStrings(values: (string | null | undefined)[]): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
@@ -395,7 +410,7 @@ async function recalculateFacilityOccupancy(
       tx.placement.count({
         where: {
           facilityId,
-          status: "in_progress",
+          status: { in: Array.from(BED_OCCUPYING_STATUSES) },
         },
       }),
     ]);
@@ -408,6 +423,76 @@ async function recalculateFacilityOccupancy(
       },
     });
   }));
+}
+
+/**
+ * Take a row-level lock (SELECT ... FOR UPDATE) on the facility so that
+ * concurrent confirmations/admissions serialize on the same row. All
+ * capacity reads and the occupancy write must happen inside the same
+ * transaction while this lock is held.
+ */
+async function lockFacilityRow(tx: any, facilityId: string): Promise<void> {
+  await tx.$queryRaw`SELECT "id" FROM "Facility" WHERE "id" = ${facilityId} FOR UPDATE`;
+}
+
+async function countBedOccupyingPlacements(
+  tx: any,
+  facilityId: string,
+  excludePlacementId?: string | null,
+): Promise<number> {
+  return tx.placement.count({
+    where: {
+      facilityId,
+      status: { in: Array.from(BED_OCCUPYING_STATUSES) },
+      ...(excludePlacementId ? { id: { not: excludePlacementId } } : {}),
+    },
+  });
+}
+
+/**
+ * Atomically verify that the target facility has capacity for the placement
+ * in its post-transition state. Must be called inside the placement
+ * transaction. The facility row is locked first so that two concurrent
+ * confirmations cannot both observe the same free bed.
+ *
+ * - `newStatus` is the prisma (snake_case) status after the transition.
+ * - `existing` is the current placement row (update path only).
+ * - Confirming a placement that already holds a bed at this facility is
+ *   idempotent: it is not double-counted and is not gated on availability.
+ */
+async function assertFacilityCapacityAvailable(
+  tx: any,
+  facilityId: string | null | undefined,
+  placementId: string | null | undefined,
+  newStatus: string,
+  existing?: { facilityId: string | null; status: string } | null,
+): Promise<void> {
+  if (!facilityId) return;
+
+  await lockFacilityRow(tx, facilityId);
+  const facility = await tx.facility.findUnique({
+    where: { id: facilityId },
+    select: { capacity: true, hasAvailability: true },
+  });
+  if (!facility) {
+    throw new DataAccessError(400, "Assigned facility must belong to this organization");
+  }
+
+  const newlyOccupies = isBedOccupyingStatus(newStatus);
+  const currentlyOccupies =
+    !!existing &&
+    existing.facilityId === facilityId &&
+    isBedOccupyingStatus(existing.status);
+
+  if (newlyOccupies && !currentlyOccupies && !facility.hasAvailability) {
+    throw new DataAccessError(409, "Selected facility has no current availability");
+  }
+
+  const otherOccupying = await countBedOccupyingPlacements(tx, facilityId, placementId);
+  const projectedOccupancy = otherOccupying + (newlyOccupies ? 1 : 0);
+  if (projectedOccupancy > facility.capacity) {
+    throw new DataAccessError(409, "Selected facility has no current availability");
+  }
 }
 
 async function validatePlacementReferences(
@@ -426,6 +511,7 @@ async function validatePlacementReferences(
     matchedFacilities: string[];
     organizationId: string;
   },
+  placementId?: string,
 ) {
   const effectiveOrganizationId = existing?.organizationId ?? organizationId;
   const patientId = data.patientId ?? existing?.patientId;
@@ -479,19 +565,22 @@ async function validatePlacementReferences(
     if (!selectedFacility.careLevelsOffered.includes(careLevelValue)) {
       throw new DataAccessError(409, "Selected facility does not support this care level");
     }
-    const isExistingActiveAssignment =
-      !!existing &&
-      existing.facilityId === selectedFacility.id &&
-      existing.status === "in_progress";
-    if (
-      !isExistingActiveAssignment &&
-      (!selectedFacility.hasAvailability || selectedFacility.currentOccupancy >= selectedFacility.capacity)
-    ) {
-      throw new DataAccessError(409, "Selected facility has no current availability");
-    }
     if (!facilityAcceptsPatientInsurance(selectedFacility, patient.insurance)) {
       throw new DataAccessError(409, "Selected facility does not accept the patient's insurance");
     }
+  }
+
+  const bedFacilityId = isConfirmedPlacementStatus(status)
+    ? selectedFacilityId ?? requestedFacilityId
+    : null;
+  if (bedFacilityId) {
+    await assertFacilityCapacityAvailable(
+      tx,
+      bedFacilityId,
+      placementId,
+      kebabToSnake(status),
+      existing,
+    );
   }
 
   const confirmedFacilityId = isConfirmedPlacementStatus(status)
@@ -849,7 +938,7 @@ export async function updatePlacement(
     const existing = await tx.placement.findFirst({ where });
     if (!existing) return null;
 
-    const flow = await validatePlacementReferences(tx, data, organizationId, role, existing);
+    const flow = await validatePlacementReferences(tx, data, organizationId, role, existing, id);
     const updateData: Record<string, any> = {
       facilityId: flow.facilityId,
       matchedFacilities: flow.matchedFacilities,
@@ -923,12 +1012,15 @@ export async function deletePlacement(
   organizationId: string,
   role: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const where = isSuperadmin(role) ? { id } : { id, organizationId };
-  const existing = await prisma.placement.findFirst({ where });
-  if (!existing) return { success: false, error: "Placement not found" };
+  return prisma.$transaction(async (tx) => {
+    const where = isSuperadmin(role) ? { id } : { id, organizationId };
+    const existing = await tx.placement.findFirst({ where });
+    if (!existing) return { success: false, error: "Placement not found" };
 
-  await prisma.placement.delete({ where: { id } });
-  return { success: true };
+    await tx.placement.delete({ where: { id } });
+    await recalculateFacilityOccupancy(tx, [existing.facilityId]);
+    return { success: true };
+  });
 }
 
 /**
@@ -999,6 +1091,483 @@ export async function getDashboardStats(
     facilitiesAvailable: availableFacilityCount,
     placementsThisMonth,
     averagePlacementTimeDays: averageDays(completedPlacements, "createdAt"),
+  };
+}
+
+function formatCareLevelLabel(careLevel: string): string {
+  return careLevel
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatClockTime(date: Date): string {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function assignScheduleHour(seed: string, fallbackHour: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return 7 + (hash % 10 || fallbackHour % 10);
+}
+
+function buildScheduleEvent(params: {
+  id: string;
+  date: Date;
+  subject: string;
+  details: string;
+  location: string;
+  participants: string;
+  type: ScheduleEventType;
+  duration?: string;
+}): ScheduleEvent {
+  const hour = params.date.getHours() === 0
+    ? assignScheduleHour(params.id, 9)
+    : params.date.getHours();
+  const eventDate = new Date(params.date);
+  if (params.date.getHours() === 0 && params.date.getMinutes() === 0) {
+    eventDate.setHours(hour, (params.id.charCodeAt(0) % 4) * 15, 0, 0);
+  }
+
+  return {
+    id: params.id,
+    dateISO: eventDate.toISOString(),
+    time: formatClockTime(eventDate),
+    subject: params.subject,
+    details: params.details,
+    location: params.location,
+    participants: params.participants,
+    duration: params.duration ?? "30m",
+    type: params.type,
+  };
+}
+
+/**
+ * Aggregate dashboard widget data (schedule, charts, facility capacity, KPIs).
+ */
+export async function getDashboardWidgetData(
+  organizationId: string,
+  role: string,
+): Promise<DashboardWidgetData> {
+  const where = isSuperadmin(role) ? {} : { organizationId };
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  const weekStart = new Date(todayStart);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const urgentWeekStart = new Date(todayStart);
+  urgentWeekStart.setDate(urgentWeekStart.getDate() - urgentWeekStart.getDay());
+  const calendarStart = new Date(weekStart);
+  const calendarEnd = new Date(weekStart);
+  calendarEnd.setDate(calendarEnd.getDate() + 28);
+  const monthStarts = Array.from({ length: 12 }, (_, index) =>
+    new Date(now.getFullYear(), index, 1),
+  );
+
+  const [
+    totalPlacements,
+    completedPlacements,
+    activePlacements,
+    placementsThisMonth,
+    placementsCreatedToday,
+    referralCount,
+    matchCount,
+    activePriority,
+    urgentThisWeek,
+    facilities,
+    hospitals,
+    careLevelGroups,
+    priorityCareLevels,
+    weekPlacements,
+    createdByMonth,
+    completedByMonth,
+    completedDurations,
+    schedulePlacements,
+  ] = await Promise.all([
+    prisma.placement.count({ where }),
+    prisma.placement.count({ where: { ...where, status: "completed" } }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        NOT: { status: { in: ["completed", "cancelled"] } },
+      },
+    }),
+    prisma.placement.count({
+      where: { ...where, createdAt: { gte: monthStart } },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        createdAt: { gte: todayStart, lt: tomorrowStart },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        status: { in: ["matching", "pending_approval", "searching", "assessment"] },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        status: { in: ["approved", "in_progress", "completed"] },
+        OR: [
+          { facilityId: { not: null } },
+          { selectedFacilityId: { not: null } },
+        ],
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        priority: { in: ["high", "emergency"] },
+        NOT: { status: { in: ["completed", "cancelled"] } },
+      },
+    }),
+    prisma.placement.count({
+      where: {
+        ...where,
+        priority: { in: ["high", "emergency"] },
+        createdAt: { gte: urgentWeekStart },
+      },
+    }),
+    prisma.facility.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        capacity: true,
+        currentOccupancy: true,
+      },
+      orderBy: { name: "asc" },
+      take: 50,
+    }),
+    prisma.hospital.findMany({
+      where,
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+      take: 20,
+    }),
+    prisma.placement.groupBy({
+      by: ["careLevel"],
+      where,
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
+    }),
+    prisma.placement.groupBy({
+      by: ["careLevel"],
+      where: {
+        ...where,
+        priority: { in: ["high", "emergency"] },
+        NOT: { status: { in: ["completed", "cancelled"] } },
+      },
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
+      take: 3,
+    }),
+    prisma.placement.findMany({
+      where: {
+        ...where,
+        createdAt: { gte: weekStart, lt: weekEnd },
+      },
+      select: { createdAt: true },
+    }),
+    Promise.all(
+      monthStarts.map((start) =>
+        prisma.placement.count({
+          where: {
+            ...where,
+            createdAt: {
+              gte: start,
+              lt: addMonths(start, 1),
+            },
+          },
+        }),
+      ),
+    ),
+    Promise.all(
+      monthStarts.map((start) =>
+        prisma.placement.count({
+          where: {
+            ...where,
+            status: "completed",
+            completedDate: {
+              gte: start,
+              lt: addMonths(start, 1),
+            },
+          },
+        }),
+      ),
+    ),
+    prisma.placement.findMany({
+      where: {
+        ...where,
+        status: "completed",
+        completedDate: { not: null },
+      },
+      select: { createdAt: true, completedDate: true },
+    }),
+    prisma.placement.findMany({
+      where: {
+        ...where,
+        OR: [
+          { startDate: { gte: calendarStart, lt: calendarEnd } },
+          { completedDate: { gte: calendarStart, lt: calendarEnd } },
+          {
+            createdAt: { gte: calendarStart, lt: calendarEnd },
+            status: {
+              in: ["assessment", "searching", "matching", "pending_approval", "approved"],
+            },
+          },
+          {
+            patient: {
+              estimatedDischargeDate: { gte: calendarStart, lt: calendarEnd },
+            },
+          },
+        ],
+      },
+      include: {
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+            estimatedDischargeDate: true,
+            primaryDiagnosis: true,
+          },
+        },
+        facility: { select: { name: true } },
+        socialWorker: { select: { firstName: true, lastName: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 80,
+    } as any) as unknown as any[],
+  ]);
+
+  const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
+  const placementsThisWeek = dayLabels.map((day, index) => {
+    const dayStart = new Date(weekStart);
+    dayStart.setDate(weekStart.getDate() + index);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    const count = weekPlacements.filter(
+      (placement) =>
+        placement.createdAt >= dayStart && placement.createdAt < dayEnd,
+    ).length;
+    return {
+      day,
+      count,
+      isToday: dayStart.toDateString() === todayStart.toDateString(),
+    };
+  });
+
+  const facilityTypeGroups: Record<
+    string,
+    { id: string; label: string; types: string[] }
+  > = {
+    snf: {
+      id: "snf",
+      label: "Skilled Nursing",
+      types: ["skilled_nursing_facility", "long_term_care"],
+    },
+    rehab: {
+      id: "rehab",
+      label: "Rehab & Therapy",
+      types: ["rehabilitation_center"],
+    },
+    assisted: {
+      id: "assisted",
+      label: "Assisted Living",
+      types: ["assisted_living"],
+    },
+    other: {
+      id: "other",
+      label: "Home Health & Hospice",
+      types: ["home_health_agency", "hospice"],
+    },
+  };
+
+  const facilitiesByCategory: FacilityCategoryData[] = [
+    {
+      id: "hospitals",
+      label: "Hospitals",
+      items: hospitals.map((hospital) => ({
+        id: hospital.id,
+        name: hospital.name,
+        total: 0,
+        available: 0,
+      })),
+    },
+    ...Object.values(facilityTypeGroups).map((group) => ({
+      id: group.id,
+      label: group.label,
+      items: facilities
+        .filter((facility) => group.types.includes(facility.type))
+        .map((facility) => ({
+          id: facility.id,
+          name: facility.name,
+          total: facility.capacity,
+          available: Math.max(facility.capacity - facility.currentOccupancy, 0),
+        })),
+    })),
+  ].filter((category) => category.items.length > 0);
+
+  const careLevelBreakdown = careLevelGroups.slice(0, 4).map((group) => ({
+    label: formatCareLevelLabel(toCareLevel(group.careLevel)),
+    value: group._count.id,
+  }));
+
+  const scheduleEvents: ScheduleEvent[] = [];
+  for (const placement of schedulePlacements) {
+    const patientName = `${placement.patient.firstName} ${placement.patient.lastName}`;
+    const facilityName = placement.facility?.name ?? "Unassigned facility";
+    const workerName = placement.socialWorker
+      ? `${placement.socialWorker.firstName} ${placement.socialWorker.lastName}`
+      : "Care team";
+    const careLabel = formatCareLevelLabel(toCareLevel(placement.careLevel));
+    const priorityType: ScheduleEventType =
+      placement.priority === "emergency" || placement.priority === "high"
+        ? "urgent"
+        : "meeting";
+
+    if (
+      placement.startDate &&
+      placement.startDate >= calendarStart &&
+      placement.startDate < calendarEnd
+    ) {
+      scheduleEvents.push(
+        buildScheduleEvent({
+          id: `${placement.id}-start`,
+          date: placement.startDate,
+          subject: `Placement start: ${patientName}`,
+          details: `${careLabel} placement begins at ${facilityName}.`,
+          location: facilityName,
+          participants: workerName,
+          type: priorityType,
+          duration: "45m",
+        }),
+      );
+    }
+
+    if (
+      placement.completedDate &&
+      placement.completedDate >= calendarStart &&
+      placement.completedDate < calendarEnd
+    ) {
+      scheduleEvents.push(
+        buildScheduleEvent({
+          id: `${placement.id}-complete`,
+          date: placement.completedDate,
+          subject: `Placement completed: ${patientName}`,
+          details: `Completed ${careLabel} placement at ${facilityName}.`,
+          location: facilityName,
+          participants: workerName,
+          type: "check-in",
+          duration: "30m",
+        }),
+      );
+    }
+
+    const dischargeDate = placement.patient.estimatedDischargeDate;
+    if (
+      dischargeDate &&
+      dischargeDate >= calendarStart &&
+      dischargeDate < calendarEnd
+    ) {
+      scheduleEvents.push(
+        buildScheduleEvent({
+          id: `${placement.id}-discharge`,
+          date: dischargeDate,
+          subject: `Est. discharge: ${patientName}`,
+          details: `Estimated discharge for ${placement.patient.primaryDiagnosis}. Care level: ${careLabel}.`,
+          location: facilityName,
+          participants: workerName,
+          type: "review",
+          duration: "30m",
+        }),
+      );
+    }
+
+    if (
+      placement.createdAt >= calendarStart &&
+      placement.createdAt < calendarEnd &&
+      ["assessment", "searching", "matching", "pending_approval", "approved"].includes(
+        placement.status,
+      )
+    ) {
+      scheduleEvents.push(
+        buildScheduleEvent({
+          id: `${placement.id}-intake`,
+          date: placement.createdAt,
+          subject:
+            placement.status === "pending_approval"
+              ? `Approval needed: ${patientName}`
+              : `Referral intake: ${patientName}`,
+          details: `${careLabel} · ${placement.patient.primaryDiagnosis}`,
+          location: facilityName,
+          participants: workerName,
+          type:
+            placement.status === "pending_approval" || placement.priority === "emergency"
+              ? "urgent"
+              : "meeting",
+          duration: "45m",
+        }),
+      );
+    }
+  }
+
+  scheduleEvents.sort(
+    (a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime(),
+  );
+
+  const successRate =
+    totalPlacements > 0
+      ? Math.round((completedPlacements / totalPlacements) * 100)
+      : 0;
+
+  return {
+    header: {
+      totalPlacements,
+      completedPlacements,
+      activePlacements,
+      placementsThisMonth,
+      placementsCreatedToday,
+    },
+    scheduleEvents: scheduleEvents.slice(0, 60),
+    activity: {
+      referrals: referralCount,
+      matches: matchCount,
+    },
+    priorityPlacements: {
+      activePriority,
+      urgentThisWeek,
+      topCareLevels: priorityCareLevels.map((group) =>
+        formatCareLevelLabel(toCareLevel(group.careLevel)),
+      ),
+    },
+    facilitiesByCategory,
+    careLevelBreakdown,
+    placementsThisWeek,
+    placementsByMonth: monthStarts.map((start, index) => ({
+      month: start.toLocaleString("en-US", { month: "short" }),
+      created: createdByMonth[index] ?? 0,
+      completed: completedByMonth[index] ?? 0,
+    })),
+    performance: {
+      averagePlacementTimeDays: averageDays(completedDurations, "createdAt"),
+      successRate,
+      partnerFacilities: facilities.length,
+    },
   };
 }
 
@@ -1507,6 +2076,11 @@ export async function getFacilityById(id: string): Promise<Facility | null> {
 export async function createFacility(
   data: Omit<Facility, "id" | "createdAt" | "updatedAt">,
 ): Promise<Facility> {
+  if (data.capacity < 0) throw new DataAccessError(400, "Capacity must be a non-negative number");
+  if (data.currentOccupancy < 0) throw new DataAccessError(400, "Current occupancy must be a non-negative number");
+  if (data.currentOccupancy > data.capacity) {
+    throw new DataAccessError(400, "Current occupancy cannot exceed capacity");
+  }
   const f = await prisma.facility.create({
     data: {
       id: crypto.randomUUID(),
@@ -1577,6 +2151,16 @@ export async function updateFacility(
   const where = isSuperadmin(role) ? { id } : { id, organizationId };
   const existing = await prisma.facility.findFirst({ where });
   if (!existing) return null;
+
+  if (data.capacity !== undefined && data.capacity < 0) {
+    throw new DataAccessError(400, "Capacity must be a non-negative number");
+  }
+  if (data.currentOccupancy !== undefined && data.currentOccupancy < 0) {
+    throw new DataAccessError(400, "Current occupancy must be a non-negative number");
+  }
+  if (data.currentOccupancy !== undefined && data.capacity !== undefined && data.currentOccupancy > data.capacity) {
+    throw new DataAccessError(400, "Current occupancy cannot exceed capacity");
+  }
 
   const updateData: Record<string, any> = {};
   if (data.name !== undefined) updateData.name = data.name;
@@ -2087,8 +2671,6 @@ function mapDocument(d: any): import("@/types").Document {
     storageKey: d.storageKey,
     storageBucket: d.storageBucket,
     storageEndpoint: d.storageEndpoint,
-    encryptionKey: d.encryptionKey ?? undefined,
-    encryptionIv: d.encryptionIv ?? undefined,
     checksum: d.checksum ?? undefined,
     mimeType: d.mimeType,
     version: d.version,
@@ -2118,6 +2700,31 @@ export async function getDocument(
   });
   if (!d) return null;
   return mapDocument(d);
+}
+
+export type DocumentWithKeyMaterial = import("@/types").Document & {
+  encryptionKey?: string;
+  encryptionIv?: string;
+};
+
+/**
+ * Server-only lookup that additionally returns the wrapped per-document key
+ * material. Used exclusively by the download route to decrypt stored files;
+ * the material is never included in API responses.
+ */
+export async function getDocumentWithKeyMaterial(
+  id: string,
+  organizationId: string,
+  role: string,
+): Promise<DocumentWithKeyMaterial | null> {
+  const where = isSuperadmin(role) ? { id, deletedAt: null } : { id, organizationId, deletedAt: null };
+  const d = await (prisma as any).document.findFirst({ where });
+  if (!d) return null;
+  return {
+    ...mapDocument(d),
+    encryptionKey: d.encryptionKey ?? undefined,
+    encryptionIv: d.encryptionIv ?? undefined,
+  };
 }
 
 export async function createDocument(
@@ -2172,6 +2779,100 @@ export async function createDocument(
     },
   });
   return mapDocument(d);
+}
+
+export interface DocumentUploadTokenData {
+  id: string;
+  organizationId: string;
+  key: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  checksum: string;
+  encryptionKey: string;
+  encryptionIv: string;
+  expiresAt: string;
+  usedAt: string | null;
+  createdAt: string;
+}
+
+export const UPLOAD_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+export async function createDocumentUploadToken(data: {
+  organizationId: string;
+  key: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  checksum: string;
+  encryptionKey: string;
+  encryptionIv: string;
+}): Promise<DocumentUploadTokenData> {
+  const t = await (prisma as any).documentUploadToken.create({
+    data: {
+      id: crypto.randomUUID(),
+      organizationId: data.organizationId,
+      key: data.key,
+      fileName: data.fileName,
+      fileSize: data.fileSize,
+      mimeType: data.mimeType,
+      checksum: data.checksum,
+      encryptionKey: data.encryptionKey,
+      encryptionIv: data.encryptionIv,
+      expiresAt: new Date(Date.now() + UPLOAD_TOKEN_TTL_MS),
+    },
+  });
+  return mapUploadToken(t);
+}
+
+function mapUploadToken(t: Record<string, unknown>): DocumentUploadTokenData {
+  return {
+    id: t.id as string,
+    organizationId: t.organizationId as string,
+    key: t.key as string,
+    fileName: t.fileName as string,
+    fileSize: t.fileSize as number,
+    mimeType: t.mimeType as string,
+    checksum: t.checksum as string,
+    encryptionKey: t.encryptionKey as string,
+    encryptionIv: t.encryptionIv as string,
+    expiresAt: toISO(t.expiresAt as Date),
+    usedAt: t.usedAt ? toISO(t.usedAt as Date) : null,
+    createdAt: toISO(t.createdAt as Date),
+  };
+}
+
+/**
+ * Fetch a token by id, scoped to the organization. Returns null when the
+ * token does not exist, belongs to another org, is expired, or already used.
+ */
+export async function getValidDocumentUploadToken(
+  id: string,
+  organizationId: string,
+): Promise<DocumentUploadTokenData | null> {
+  const t = await (prisma as any).documentUploadToken.findFirst({
+    where: { id, organizationId },
+  });
+  if (!t) return null;
+  const token = mapUploadToken(t);
+  if (token.usedAt) return null;
+  if (new Date(token.expiresAt).getTime() < Date.now()) return null;
+  return token;
+}
+
+/**
+ * Atomically consume a token (marks it used). Returns true if this caller won
+ * the race; false if the token was already used.
+ */
+export async function consumeDocumentUploadToken(
+  id: string,
+  organizationId: string,
+): Promise<boolean> {
+  const result = await (prisma as any).documentUploadToken.updateMany({
+    where: { id, organizationId, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+  return result.count > 0;
 }
 
 export async function updateDocument(
@@ -2720,40 +3421,49 @@ export async function createJoinRequest(
 export async function approveJoinRequest(
   joinRequestId: string,
   reviewedById: string,
+  notes?: string,
 ) {
-  const joinRequest = await prisma.joinRequest.findUniqueOrThrow({
-    where: { id: joinRequestId },
-    include: { inviteCode: true },
-  });
+  await prisma.$transaction(
+    async (tx) => {
+      const joinRequest = await tx.joinRequest.findUniqueOrThrow({
+        where: { id: joinRequestId },
+        include: { inviteCode: true },
+      });
 
-  const newRole = joinRequest.inviteCode?.role || "customer";
+      if (joinRequest.status !== "pending") {
+        throw new Error("Join request already processed");
+      }
 
-  // Update the user's organization and role
-  await prisma.user.update({
-    where: { id: joinRequest.userId },
-    data: {
-      organizationId: joinRequest.organizationId,
-      role: newRole as any,
+      // Count a use only on successful approval, gated by maxUses
+      if (joinRequest.inviteCodeId) {
+        const consumed = await consumeInviteCodeUse(tx, joinRequest.inviteCodeId);
+        if (!consumed) {
+          throw new Error("Invite code is invalid or expired");
+        }
+      }
+
+      const newRole = joinRequest.inviteCode?.role || "customer";
+
+      await tx.user.update({
+        where: { id: joinRequest.userId },
+        data: {
+          organizationId: joinRequest.organizationId,
+          role: newRole as any,
+        },
+      });
+
+      await tx.joinRequest.update({
+        where: { id: joinRequestId },
+        data: {
+          status: "approved",
+          reviewedById,
+          reviewedAt: new Date(),
+          notes: notes ?? null,
+        },
+      });
     },
-  });
-
-  // Update join request
-  await prisma.joinRequest.update({
-    where: { id: joinRequestId },
-    data: {
-      status: "approved",
-      reviewedById,
-      reviewedAt: new Date(),
-    },
-  });
-
-  // Increment invite code used count if applicable
-  if (joinRequest.inviteCodeId) {
-    await prisma.inviteCode.update({
-      where: { id: joinRequest.inviteCodeId },
-      data: { usedCount: { increment: 1 } },
-    });
-  }
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  );
 
   return { success: true };
 }

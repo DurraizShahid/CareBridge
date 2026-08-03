@@ -16,6 +16,11 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       findMany: vi.fn(),
     },
+    documentUploadToken: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      updateMany: vi.fn(),
+    },
   },
 }));
 
@@ -27,8 +32,12 @@ import {
   deleteDocument,
   logDocumentAccess,
   getDocumentStats,
+  createDocumentUploadToken,
+  getValidDocumentUploadToken,
+  consumeDocumentUploadToken,
   DataAccessError,
 } from "@/lib/data-access";
+import type { DocumentUploadTokenData } from "@/lib/data-access";
 
 const mockDocRecord: any = {
   id: "doc-1",
@@ -541,5 +550,119 @@ describe("edge cases — category enum consistency", () => {
       const doc = await getDocument("doc-1", "org-1", "administrator");
       expect(doc?.category).toBe(cat);
     }
+  });
+});
+
+describe("document upload tokens", () => {
+  const tokenRecord: {
+    id: string;
+    organizationId: string;
+    key: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    checksum: string;
+    encryptionKey: string;
+    encryptionIv: string;
+    expiresAt: Date;
+    usedAt: Date | null;
+    createdAt: Date;
+  } = {
+    id: "token-1",
+    organizationId: "org-1",
+    key: "orgs/org-1/documents/abc-encrypted.pdf",
+    fileName: "report.pdf",
+    fileSize: 1024,
+    mimeType: "application/pdf",
+    checksum: "sha256-xyz",
+    encryptionKey: "v1:tag:fileiv:ciphertext",
+    encryptionIv: "wrapiv",
+    expiresAt: new Date(Date.now() + 60_000),
+    usedAt: null,
+    createdAt: new Date(),
+  };
+
+  it("creates a token with a 15-minute expiry", async () => {
+    vi.mocked(prisma.documentUploadToken.create).mockResolvedValue(tokenRecord);
+
+    const token = await createDocumentUploadToken({
+      organizationId: "org-1",
+      key: tokenRecord.key,
+      fileName: tokenRecord.fileName,
+      fileSize: tokenRecord.fileSize,
+      mimeType: tokenRecord.mimeType,
+      checksum: tokenRecord.checksum,
+      encryptionKey: tokenRecord.encryptionKey,
+      encryptionIv: tokenRecord.encryptionIv,
+    });
+
+    expect(token.id).toBe("token-1");
+    const createArgs = vi.mocked(prisma.documentUploadToken.create).mock.calls[0][0]!;
+    expect(createArgs.data.organizationId).toBe("org-1");
+    expect(createArgs.data.encryptionKey).toBe(tokenRecord.encryptionKey);
+    const ttl =
+      new Date(createArgs.data.expiresAt as Date).getTime() - Date.now();
+    expect(ttl).toBeGreaterThan(14 * 60 * 1000);
+    expect(ttl).toBeLessThanOrEqual(15 * 60 * 1000);
+  });
+
+  it("returns a token only when valid, unexpired, and unused", async () => {
+    vi.mocked(prisma.documentUploadToken.findFirst).mockResolvedValue(tokenRecord);
+
+    const token = await getValidDocumentUploadToken("token-1", "org-1");
+
+    expect(token).not.toBeNull();
+    expect(token!.id).toBe("token-1");
+  });
+
+  it("returns null for an expired token", async () => {
+    vi.mocked(prisma.documentUploadToken.findFirst).mockResolvedValue({
+      ...tokenRecord,
+      expiresAt: new Date(Date.now() - 60_000),
+    });
+
+    const token = await getValidDocumentUploadToken("token-1", "org-1");
+
+    expect(token).toBeNull();
+  });
+
+  it("returns null for an already-used token", async () => {
+    vi.mocked(prisma.documentUploadToken.findFirst).mockResolvedValue({
+      ...tokenRecord,
+      usedAt: new Date(),
+    });
+
+    const token = await getValidDocumentUploadToken("token-1", "org-1");
+
+    expect(token).toBeNull();
+  });
+
+  it("returns null for a token in another organization", async () => {
+    vi.mocked(prisma.documentUploadToken.findFirst).mockResolvedValue(null);
+
+    const token = await getValidDocumentUploadToken("token-1", "org-2");
+
+    const where = vi.mocked(prisma.documentUploadToken.findFirst).mock.calls[0][0]?.where;
+    expect(where).toEqual({ id: "token-1", organizationId: "org-2" });
+    expect(token).toBeNull();
+  });
+
+  it("consumes a token atomically via updateMany and reports the race winner", async () => {
+    vi.mocked(prisma.documentUploadToken.updateMany).mockResolvedValue({ count: 1 });
+
+    const won = await consumeDocumentUploadToken("token-1", "org-1");
+
+    expect(won).toBe(true);
+    const updateArgs = vi.mocked(prisma.documentUploadToken.updateMany).mock.calls[0][0]!;
+    expect(updateArgs.where).toEqual({ id: "token-1", organizationId: "org-1", usedAt: null });
+    expect(updateArgs.data.usedAt).toBeInstanceOf(Date);
+  });
+
+  it("reports losing the consume race when the token was already used", async () => {
+    vi.mocked(prisma.documentUploadToken.updateMany).mockResolvedValue({ count: 0 });
+
+    const won = await consumeDocumentUploadToken("token-1", "org-1");
+
+    expect(won).toBe(false);
   });
 });

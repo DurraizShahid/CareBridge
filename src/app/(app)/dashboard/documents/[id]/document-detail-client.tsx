@@ -163,10 +163,17 @@ export function DocumentDetailClient({
         method: "POST",
       });
       if (!res.ok) throw new Error("Download failed");
-      const { downloadUrl } = await res.json();
-      window.open(downloadUrl, "_blank");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = globalThis.document.createElement("a");
+      a.href = url;
+      a.download = document?.fileName ?? "document";
+      globalThis.document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch {
-      toast.error("Failed to generate download link");
+      toast.error("Failed to download document");
     }
   };
 
