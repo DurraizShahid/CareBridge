@@ -4,6 +4,7 @@ import { Search, Plus } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import { getFacilities } from "@/lib/data-access";
@@ -33,10 +34,18 @@ export default async function FacilitiesPage() {
         breadcrumbs={[{ label: "Facilities" }]}
       >
         {canCreate && (
-          <Button variant="default" render={<Link href="/facilities/new" />}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New Facility
-          </Button>
+          <Link href="/facilities/new">
+            <ShimmerButton
+              shimmerColor="#ffffff"
+              shimmerSize="0.05em"
+              shimmerDuration="3s"
+              borderRadius="12px"
+              background="rgba(25, 24, 23, 1)"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              New Facility
+            </ShimmerButton>
+          </Link>
         )}
       </PageHeader>
 

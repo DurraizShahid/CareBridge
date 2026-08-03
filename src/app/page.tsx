@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Ripple } from "@/components/ui/ripple";
 import Lightfall from "@/components/ui/lightfall";
-import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { CareLevelCombobox } from "@/components/care-level-combobox";
 import Link from "next/link";
 
 const stats = [
@@ -124,21 +125,30 @@ export default function Page() {
                   nursing to home health — faster, smarter, and with confidence.
                 </p>
                 <div className="mt-8 flex items-center gap-4">
-                  <Button
-                    render={<Link href="/sign-up" />}
-                    size="lg"
-                    className="rounded-full bg-white text-[#134675] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-white/90 hover:shadow-[0_6px_25px_rgba(0,0,0,0.4)]"
-                  >
-                    Get started
-                  </Button>
-                  <Button
-                    render={<a href="#contact" />}
-                    variant="outline"
-                    size="lg"
-                    className="rounded-full border-white/40 bg-white/15 text-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] backdrop-blur-md hover:bg-white/25 hover:text-white"
-                  >
-                    Contact sales
-                  </Button>
+                  <Link href="/sign-up">
+                    <ShimmerButton
+                      shimmerColor="#134675"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(255, 255, 255, 1)"
+                      className="text-[#134675] font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_25px_rgba(0,0,0,0.4)] px-8 py-3 text-base"
+                    >
+                      Get started
+                    </ShimmerButton>
+                  </Link>
+                  <a href="#contact">
+                    <ShimmerButton
+                      shimmerColor="#44BEAF"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(255, 255, 255, 0.15)"
+                      className="border border-white/40 text-white font-semibold shadow-[0_4px_15px_rgba(0,0,0,0.2)] backdrop-blur-md hover:bg-white/25 px-8 py-3 text-base"
+                    >
+                      Contact sales
+                    </ShimmerButton>
+                  </a>
                 </div>
               </div>
             </div>
@@ -161,34 +171,21 @@ export default function Page() {
                   </div>
 
                   {/* Care level select */}
-                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
-                    <Stethoscope className="h-5 w-5 shrink-0 text-white/70" />
-                    <select
-                      defaultValue=""
-                      className="w-full appearance-none bg-transparent text-sm text-white outline-none [&>option]:bg-[#134675] [&>option]:text-white"
-                      suppressHydrationWarning
-                    >
-                      <option value="" disabled className="text-white/50">
-                        Care level needed
-                      </option>
-                      <option value="skilled-nursing">Skilled Nursing</option>
-                      <option value="rehab">Rehabilitation</option>
-                      <option value="assisted-living">Assisted Living</option>
-                      <option value="home-health">Home Health</option>
-                      <option value="memory-care">Memory Care</option>
-                      <option value="ltc">Long-Term Care</option>
-                    </select>
-                  </div>
+                  <CareLevelCombobox />
 
                   {/* Search button */}
-                  <button
-                    type="button"
-                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] transition-all hover:opacity-90 hover:shadow-[0_6px_20px_rgba(68,190,175,0.5)] active:translate-y-px sm:w-auto"
+                  <ShimmerButton
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="100px"
+                    background="rgba(68, 190, 175, 1)"
+                    className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
                     suppressHydrationWarning
                   >
                     <Search className="h-4 w-4" />
                     <span>Find Facilities</span>
-                  </button>
+                  </ShimmerButton>
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
@@ -116,10 +117,18 @@ export default async function PlacementsPage() {
         breadcrumbs={[{ label: "Placements" }]}
       >
         {canCreate && (
-          <Button render={<Link href="/placements/new" />}>
-            <Plus className="h-4 w-4" />
-            New Placement
-          </Button>
+          <Link href="/placements/new">
+            <ShimmerButton
+              shimmerColor="#ffffff"
+              shimmerSize="0.05em"
+              shimmerDuration="3s"
+              borderRadius="12px"
+              background="rgba(25, 24, 23, 1)"
+            >
+              <Plus className="h-4 w-4" />
+              New Placement
+            </ShimmerButton>
+          </Link>
         )}
       </PageHeader>
 
@@ -132,10 +141,18 @@ export default async function PlacementsPage() {
               Create a new placement to start tracking patient transfers.
             </p>
             {canCreate && (
-              <Button render={<Link href="/placements/new" />} className="mt-4">
-                <Plus className="h-4 w-4" />
-                New Placement
-              </Button>
+              <Link href="/placements/new" className="mt-4">
+                <ShimmerButton
+                  shimmerColor="#ffffff"
+                  shimmerSize="0.05em"
+                  shimmerDuration="3s"
+                  borderRadius="12px"
+                  background="rgba(25, 24, 23, 1)"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Placement
+                </ShimmerButton>
+              </Link>
             )}
           </CardContent>
         </Card>

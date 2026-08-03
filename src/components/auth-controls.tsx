@@ -2,7 +2,7 @@
 
 import { SignInButton, UserButton, Show } from "@clerk/nextjs";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 export function AuthControls() {
   return (
@@ -10,22 +10,29 @@ export function AuthControls() {
       <Show when="signed-out">
         <div className="flex items-center gap-2">
           <SignInButton mode="redirect">
-            <button
-              type="button"
-              className="rounded-full px-5 py-2.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/15 hover:text-white"
+            <ShimmerButton
+              shimmerColor="#ffffff"
+              shimmerSize="0.05em"
+              shimmerDuration="3s"
+              borderRadius="100px"
+              background="transparent"
+              className="border border-white/20 text-white/90 hover:text-white hover:bg-white/15 px-5 py-2.5 text-sm font-medium"
             >
               Sign In
-            </button>
+            </ShimmerButton>
           </SignInButton>
-          <Button
-            variant="default"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/sign-up" />}
-            className="rounded-full bg-white text-[#134675] shadow-[0_2px_10px_rgba(0,0,0,0.3)] hover:bg-white/90"
-          >
-            Get Started
-          </Button>
+          <Link href="/sign-up">
+            <ShimmerButton
+              shimmerColor="#134675"
+              shimmerSize="0.05em"
+              shimmerDuration="3s"
+              borderRadius="100px"
+              background="rgba(255, 255, 255, 1)"
+              className="text-[#134675] font-semibold shadow-[0_2px_10px_rgba(0,0,0,0.3)] hover:bg-white/90 px-5 py-2.5 text-sm"
+            >
+              Get Started
+            </ShimmerButton>
+          </Link>
         </div>
       </Show>
       <Show when="signed-in">

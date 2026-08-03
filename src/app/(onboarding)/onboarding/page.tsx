@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -418,9 +418,14 @@ export default function OnboardingPage() {
                     )}
                   </div>
 
-                  <Button
+                  <ShimmerButton
                     type="submit"
-                    className="h-12 w-full rounded-xl bg-[#44BEAF] text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)] hover:bg-[#3aafa0] hover:shadow-[0_6px_25px_rgba(68,190,175,0.4)]"
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="12px"
+                    background="rgba(68, 190, 175, 1)"
+                    className="h-12 w-full rounded-xl text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)]"
                     disabled={isLoading || !orgName || !orgSlug}
                   >
                     {isLoading ? (
@@ -431,7 +436,7 @@ export default function OnboardingPage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
-                  </Button>
+                  </ShimmerButton>
                 </form>
               </TabsContent>
 
@@ -459,9 +464,14 @@ export default function OnboardingPage() {
                     </p>
                   </div>
 
-                  <Button
+                  <ShimmerButton
                     type="submit"
-                    className="h-12 w-full rounded-xl bg-[#44BEAF] text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)] hover:bg-[#3aafa0] hover:shadow-[0_6px_25px_rgba(68,190,175,0.4)]"
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="12px"
+                    background="rgba(68, 190, 175, 1)"
+                    className="h-12 w-full rounded-xl text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)]"
                     disabled={isLoading || !inviteCode}
                   >
                     {isLoading ? (
@@ -472,7 +482,7 @@ export default function OnboardingPage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
-                  </Button>
+                  </ShimmerButton>
                 </form>
               </TabsContent>
             </Tabs>

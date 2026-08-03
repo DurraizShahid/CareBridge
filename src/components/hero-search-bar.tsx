@@ -3,6 +3,7 @@
 import { Search, MapPin, Stethoscope } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ShimmerButton } from "@/components/ui/shimmer-button"
 import {
   Select,
   SelectContent,
@@ -51,14 +52,17 @@ export function HeroSearchBar() {
               </SelectContent>
             </Select>
           </div>
-          <Button
-            size="lg"
+          <ShimmerButton
+            shimmerColor="#ffffff"
+            shimmerSize="0.05em"
+            shimmerDuration="3s"
+            borderRadius="12px"
+            background="rgba(68, 190, 175, 1)"
             className="h-12 shrink-0 gap-2 px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
-            style={{ backgroundColor: "#44BEAF" }}
           >
             <Search className="h-4 w-4" />
             <span>Find Facilities</span>
-          </Button>
+          </ShimmerButton>
         </div>
       </div>
     </div>
