@@ -119,7 +119,7 @@
   --stat-facility: oklch(0.52 0.14 260);
   --stat-facility-bg: oklch(0.52 0.14 260 / 0.08);
   /* Soft elevated card tokens */
-  --page-bg: #ebeaea;
+  --page-bg: #f5f4fa;
   --card-top: #f1f0f0;
   --card-center: #efeeee;
   --card-bottom: #ecebea;
@@ -129,6 +129,27 @@
   --shadow-contact: rgba(73, 63, 56, 0.13);
   --shadow-main: rgba(73, 63, 56, 0.14);
   --shadow-ambient: rgba(82, 74, 68, 0.08);
+  /* Premium dashboard tokens */
+  --dash-bg: #f5f4fa;
+  --dash-canvas: rgba(255, 255, 255, 0.55);
+  --dash-canvas-border: rgba(255, 255, 255, 0.85);
+  --dash-card: #ffffff;
+  --dash-card-border: rgba(236, 235, 242, 0.85);
+  --dash-card-tint: #f4f5fb;
+  --dash-card-mint: #edf7f1;
+  --dash-card-aqua: #eef8f6;
+  --dash-accent-lime: #e1f26a;
+  --dash-accent-lilac: #e9edf8;
+  --dash-text-primary: #111014;
+  --dash-text-muted: #a09cab;
+  --dash-text-secondary: #8d8a98;
+  --dash-text-body: #1e1d24;
+  --dash-pill-bg: #f1f0f6;
+  --dash-pill-color: #6c6a78;
+  --dash-pill-active: #15141b;
+  --dash-pill-active-color: #ffffff;
+  --dash-control-bg: #fbfbfe;
+  --dash-control-border: #eceaf2;
 }
 
 .dark {
@@ -195,6 +216,27 @@
   --shadow-contact: rgba(0, 0, 0, 0.4);
   --shadow-main: rgba(0, 0, 0, 0.35);
   --shadow-ambient: rgba(0, 0, 0, 0.2);
+  /* Premium dashboard tokens (dark) */
+  --dash-bg: #0c0c0e;
+  --dash-canvas: rgba(18, 18, 22, 0.85);
+  --dash-canvas-border: rgba(255, 255, 255, 0.06);
+  --dash-card: oklch(0.11 0.01 240);
+  --dash-card-border: rgba(255, 255, 255, 0.05);
+  --dash-card-tint: rgba(255, 255, 255, 0.03);
+  --dash-card-mint: rgba(0, 200, 150, 0.06);
+  --dash-card-aqua: rgba(0, 180, 200, 0.06);
+  --dash-accent-lime: #b8d44a;
+  --dash-accent-lilac: rgba(180, 160, 240, 0.12);
+  --dash-text-primary: oklch(0.97 0.005 245);
+  --dash-text-muted: oklch(0.62 0.018 245);
+  --dash-text-secondary: oklch(0.72 0.01 245);
+  --dash-text-body: oklch(0.92 0.008 245);
+  --dash-pill-bg: rgba(255, 255, 255, 0.06);
+  --dash-pill-color: oklch(0.72 0.01 245);
+  --dash-pill-active: oklch(0.97 0.005 245);
+  --dash-pill-active-color: #0c0c0e;
+  --dash-control-bg: rgba(255, 255, 255, 0.04);
+  --dash-control-border: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {
@@ -203,7 +245,7 @@
   }
   body {
     @apply font-sans antialiased text-foreground;
-    background: var(--page-bg);
+    background: var(--dash-bg);
   }
   html {
     @apply font-sans;
@@ -264,9 +306,9 @@
 
   .dashboard-gradient {
     background:
-      radial-gradient(ellipse 60% 40% at 15% 90%, oklch(0.58 0.16 212 / 0.07) 0%, transparent 65%),
-      radial-gradient(ellipse 50% 35% at 85% 15%, oklch(0.74 0.18 280 / 0.05) 0%, transparent 60%),
-      radial-gradient(ellipse 55% 40% at 50% 50%, oklch(0.66 0.2 220 / 0.04) 0%, transparent 55%);
+      radial-gradient(ellipse 60% 40% at 15% 90%, oklch(0.58 0.16 212 / 0.05) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 35% at 85% 15%, oklch(0.74 0.18 280 / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 40% at 50% 50%, oklch(0.66 0.2 220 / 0.03) 0%, transparent 55%);
   }
 
   .dark .dashboard-gradient {
@@ -296,6 +338,79 @@
   .hide-card-content img {
     display: none !important;
   }
+
+  .dashboard-canvas {
+    max-width: 1560px;
+    margin: 28px auto;
+    padding: 32px;
+    border-radius: 32px;
+    background: var(--dash-canvas);
+    border: 1px solid var(--dash-canvas-border);
+    box-shadow:
+      0 22px 60px rgba(93, 98, 120, 0.10),
+      0 6px 18px rgba(93, 98, 120, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .dash-card {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 28px;
+    box-shadow:
+      0 12px 28px rgba(97, 99, 120, 0.06),
+      0 3px 10px rgba(97, 99, 120, 0.03);
+  }
+
+  .dash-card-tint {
+    background: var(--dash-card-tint);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 28px;
+    box-shadow:
+      0 12px 28px rgba(97, 99, 120, 0.06),
+      0 3px 10px rgba(97, 99, 120, 0.03);
+  }
+
+  .dash-card-mint {
+    background: var(--dash-card-mint);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 28px;
+    box-shadow:
+      0 12px 28px rgba(97, 99, 120, 0.06),
+      0 3px 10px rgba(97, 99, 120, 0.03);
+  }
+
+  .dash-pill {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: var(--dash-pill-bg);
+    color: var(--dash-pill-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .dash-pill-active {
+    background: var(--dash-pill-active);
+    color: var(--dash-pill-active-color);
+    box-shadow: 0 2px 8px rgba(21, 20, 27, 0.15);
+  }
+
+  .dash-control {
+    height: 48px;
+    border-radius: 999px;
+    background: var(--dash-control-bg);
+    border: 1px solid var(--dash-control-border);
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--dash-pill-color);
+  }
 }
 
 /* Card styles — Soft molded card, outside @layer */
@@ -303,99 +418,21 @@
 .soft-elevated-card {
   position: relative;
   isolation: isolate;
-  border: 1px solid var(--edge-neutral);
-  background:
-    radial-gradient(
-      ellipse 65% 70% at 82% 12%,
-      rgba(255, 255, 255, 0.16),
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      var(--card-top) 0%,
-      var(--card-center) 55%,
-      var(--card-bottom) 100%
-    );
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card);
+  border-radius: 28px;
   box-shadow:
-    0 5px 8px -4px var(--shadow-contact),
-    0 30px 46px -22px var(--shadow-main),
-    -8px 34px 58px -34px var(--shadow-ambient),
-    inset 0 1px 1px var(--edge-light),
-    inset 1px 0 1px rgba(255, 255, 255, 0.2),
-    inset -1px 0 1px rgba(255, 255, 255, 0.14),
-    inset 0 -1px 1px var(--edge-bottom);
-}
-.card-fade-shadow::before,
-.soft-elevated-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  transform: translateY(2px);
-  border-radius: inherit;
-  background: #dedbd9;
-  box-shadow: 0 5px 9px -6px rgba(68, 57, 50, 0.15);
-  pointer-events: none;
-}
-.card-fade-shadow::after,
-.soft-elevated-card::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  z-index: 2;
-  border-radius: inherit;
-  pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  -webkit-mask-image:
-    linear-gradient(
-      155deg,
-      rgba(0, 0, 0, 0.95) 0%,
-      rgba(0, 0, 0, 0.5) 28%,
-      rgba(0, 0, 0, 0.08) 58%,
-      transparent 75%
-    );
-  mask-image:
-    linear-gradient(
-      155deg,
-      rgba(0, 0, 0, 0.95) 0%,
-      rgba(0, 0, 0, 0.5) 28%,
-      rgba(0, 0, 0, 0.08) 58%,
-      transparent 75%
-    );
+    0 12px 28px rgba(97, 99, 120, 0.06),
+    0 3px 10px rgba(97, 99, 120, 0.03);
 }
 
 .dark .card-fade-shadow,
 .dark .soft-elevated-card {
-  border-color: var(--edge-neutral);
-  background:
-    radial-gradient(
-      ellipse 65% 70% at 82% 12%,
-      rgba(255, 255, 255, 0.04),
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      var(--card-top) 0%,
-      var(--card-center) 55%,
-      var(--card-bottom) 100%
-    );
+  border-color: var(--dash-card-border);
+  background: var(--dash-card);
   box-shadow:
-    0 5px 8px -4px var(--shadow-contact),
-    0 30px 46px -22px var(--shadow-main),
-    -8px 34px 58px -34px var(--shadow-ambient),
-    inset 0 1px 1px var(--edge-light),
-    inset 1px 0 1px rgba(255, 255, 255, 0.03),
-    inset -1px 0 1px rgba(255, 255, 255, 0.02),
-    inset 0 -1px 1px var(--edge-bottom);
-}
-.dark .card-fade-shadow::before,
-.dark .soft-elevated-card::before {
-  background: #0a0a0c;
-  box-shadow: 0 5px 9px -6px rgba(0, 0, 0, 0.5);
-}
-.dark .card-fade-shadow::after,
-.dark .soft-elevated-card::after {
-  border-color: rgba(255, 255, 255, 0.06);
+    0 12px 28px rgba(0, 0, 0, 0.15),
+    0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {

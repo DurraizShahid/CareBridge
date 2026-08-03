@@ -3,12 +3,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpRight } from "lucide-react";
 
-const TEAL = "#277979";
-const DARK_TEXT = "#155F60";
-const YELLOW = "#F5C542";
-const YELLOW_TEXT = "#6B5A1E";
-const DOT_GRAY = "#C4C8CE";
-const LABEL_GRAY = "#A0A5AD";
+const TEAL = "#6c7a9a";
+const DARK_TEXT = "#3a3f52";
+const YELLOW = "#e1f26a";
+const YELLOW_TEXT = "#5a6020";
+const DOT_GRAY = "#d3d1da";
+const LABEL_GRAY = "#8d8a98";
 
 const weekData = [
   { day: "S", hours: 2.5, active: false, dot: DOT_GRAY },
@@ -84,32 +84,29 @@ export function ProgressCard() {
         }
       `}</style>
 
-      <Card className="h-full bg-card overflow-hidden">
-        <CardContent className="flex flex-col h-full p-5">
+      <Card className="h-full overflow-hidden">
+        <CardContent className="flex flex-col h-full p-6">
           {/* Header */}
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-xl font-bold tracking-tight" style={{ color: DARK_TEXT }}>
+              <h3 className="text-sm font-semibold tracking-tight text-[#1e1d24]">
                 Progress
               </h3>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="text-[28px] font-bold tracking-tight" style={{ color: DARK_TEXT }}>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-[32px] font-[500] tracking-[-0.03em]" style={{ color: DARK_TEXT }}>
                   {totalHours}h
                 </span>
-                <span className="text-[10px] leading-tight" style={{ color: "rgba(39,121,121,0.5)" }}>
+                <span className="text-[11px] leading-tight text-[#8d8a98]">
                   Work Time<br />this week
                 </span>
               </div>
             </div>
             <button
               aria-label="View full progress"
-              className="flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md active:scale-95 bg-card shadow-sm"
-              style={{
-                width: "32px",
-                height: "32px",
-              }}
+              className="flex items-center justify-center rounded-full transition-all duration-200 hover:bg-[#f3f1f8] active:scale-95"
+              style={{ width: "32px", height: "32px" }}
             >
-              <ArrowUpRight className="size-3.5 transition-colors duration-200" style={{ color: TEAL }} />
+              <ArrowUpRight className="size-3.5" style={{ color: TEAL }} />
             </button>
           </div>
 

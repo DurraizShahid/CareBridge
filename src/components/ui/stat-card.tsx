@@ -30,27 +30,27 @@ const trendStyles = {
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
   return (
-    <Card glass className="bg-card">
-      <CardContent className="flex flex-col gap-6">
-        <div className="flex items-start justify-between">
-          <span className="text-sm font-semibold text-muted-foreground">{title}</span>
+    <Card>
+      <CardContent className="flex flex-col gap-4 p-5">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] font-medium text-[#8d8a98]">{title}</span>
           <div
             className={cn(
-              "flex size-14 shrink-0 items-center justify-center rounded-2xl",
+              "flex size-9 shrink-0 items-center justify-center rounded-full",
               iconStyles[variant],
             )}
           >
-            <Icon className="size-7" />
+            <Icon className="size-4" />
           </div>
         </div>
-        <div className="flex items-baseline gap-4">
-          <span className="font-heading text-4xl font-bold tracking-tight tabular-nums">
+        <div className="flex items-baseline gap-3">
+          <span className="text-[28px] font-[500] tracking-[-0.03em] tabular-nums text-[#111014]">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 text-sm font-bold px-4 py-1.5 rounded-full",
+                "inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full",
                 trendStyles[trend.positive ? "positive" : "negative"],
               )}
             >

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.06"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="35"/>
+    </filter>
+    <filter id="blur3">
+      <feGaussianBlur stdDeviation="25"/>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a211f"/>
+      <stop offset="35%" stop-color="#3d2c27"/>
+      <stop offset="60%" stop-color="#4a332c"/>
+      <stop offset="100%" stop-color="#1f1816"/>
+    </linearGradient>
+    <linearGradient id="overlay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(18,12,10,0.12)"/>
+      <stop offset="55%" stop-color="rgba(18,12,10,0.04)"/>
+      <stop offset="100%" stop-color="rgba(18,12,10,0.38)"/>
+    </linearGradient>
+  </defs>
+  <!-- Base -->
+  <rect width="800" height="1000" fill="url(#bgGrad)"/>
+  <!-- Warm blurred light gradients -->
+  <ellipse cx="200" cy="300" rx="400" ry="250" fill="#8b5e3c" opacity="0.3" filter="url(#blur1)"/>
+  <ellipse cx="600" cy="200" rx="300" ry="200" fill="#6b3a2a" opacity="0.35" filter="url(#blur1)"/>
+  <ellipse cx="100" cy="700" rx="250" ry="300" fill="#a0724e" opacity="0.2" filter="url(#blur1)"/>
+  <ellipse cx="700" cy="800" rx="200" ry="250" fill="#7a4a33" opacity="0.25" filter="url(#blur1)"/>
+  <ellipse cx="400" cy="500" rx="350" ry="200" fill="#c4956a" opacity="0.08" filter="url(#blur1)"/>
+  <!-- Muted red/warm accents -->
+  <ellipse cx="350" cy="250" rx="150" ry="120" fill="#8a3f2e" opacity="0.25" filter="url(#blur2)"/>
+  <ellipse cx="550" cy="650" rx="180" ry="140" fill="#9c5438" opacity="0.2" filter="url(#blur2)"/>
+  <!-- Soft beige warm spots -->
+  <ellipse cx="300" cy="600" rx="120" ry="100" fill="#d4b896" opacity="0.1" filter="url(#blur3)"/>
+  <ellipse cx="500" cy="350" rx="100" ry="80" fill="#c9ad8a" opacity="0.08" filter="url(#blur3)"/>
+  <!-- Subtle vertical architectural lines -->
+  <line x1="120" y1="0" x2="120" y2="1000" stroke="rgba(255,255,255,0.03)" stroke-width="1.5"/>
+  <line x1="240" y1="0" x2="240" y2="1000" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  <line x1="360" y1="0" x2="360" y2="1000" stroke="rgba(255,255,255,0.025)" stroke-width="1.5"/>
+  <line x1="480" y1="0" x2="480" y2="1000" stroke="rgba(255,255,255,0.015)" stroke-width="1"/>
+  <line x1="600" y1="0" x2="600" y2="1000" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  <line x1="720" y1="0" x2="720" y2="1000" stroke="rgba(255,255,255,0.015)" stroke-width="1"/>
+  <line x1="180" y1="0" x2="180" y2="1000" stroke="rgba(255,255,255,0.015)" stroke-width="0.8"/>
+  <line x1="300" y1="0" x2="300" y2="1000" stroke="rgba(255,255,255,0.01)" stroke-width="0.8"/>
+  <line x1="420" y1="0" x2="420" y2="1000" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  <line x1="540" y1="0" x2="540" y2="1000" stroke="rgba(255,255,255,0.01)" stroke-width="0.8"/>
+  <line x1="660" y1="0" x2="660" y2="1000" stroke="rgba(255,255,255,0.015)" stroke-width="1"/>
+  <!-- Smoky gray overlay lines -->
+  <line x1="90" y1="0" x2="90" y2="1000" stroke="rgba(80,60,50,0.08)" stroke-width="2"/>
+  <line x1="330" y1="0" x2="330" y2="1000" stroke="rgba(80,60,50,0.06)" stroke-width="1.5"/>
+  <line x1="570" y1="0" x2="570" y2="1000" stroke="rgba(80,60,50,0.07)" stroke-width="2"/>
+  <!-- Film grain overlay -->
+  <rect width="800" height="1000" fill="none" filter="url(#grain)" opacity="0.5"/>
+</svg>

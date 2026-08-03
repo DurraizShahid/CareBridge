@@ -14,9 +14,8 @@ import { ProgressCard } from "./_sections/progress-card";
 import { AdvantagesCard } from "./_sections/advantages-card";
 import { TotalSpentCard } from "./_sections/total-spent-card";
 import { ContractTypeCard } from "./_sections/contract-type-card";
-import {
-  StatsGridSkeleton,
-} from "@/components/dashboard-skeletons";
+import WelcomeCard from "./_sections/welcome-card";
+import { StatsGridSkeleton } from "@/components/dashboard-skeletons";
 
 export default async function DashboardPage() {
   const org = await getServerOrganization();
@@ -73,7 +72,7 @@ export default async function DashboardPage() {
 
       {role !== "superadmin" && (
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-min">
             <div className="md:col-span-5 md:row-span-2">
               <AppointmentsCard />
             </div>
@@ -101,6 +100,11 @@ export default async function DashboardPage() {
             <div className="md:col-span-4">
               <AdvantagesCard />
             </div>
+          </div>
+
+          {/* Accent feature card - CareBridge Pro */}
+          <div className="mt-5">
+            <WelcomeCard />
           </div>
         </section>
       )}

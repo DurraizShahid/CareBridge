@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,30 +9,24 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import {
-  RiSendPlaneFill,
-  RiSparkling2Line,
-  RiBuilding2Line,
-  RiUserHeartLine,
-  RiStethoscopeLine,
   RiSparklingFill,
-  RiStopCircleLine,
   RiArrowGoBackLine,
   RiFileCopyLine,
   RiCheckLine,
-  RiTimeLine,
 } from "@remixicon/react";
-import { SidebarToggleIcon } from "@/components/ui/sidebar-toggle-icon";
+import { History, Plus, Globe2, Mic, ArrowUp } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Message, MessageContent, MessageFooter } from "@/components/ui/message";
-import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { FacilityResultCard } from "@/components/ai/facility-result-card";
 import { PlacementConfirmationCard } from "@/components/ai/placement-confirmation-card";
 import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
 import { AIHomePageSkeleton } from "@/components/dashboard-skeletons";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { cn } from "@/lib/utils";
-import { useChatSidebar } from "@/hooks/use-chat-sidebar";
-
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+} from "@/components/ui/sheet";
 import type { Facility } from "@/types";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
 
@@ -46,21 +40,6 @@ interface ChatMessage {
   isError?: boolean;
   timestamp?: number;
 }
-
-const suggestions = [
-  {
-    icon: RiBuilding2Line,
-    label: "Find facilities with cardiac care beds",
-  },
-  {
-    icon: RiUserHeartLine,
-    label: "Show pending discharge approvals",
-  },
-  {
-    icon: RiStethoscopeLine,
-    label: "Compare skilled nursing options",
-  },
-];
 
 function sanitizeStreamingMarkdown(content: string): string {
   const parts = content.split("```");
@@ -161,6 +140,13 @@ const markdownComponents: Components = {
   ),
   hr: () => <hr className="my-3 border-border/50" />,
 };
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 function parseSuggestions(
   content: string,
@@ -272,22 +258,10 @@ export default function HomePage() {
   const abortRef = useRef<AbortController | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const { sidebarOpen, setSidebarOpen, setShowNewChat, setNewChatHandler } = useChatSidebar();
-  useEffect(() => {
-    setSidebarOpen(window.innerWidth >= 768);
-    const onResize = () => setSidebarOpen(window.innerWidth >= 768);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [setSidebarOpen]);
-  useEffect(() => {
-    setShowNewChat(hasStarted);
-    setNewChatHandler(handleNewChat);
-  }, [hasStarted, setShowNewChat, setNewChatHandler]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
-  const [characterCount, setCharacterCount] = useState(0);
   const messageContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const streamingRef = useRef(false);
   const messagesRef = useRef<ChatMessage[]>([]);
   const wasAbortedRef = useRef(false);
@@ -296,7 +270,6 @@ export default function HomePage() {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Abort active stream on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
@@ -312,25 +285,6 @@ export default function HomePage() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Auto-resize textarea
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
-  }, [query]);
-
-  // Close sidebar on Escape
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [sidebarOpen]);
-
   const copyMessage = async (text: string, index: number) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -345,17 +299,6 @@ export default function HomePage() {
       hour: "numeric",
       minute: "2-digit",
     }).format(ts);
-  };
-
-  if (!isLoaded) {
-    return <AIHomePageSkeleton />;
-  }
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
   };
 
   const saveMessage = async (chatId: string, role: string, content: string) => {
@@ -383,7 +326,7 @@ export default function HomePage() {
     abortRef.current?.abort();
     setCurrentChatId(chatId);
     setIsStreaming(false);
-    setSidebarOpen(false);
+    setHistoryOpen(false);
 
     try {
       const response = await fetch(`/api/chats/${chatId}`);
@@ -402,10 +345,6 @@ export default function HomePage() {
     } catch (error) {
       console.error("Error loading chat:", error);
     }
-  };
-
-  const handleSuggestionClick = async (label: string) => {
-    await sendMessage(label);
   };
 
   const handleFollowUpClick = async (question: string) => {
@@ -427,11 +366,6 @@ export default function HomePage() {
 
   const handleRetry = async (text: string) => {
     await sendMessage(text);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await sendMessage(query);
   };
 
   const handleStopStreaming = () => {
@@ -467,9 +401,9 @@ export default function HomePage() {
     streamingRef.current = true;
     wasAbortedRef.current = false;
     setQuery("");
-    setCharacterCount(0);
     setHasStarted(true);
 
+    // eslint-disable-next-line react-hooks/purity
     const ts = Date.now();
     const userMsg: ChatMessage = { role: "user", content: text, timestamp: ts };
     const aiMsg: ChatMessage = {
@@ -481,7 +415,6 @@ export default function HomePage() {
     setMessages((prev) => [...prev, userMsg, aiMsg]);
     setIsStreaming(true);
 
-    // Create a new chat if needed (parallel with AI fetch)
     let chatId = currentChatId;
     const chatPromise = !chatId
       ? fetch("/api/chats", {
@@ -502,7 +435,6 @@ export default function HomePage() {
       }));
       history.push({ role: "user", content: text });
 
-      // Start AI fetch immediately, don't wait for chat creation
       const responsePromise = fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -510,7 +442,6 @@ export default function HomePage() {
         signal: controller.signal,
       });
 
-      // Resolve chat ID in parallel (won't throw — caught above)
       const chatResult = await chatPromise;
       if (chatResult) {
         chatId = chatResult.id;
@@ -531,7 +462,6 @@ export default function HomePage() {
         throw new Error(errorMsg);
       }
 
-      // Save user message to database (fire-and-forget)
       if (chatId) {
         saveMessage(chatId, "user", text);
       }
@@ -573,11 +503,15 @@ export default function HomePage() {
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               if (last?.role === "assistant" && last.isStreaming) {
+                const existing = new Set((last.facilities ?? []).map((f) => f.id));
                 return [
                   ...prev.slice(0, -1),
                   {
                     ...last,
-                    facilities: [...(last.facilities ?? []), ...facilities],
+                    facilities: [
+                      ...(last.facilities ?? []),
+                      ...facilities.filter((f) => !existing.has(f.id)),
+                    ],
                   },
                 ];
               }
@@ -612,7 +546,6 @@ export default function HomePage() {
         });
       }
 
-      // Save assistant message to database
       if (chatId && fullResponse) {
         const { cleanContent } = parseSuggestions(fullResponse);
         saveMessage(chatId, "assistant", cleanContent);
@@ -664,362 +597,359 @@ export default function HomePage() {
     }
   };
 
+  const composer = (
+    <div className="w-full max-w-[640px]" style={{ height: "108px" }}>
+      <div
+        className="flex flex-col h-full rounded-[24px]"
+        style={{
+          background: "rgba(255,255,255,0.98)",
+          border: "1px solid rgba(224,235,244,0.65)",
+          boxShadow:
+            "0 15px 34px rgba(97,158,205,0.13), 0 4px 12px rgba(97,158,205,0.06)",
+        }}
+      >
+        <div className="flex-1 px-[20px] pt-[18px]">
+          <textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (query.trim()) sendMessage(query);
+              }
+            }}
+            placeholder="Ask CareBridge anything..."
+            rows={1}
+            className="w-full resize-none bg-transparent outline-none text-[15px] leading-[1.4]"
+            style={{ color: "#26313f" }}
+            aria-label="Message input"
+          />
+        </div>
+
+        <div className="flex items-center justify-between px-[18px] pb-[13px]">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex size-8 items-center justify-center rounded-full"
+              style={{ background: "#eff6fb", color: "#526273" }}
+              aria-label="Attach file"
+            >
+              <Plus className="size-4" />
+            </button>
+            <div className="flex items-center gap-1">
+              <Globe2 className="size-4" style={{ color: "#a1a8b2" }} />
+              <span className="text-[13px]" style={{ color: "#a1a8b2" }}>
+                Search
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              className="flex size-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+              style={{ color: "#405365" }}
+              aria-label="Voice input"
+            >
+              <Mic className="size-4" />
+            </button>
+            {isStreaming ? (
+              <button
+                type="button"
+                onClick={handleStopStreaming}
+                className="flex size-[34px] items-center justify-center rounded-full"
+                style={{ background: "#182537", color: "#ffffff" }}
+                aria-label="Stop generating"
+              >
+                <div className="size-3.5 rounded-sm bg-white" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { if (query.trim()) sendMessage(query); }}
+                disabled={!query.trim()}
+                className="flex size-[34px] items-center justify-center rounded-full transition-opacity disabled:opacity-40"
+                style={{ background: "#182537", color: "#ffffff" }}
+                aria-label="Send message"
+              >
+                <ArrowUp className="size-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (!isLoaded) {
+    return <AIHomePageSkeleton />;
+  }
+
   return (
     <div
-      className="flex overflow-hidden relative"
-      style={{ height: 'calc(100dvh - 4rem)' }}
+      className="min-h-dvh w-full overflow-x-hidden flex flex-col"
+      style={{ background: "#f9fafc" }}
     >
-      {/* Mobile overlay backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-[15] bg-black/15 backdrop-blur-[2px] motion-safe:transition-opacity motion-safe:duration-200 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+      <style>{`@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
+      {/* Chat History Drawer */}
+      <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+        <SheetTrigger
+          render={
+            <button
+              className="absolute top-[22px] left-[22px] z-40 flex size-9 items-center justify-center rounded-xl text-[#5a6a7a] hover:bg-black/5 transition-colors"
+              aria-label="Open chat history"
+            >
+              <History className="size-[18px]" />
+            </button>
+          }
         />
-      )}
-
-      {/* Chat History Sidebar */}
-      <div
-        className={cn(
-          "border-r border-border/30 overflow-hidden transition-[width] motion-safe:duration-300 motion-safe:ease-in-out fixed top-0 left-0 z-20",
-          sidebarOpen ? "w-64" : "w-0"
-        )}
-        style={{ height: 'calc(100dvh - 4rem)' }}
-        aria-hidden={!sidebarOpen}
-      >
-        <div className="w-64 h-full">
+        <SheetContent side="left" className="w-[300px] p-0" showCloseButton={false}>
           <ChatHistorySidebar
             currentChatId={currentChatId}
             onChatSelect={handleChatSelect}
             onNewChat={handleNewChat}
             refreshTrigger={refreshTrigger}
           />
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
 
-      {/* Main Content */}
-      <div className={cn("relative flex flex-1 flex-col min-w-0", sidebarOpen ? "pl-64" : "pl-0")}>
-        <div className={cn("fixed top-0 z-30", sidebarOpen ? "left-64" : "left-0")}>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="size-8 min-h-[44px] text-muted-foreground hover:text-foreground"
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+      {!hasStarted ? (
+        /* ── Empty State ── */
+        <div className="flex-1 flex flex-col items-center justify-center px-4 gap-6">
+          <div
+            className="relative"
+            style={{ width: "140px", height: "140px", animation: "float 3s ease-in-out infinite" }}
           >
-            <SidebarToggleIcon className="size-4" sidebarOpen={sidebarOpen} />
-          </Button>
-        </div>
+            {/* Outer glow */}
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: "140px",
+                height: "140px",
+                background: "radial-gradient(circle at 50% 50%, rgba(88,170,224,0.15) 0%, transparent 70%)",
+                filter: "blur(20px)",
+              }}
+            />
+            {/* Body */}
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: "100px",
+                height: "100px",
+                top: "20px",
+                left: "20px",
+                filter: "blur(6px)",
+                background: `
+                  radial-gradient(circle at 35% 30%, rgba(120,200,255,0.95) 0%, rgba(58,150,210,0.5) 40%, transparent 65%),
+                  radial-gradient(circle at 70% 60%, rgba(100,150,230,0.75) 0%, rgba(58,139,191,0.25) 45%, transparent 65%)
+                `,
+              }}
+            />
+            {/* Core */}
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: "48px",
+                height: "48px",
+                top: "46px",
+                left: "46px",
+                background: "radial-gradient(circle, rgba(180,230,255,0.85) 0%, rgba(120,200,240,0.3) 50%, transparent 70%)",
+                filter: "blur(2px)",
+              }}
+            />
+            {/* Specular highlight */}
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: "18px",
+                height: "18px",
+                top: "38px",
+                left: "42px",
+                background: "radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 70%)",
+                filter: "blur(1px)",
+              }}
+            />
+          </div>
 
-        {/* Content */}
-        <div
-          ref={messageContainerRef}
-          className="flex-1 overflow-y-auto min-h-0"
-          role="log"
-          aria-live="polite"
-          aria-label="Chat messages"
-          tabIndex={-1}
-        >
-          {!hasStarted ? (
-            // ── Welcome State ──
-            <div className="flex min-h-full flex-col items-center justify-center px-6 py-24">
-              <div className="text-center max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-700 fill-mode-both">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-[1.05] text-balance">
-                  {getGreeting()}, {user?.firstName ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1) : "there"}
-                </h1>
-                <p className="text-base sm:text-lg font-medium text-muted-foreground mt-3 leading-snug">
-                  What can I help you find today?
-                </p>
-              </div>
-            </div>
-          ) : (
-            // ── Conversation ──
-            <div className="mx-auto w-full max-w-[720px] space-y-5 px-4 py-8">
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "group/message motion-safe:transition-all motion-safe:duration-500",
-                    i >= messages.length - 2 ? `card-enter card-enter-${messages.length - i}` : "opacity-100",
-                  )}
-                >
-                  {msg.role === "user" ? (
-                    <Message align="end">
-                      <MessageContent>
-                        <Bubble variant="default" align="end">
-                          <BubbleContent className="bg-health text-white">
-                            <div className="flex items-start gap-2">
-                              <span className="flex-1">{msg.content}</span>
-                            </div>
-                          </BubbleContent>
-                        </Bubble>
-                        {msg.timestamp && (
-                          <MessageFooter>
-                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                              <RiTimeLine className="size-2.5" />
+          <p
+            className="text-center"
+            style={{
+              fontSize: "24px",
+              lineHeight: "1.4",
+              fontWeight: 450,
+              letterSpacing: "-0.02em",
+              color: "#202936",
+            }}
+          >
+            {getGreeting()}{user?.firstName ? `, ${user.firstName}` : ""}
+          </p>
+
+          <p
+            className="text-center text-sm max-w-[460px]"
+            style={{ color: "#526273" }}
+          >
+            Ask CareBridge to find facilities, review placements, compare care options, and surface the information you need.
+          </p>
+
+          {composer}
+        </div>
+      ) : (
+        /* ── Active Conversation ── */
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div ref={messageContainerRef} className="max-w-[640px] mx-auto px-5 pt-5 space-y-4">
+            {messages.map((msg, i) => (
+              <div key={i} className="group/message">
+                {msg.role === "user" ? (
+                  <div className="flex justify-end">
+                    <div
+                      className="rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%]"
+                      style={{
+                        background: "#f0f4f8",
+                        color: "#202936",
+                      }}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2.5">
+                    <div
+                      className="flex size-7 shrink-0 items-center justify-center rounded-lg"
+                      style={{ background: "#eef3f8" }}
+                    >
+                      <span
+                        className="text-[11px] font-semibold"
+                        style={{ color: "#5a7b9b" }}
+                      >
+                        AI
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm leading-relaxed" style={{ color: "#202936" }}>
+                        {msg.content ? (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[
+                              [rehypeSanitize, {
+                                ...defaultSchema,
+                                attributes: {
+                                  ...defaultSchema.attributes,
+                                  "*:all": ["className"],
+                                  code: ["className"],
+                                  span: ["className", "style"],
+                                },
+                              }],
+                              rehypeHighlight,
+                            ]}
+                            components={markdownComponents}
+                          >
+                            {msg.isStreaming ? sanitizeStreamingMarkdown(msg.content) : msg.content}
+                          </ReactMarkdown>
+                        ) : msg.isStreaming ? null : (
+                          <span className="italic" style={{ color: "#9ca5b2" }}>
+                            Thinking...
+                          </span>
+                        )}
+                      </div>
+
+                      {msg.facilities && msg.facilities.length > 0 && (
+                        <ErrorBoundary>
+                          <div className="grid gap-2 mt-2 sm:grid-cols-2">
+                            {msg.facilities.map((facility) => (
+                              <FacilityResultCard key={facility.id} facility={facility} />
+                            ))}
+                          </div>
+                        </ErrorBoundary>
+                      )}
+
+                      {msg.placementDraft && !msg.isStreaming && (
+                        <ErrorBoundary>
+                          <PlacementConfirmationCard
+                            draft={msg.placementDraft}
+                            onConfirmed={handlePlacementConfirmed}
+                            onDismiss={() => handleDismissPlacement(i)}
+                          />
+                        </ErrorBoundary>
+                      )}
+
+                      {msg.isStreaming && (
+                        <div className="mt-1">
+                          <TypingIndicator />
+                        </div>
+                      )}
+
+                      {!msg.isStreaming && msg.isError && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const prevUserMsg = messages
+                                .slice(0, i)
+                                .reverse()
+                                .find((m) => m.role === "user");
+                              if (prevUserMsg) handleRetry(prevUserMsg.content);
+                            }}
+                            className="gap-1.5 text-xs"
+                            aria-label="Retry sending message"
+                          >
+                            <RiArrowGoBackLine className="size-3.5" />
+                            Retry
+                          </Button>
+                        </div>
+                      )}
+
+                      {!msg.isStreaming && !msg.isError && msg.suggestions && msg.suggestions.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {msg.suggestions.map((suggestion, si) => (
+                            <button
+                              key={si}
+                              type="button"
+                              onClick={() => handleFollowUpClick(suggestion)}
+                              className="text-xs px-3 rounded-full border border-[#e0ebf4] bg-white text-[#5a6a7a] hover:bg-[#f0f6fb] hover:text-[#202936] transition-colors"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {!msg.isStreaming && msg.content && (
+                        <div className="flex items-center gap-2 mt-1 opacity-0 group-hover/message:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => copyMessage(msg.content, i)}
+                            className="flex items-center gap-1 text-[11px] text-[#9ca5b2] hover:text-[#202936] transition-colors"
+                            aria-label={copiedMessageIndex === i ? "Copied" : "Copy message"}
+                          >
+                            {copiedMessageIndex === i ? (
+                              <RiCheckLine className="size-3" />
+                            ) : (
+                              <RiFileCopyLine className="size-3" />
+                            )}
+                          </button>
+                          {msg.timestamp && (
+                            <span className="text-[11px]" style={{ color: "#9ca5b2" }}>
                               {formatTime(msg.timestamp)}
                             </span>
-                          </MessageFooter>
-                        )}
-                      </MessageContent>
-                    </Message>
-                  ) : (
-                    <Message align="start">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-health"
-                          aria-hidden="true"
-                        >
-                          <RiSparkling2Line className="size-4 text-white" />
+                          )}
                         </div>
-                        <MessageContent>
-                          <div className="flex items-center gap-2 mb-1 px-1">
-                            <span className="text-xs font-semibold text-foreground">CareBridge AI</span>
-                          </div>
-                          <Bubble
-                            variant={msg.isError ? "destructive" : "outline"}
-                            align="start"
-                          >
-                            <BubbleContent>
-                              {msg.content ? (
-                                <ReactMarkdown
-                                  remarkPlugins={[remarkGfm]}
-                                  rehypePlugins={[
-                                    [rehypeSanitize, {
-                                      ...defaultSchema,
-                                      attributes: {
-                                        ...defaultSchema.attributes,
-                                        "*:all": ["className"],
-                                        code: ["className"],
-                                        span: ["className", "style"],
-                                      },
-                                    }],
-                                    rehypeHighlight,
-                                  ]}
-                                  components={markdownComponents}
-                                >
-                                  {msg.isStreaming ? sanitizeStreamingMarkdown(msg.content) : msg.content}
-                                </ReactMarkdown>
-                              ) : msg.isStreaming ? null : (
-                                <span className="text-muted-foreground italic">
-                                  Thinking...
-                                </span>
-                              )}
-                            </BubbleContent>
-                          </Bubble>
-                          {msg.facilities && msg.facilities.length > 0 && (
-                            <ErrorBoundary>
-                              <div className="grid gap-2 px-0.5 mt-2 sm:grid-cols-2">
-                                {msg.facilities.map((facility) => (
-                                  <FacilityResultCard
-                                    key={facility.id}
-                                    facility={facility}
-                                  />
-                                ))}
-                              </div>
-                            </ErrorBoundary>
-                          )}
-                          {msg.placementDraft && !msg.isStreaming && (
-                            <ErrorBoundary>
-                              <PlacementConfirmationCard
-                                draft={msg.placementDraft}
-                                onConfirmed={handlePlacementConfirmed}
-                                onDismiss={() => handleDismissPlacement(i)}
-                              />
-                            </ErrorBoundary>
-                          )}
-                          {msg.isStreaming && (
-                            <div className="mt-1.5">
-                              <TypingIndicator />
-                            </div>
-                          )}
-                          {!msg.isStreaming && msg.isError && (
-                            <div className="flex items-center gap-2 mt-2 px-0.5">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const prevUserMsg = messages
-                                    .slice(0, i)
-                                    .reverse()
-                                    .find((m) => m.role === "user");
-                                  if (prevUserMsg) handleRetry(prevUserMsg.content);
-                                }}
-                                  className="gap-1.5 text-xs min-h-[44px]"
-                                  aria-label="Retry sending message"
-                              >
-                                <RiArrowGoBackLine className="size-3.5" />
-                                Retry
-                              </Button>
-                            </div>
-                          )}
-                          {!msg.isStreaming &&
-                            !msg.isError &&
-                            msg.suggestions &&
-                            msg.suggestions.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 px-0.5 mt-2">
-                                {msg.suggestions.map((suggestion, si) => (
-                                  <button
-                                    key={si}
-                                    type="button"
-                                    onClick={() =>
-                                      handleFollowUpClick(suggestion)
-                                    }
-                                    className="text-xs px-3 min-h-[44px] rounded-full border border-border/50 bg-muted/30 text-muted-foreground hover:bg-health/10 hover:text-foreground hover:border-health/30 active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          {/* Message actions row */}
-                          {!msg.isStreaming && msg.content && (
-                            <div className="flex items-center gap-1 mt-1.5 px-0.5">
-                              <div className="opacity-0 group-hover/message:opacity-100 motion-safe:transition-opacity motion-safe:duration-200">
-                                <button
-                                  type="button"
-                                  onClick={() => copyMessage(msg.content, i)}
-                                  className="flex items-center gap-1 rounded-md px-1.5 min-h-[44px] text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/50 motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                  aria-label={copiedMessageIndex === i ? "Copied" : "Copy message"}
-                                >
-                                  {copiedMessageIndex === i ? (
-                                    <>
-                                      <RiCheckLine className="size-3" />
-                                      Copied
-                                    </>
-                                  ) : (
-                                    <>
-                                      <RiFileCopyLine className="size-3" />
-                                      Copy
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                              {msg.timestamp && (
-                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                  <RiTimeLine className="size-2.5" />
-                                  {formatTime(msg.timestamp)}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </MessageContent>
-                      </div>
-                    </Message>
-                  )}
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Input Area */}
-        <div className="relative shrink-0 border-t border-border/20 bg-background px-4 pb-4 pt-3.5 min-h-[7.5rem]">
-
-          <form
-            onSubmit={handleSubmit}
-            className="mx-auto w-full max-w-[720px]"
-          >
-            <div
-              className="group relative rounded-2xl border border-border/40 bg-card shadow-sm motion-safe:transition-all motion-safe:duration-300 hover:border-border/70 hover:shadow-md focus-within:border-primary/40 focus-within:shadow-md"
-            >
-              <div className="flex items-start p-4 pb-0">
-                <textarea
-                  ref={textareaRef}
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setCharacterCount(e.target.value.length);
-                  }}
-                  placeholder="Ask AI a question or make a request..."
-                  rows={1}
-                  aria-label="Message input"
-                  className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground pt-0.5 leading-relaxed max-h-40 focus-visible:ring-0"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
-                <div className="flex items-center gap-1.5">
-                  {isStreaming ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleStopStreaming}
-                      className="gap-1.5 text-xs min-h-[44px] text-destructive border-destructive/30 hover:bg-destructive/10 active:scale-95"
-                      aria-label="Stop generating response"
-                    >
-                      <RiStopCircleLine className="size-4" />
-                      Stop
-                    </Button>
-                  ) : null}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {!query && !isStreaming && (
-                    <span className="text-[10px] text-muted-foreground/30 hidden sm:inline" aria-hidden="true">
-                      Enter to send · Shift+Enter for new line
-                    </span>
-                  )}
-                  {characterCount > 0 && !isStreaming && (
-                    <span
-                      className={cn(
-                        "text-[10px] tabular-nums",
-                        characterCount > 4000
-                          ? "text-destructive"
-                          : "text-muted-foreground/40"
                       )}
-                      aria-label={`${characterCount} characters`}
-                    >
-                      {characterCount}
-                    </span>
-                  )}
-                  <Button
-                    type="submit"
-                    size="icon"
-                    disabled={!query.trim() || isStreaming}
-                    aria-label={query.trim() ? "Send message" : "Type a message to send"}
-                    className={cn(
-                      "size-9 min-h-[44px] min-w-[44px] rounded-full motion-safe:transition-all motion-safe:duration-300",
-                      query.trim() && !isStreaming
-                        ? "bg-health text-white hover:bg-health/90 active:scale-95"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    <RiSendPlaneFill className="size-4" />
-                  </Button>
-                </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </form>
-
-          {/* Suggestion Items */}
-          {!hasStarted && (
-            <div className="mx-auto w-full max-w-[720px] mt-4 flex flex-wrap gap-2">
-              {suggestions.map((suggestion) => {
-                const Icon = suggestion.icon;
-                return (
-                  <button
-                    key={suggestion.label}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion.label)}
-                    className="flex flex-1 items-center gap-3 rounded-xl border border-border/40 bg-card px-4 py-3 text-left text-sm text-muted-foreground hover:bg-accent hover:border-border/60 hover:text-foreground active:scale-[0.98] motion-safe:transition-all motion-safe:duration-200 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                  >
-                    <Icon className="size-4 shrink-0 text-muted-foreground" />
-                    <span>{suggestion.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
-      </div>
+      )}
+
+      {hasStarted && (
+        <div className="flex justify-center px-4 pb-6 pt-4">
+          {composer}
+        </div>
+      )}
     </div>
   );
 }
