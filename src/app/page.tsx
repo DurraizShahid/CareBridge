@@ -28,7 +28,7 @@ import {
   NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { Ripple } from "@/components/ui/ripple";
-import Lightfall from "@/components/ui/lightfall";
+import Silk from "@/components/ui/silk";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { CareLevelCombobox } from "@/components/care-level-combobox";
 import { LandingPageLoader } from "@/components/landing-page-loader";
@@ -46,26 +46,16 @@ export default function Page() {
     <LandingPageLoader>
       <div className="flex flex-col flex-1">
         <main className="flex-1">
-          {/* Hero Section - Full screen with Lightfall animation */}
+          {/* Hero Section - Full screen with Silk animation */}
           <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
-          {/* Lightfall animation background */}
+          {/* Silk animation background */}
           <div className="absolute inset-0 z-0">
-            <Lightfall
-              colors={["#A6C8FF", "#44BEAF", "#134675", "#5227FF"]}
-              backgroundColor="#0a1628"
-              speed={0.4}
-              streakCount={4}
-              streakWidth={1}
-              streakLength={1.2}
-              glow={0.6}
-              density={0.4}
-              twinkle={0.5}
-              zoom={3}
-              backgroundGlow={0.3}
-              opacity={0.5}
-              mouseInteraction={true}
-              mouseStrength={0.3}
-              mouseRadius={0.8}
+            <Silk
+              speed={12}
+              scale={1.2}
+              color="#134675"
+              noiseIntensity={1.5}
+              rotation={0}
             />
           </div>
           {/* Stronger gradient overlay for text readability */}
@@ -152,42 +142,38 @@ export default function Page() {
                     </ShimmerButton>
                   </a>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Search Bar - Bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
-            <div className="mx-auto max-w-7xl">
-              <div className="rounded-2xl border border-white/15 bg-white/[0.1] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-6">
-                <div className="flex flex-col items-center gap-4 sm:flex-row">
-                  {/* Location input */}
-                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
-                    <MapPin className="h-5 w-5 shrink-0 text-white/70" />
-                    <input
-                      type="text"
-                      placeholder="City, state, or ZIP code"
-                      className="w-full bg-transparent text-sm text-white placeholder-white/50 outline-none"
+                {/* Search Bar */}
+                <div className="mt-8 rounded-2xl border border-white/15 bg-white/[0.1] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-6">
+                  <div className="flex flex-col items-center gap-4 sm:flex-row">
+                    {/* Location input */}
+                    <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
+                      <MapPin className="h-5 w-5 shrink-0 text-white/70" />
+                      <input
+                        type="text"
+                        placeholder="City, state, or ZIP code"
+                        className="w-full bg-transparent text-sm text-white placeholder-white/50 outline-none"
+                        suppressHydrationWarning
+                      />
+                    </div>
+
+                    {/* Care level select */}
+                    <CareLevelCombobox />
+
+                    {/* Search button */}
+                    <ShimmerButton
+                      shimmerColor="#ffffff"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(68, 190, 175, 1)"
+                      className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
                       suppressHydrationWarning
-                    />
+                    >
+                      <Search className="h-4 w-4" />
+                      <span>Find Facilities</span>
+                    </ShimmerButton>
                   </div>
-
-                  {/* Care level select */}
-                  <CareLevelCombobox />
-
-                  {/* Search button */}
-                  <ShimmerButton
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="100px"
-                    background="rgba(68, 190, 175, 1)"
-                    className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
-                    suppressHydrationWarning
-                  >
-                    <Search className="h-4 w-4" />
-                    <span>Find Facilities</span>
-                  </ShimmerButton>
                 </div>
               </div>
             </div>
