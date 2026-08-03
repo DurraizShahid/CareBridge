@@ -28,7 +28,7 @@ import {
   NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { Ripple } from "@/components/ui/ripple";
-import Lightfall from "@/components/ui/lightfall";
+import Silk from "@/components/ui/silk";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { CareLevelCombobox } from "@/components/care-level-combobox";
 import { LandingPageLoader } from "@/components/landing-page-loader";
@@ -46,26 +46,16 @@ export default function Page() {
     <LandingPageLoader>
       <div className="flex flex-col flex-1">
         <main className="flex-1">
-          {/* Hero Section - Full screen with Lightfall animation */}
+          {/* Hero Section - Full screen with Silk animation */}
           <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
-          {/* Lightfall animation background */}
+          {/* Silk animation background */}
           <div className="absolute inset-0 z-0">
-            <Lightfall
-              colors={["#A6C8FF", "#44BEAF", "#134675", "#5227FF"]}
-              backgroundColor="#0a1628"
-              speed={0.4}
-              streakCount={4}
-              streakWidth={1}
-              streakLength={1.2}
-              glow={0.6}
-              density={0.4}
-              twinkle={0.5}
-              zoom={3}
-              backgroundGlow={0.3}
-              opacity={0.5}
-              mouseInteraction={true}
-              mouseStrength={0.3}
-              mouseRadius={0.8}
+            <Silk
+              speed={12}
+              scale={1.2}
+              color="#134675"
+              noiseIntensity={1.5}
+              rotation={0}
             />
           </div>
           {/* Stronger gradient overlay for text readability */}
