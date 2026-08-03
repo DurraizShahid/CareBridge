@@ -31,6 +31,7 @@ import { Ripple } from "@/components/ui/ripple";
 import Lightfall from "@/components/ui/lightfall";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { CareLevelCombobox } from "@/components/care-level-combobox";
+import { LandingPageLoader } from "@/components/landing-page-loader";
 import Link from "next/link";
 
 const stats = [
@@ -42,10 +43,11 @@ const stats = [
 
 export default function Page() {
   return (
-    <div className="flex flex-col flex-1">
-      <main className="flex-1">
-        {/* Hero Section - Full screen with Lightfall animation */}
-        <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
+    <LandingPageLoader>
+      <div className="flex flex-col flex-1">
+        <main className="flex-1">
+          {/* Hero Section - Full screen with Lightfall animation */}
+          <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
           {/* Lightfall animation background */}
           <div className="absolute inset-0 z-0">
             <Lightfall
@@ -642,5 +644,6 @@ export default function Page() {
 
       <Footer />
     </div>
+    </LandingPageLoader>
   );
 }
