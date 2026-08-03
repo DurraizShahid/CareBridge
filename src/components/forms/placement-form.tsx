@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -438,9 +439,17 @@ export function PlacementForm({ initialData, placementId, patients, facilities, 
       <Separator />
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={saving}>
+        <ShimmerButton
+          type="submit"
+          disabled={saving}
+          shimmerColor="#ffffff"
+          shimmerSize="0.05em"
+          shimmerDuration="3s"
+          borderRadius="12px"
+          background="rgba(68, 190, 175, 1)"
+        >
           {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Placement"}
-        </Button>
+        </ShimmerButton>
         <Button
           type="button"
           variant="outline"

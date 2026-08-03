@@ -111,8 +111,8 @@ function EventDetailPanel({ appointment, onClose }: { appointment: Appointment; 
   return (
         <div
           className="absolute inset-0 z-20 flex flex-col overflow-hidden rounded-xl bg-card"
-          style={{ animation: "slide-in-bottom 0.25s cubic-bezier(0.16,1,0.3,1) forwards" }}
-    >
+          style={{ animation: "slide-in-bottom 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
+        >
       <div className="flex items-center justify-between px-6 py-5 shrink-0" style={{ borderBottom: "1px solid rgba(204,215,211,0.4)" }}>
         <div className="flex items-center gap-3 min-w-0">
           <span className="size-3 rounded-full shrink-0" style={{ backgroundColor: colors.dot }} />
@@ -126,7 +126,7 @@ function EventDetailPanel({ appointment, onClose }: { appointment: Appointment; 
         <button
           onClick={onClose}
           aria-label="Close detail panel"
-          className="flex items-center justify-center rounded-full shrink-0 transition-all duration-150 hover:scale-110 hover:rotate-90 active:scale-90"
+          className="flex items-center justify-center rounded-full shrink-0 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-110 hover:rotate-90 active:scale-90"
           style={{ width: "32px", height: "32px", backgroundColor: "rgba(204,215,211,0.3)" }}
         >
           <X className="size-4" style={{ color: DARK_TEXT }} />
@@ -169,11 +169,11 @@ function EventDetailPanel({ appointment, onClose }: { appointment: Appointment; 
       </div>
 
       <div className="flex items-center gap-2 px-6 py-4 shrink-0" style={{ borderTop: "1px solid rgba(204,215,211,0.4)" }}>
-        <button className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-medium transition-all duration-150 hover:shadow-md hover:scale-[1.01] active:scale-[0.99]" style={{ backgroundColor: TEAL, color: "#FFFFFF", boxShadow: "0 2px 8px rgba(39,121,121,0.2)" }}>
+        <button className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-medium transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-md hover:scale-[1.02] active:scale-[0.98]" style={{ backgroundColor: TEAL, color: "#FFFFFF", boxShadow: "0 2px 8px rgba(39,121,121,0.2)" }}>
           <CalendarDays className="size-3.5" />
           Open in Calendar
         </button>
-        <button className="flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-150 hover:bg-[rgba(204,215,211,0.35)] active:scale-[0.98]" style={{ backgroundColor: "rgba(204,215,211,0.2)", color: TEAL }}>
+        <button className="flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-[rgba(204,215,211,0.35)] active:scale-[0.98]" style={{ backgroundColor: "rgba(204,215,211,0.2)", color: TEAL }}>
           <Plus className="size-3.5" />
           Add note
         </button>
@@ -203,13 +203,13 @@ function MeetingCard({
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
       <div
         className={cn(
-          "rounded-2xl overflow-hidden transition-all duration-300 group/card cursor-pointer",
+          "rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group/card cursor-pointer",
           isActive ? "shadow-lg" : "shadow-sm hover:shadow-md",
         )}
         style={{
           backgroundColor: isActive ? TEAL : "#FFFFFF",
           boxShadow: isActive ? "0 4px 20px rgba(39,121,121,0.25)" : "0 2px 12px rgba(39,121,121,0.08)",
-          animation: `card-enter 0.35s cubic-bezier(0.16,1,0.3,1) ${index * 50}ms forwards`,
+          animation: `card-enter 0.4s cubic-bezier(0.34,1.56,0.64,1) ${index * 60}ms forwards`,
           opacity: 0,
         }}
       >
@@ -224,7 +224,7 @@ function MeetingCard({
           />
         )}
         <CollapsibleTrigger className="w-full text-left" aria-label={isExpanded ? "Collapse" : "Expand"}>
-          <div className="px-4 py-3 transition-all duration-200 group-hover/card:brightness-[0.97] group-active/card:scale-[0.98]">
+          <div className="px-4 py-3 transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/card:brightness-[0.97] group-active/card:scale-[0.98]">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className={cn("text-[15px] font-medium leading-snug transition-colors duration-200", isActive && "text-white")} style={!isActive ? { color: DARK_TEXT } : undefined}>
@@ -236,7 +236,7 @@ function MeetingCard({
               </div>
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <span
-                  className="size-2.5 rounded-full shrink-0 transition-all duration-300 group-hover/card:scale-150 group-hover/card:shadow-[0_0_8px_rgba(39,121,121,0.5)]"
+                  className="size-2.5 rounded-full shrink-0 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/card:scale-150 group-hover/card:shadow-[0_0_8px_rgba(39,121,121,0.5)]"
                   style={{ backgroundColor: isActive ? "rgba(255,255,255,0.6)" : TEAL }}
                 />
                 <ChevronDownIcon
@@ -263,7 +263,7 @@ function MeetingCard({
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); onOpenDetail(); }}
-              className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:gap-3 hover:shadow-md hover:scale-[1.02] active:scale-[0.97]"
+              className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:gap-3 hover:shadow-md hover:scale-[1.03] active:scale-[0.97]"
               style={{ backgroundColor: isActive ? "rgba(255,255,255,0.15)" : "rgba(39,121,121,0.08)", color: isActive ? "#FFFFFF" : TEAL }}
             >
               View details
@@ -396,15 +396,15 @@ function TimelineLine({
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSlotClick(hour); } }}
           >
             <div
-              className="relative flex items-center justify-center rounded-full text-xs font-medium transition-all duration-200"
+              className="relative flex items-center justify-center rounded-full text-xs font-medium transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{
                 width: `${PILL_W}px`,
                 height: `${PILL_H}px`,
                 backgroundColor: isActive ? TEAL : "#CCD7D3",
                 border: isActive ? "none" : isHovered ? `1.5px solid ${TEAL}` : `1.5px solid rgba(39,121,121,0.45)`,
                 color: isActive ? "#FFFFFF" : isHovered ? TEAL : DARK_TEXT,
-                boxShadow: isActive ? "0 2px 8px rgba(39,121,121,0.18)" : isHovered ? "0 2px 8px rgba(39,121,121,0.08)" : undefined,
-                transform: isHovered ? "scale(1.08)" : "scale(1)",
+                boxShadow: isActive ? "0 2px 8px rgba(39,121,121,0.18)" : isHovered ? "0 4px 12px rgba(39,121,121,0.15)" : undefined,
+                transform: isHovered ? "scale(1.1)" : "scale(1)",
                 zIndex: 10,
               }}
             >
@@ -439,7 +439,7 @@ function TimelineScrollButton({ onClick }: { onClick: () => void }) {
       <button
         onClick={onClick}
         aria-label="View later schedule times"
-        className="flex items-center justify-center rounded-full shadow-sm transition-all duration-200 hover:scale-110 hover:shadow-md active:scale-90"
+        className="flex items-center justify-center rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-115 hover:shadow-md active:scale-90"
         style={{ width: "36px", height: "36px", backgroundColor: TEAL }}
       >
         <ChevronDownIcon className="size-4 text-white" />
@@ -596,10 +596,10 @@ export function AppointmentsCard() {
   if (hasError) return <FacilityCalendarErrorState onRetry={() => setHasError(false)} />;
 
   return (
-    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
-      <CardContent className="p-0 flex flex-col h-full">
+    <Card className="flex h-full min-h-0 flex-col">
+      <CardContent className="p-0 flex flex-col h-full overflow-hidden rounded-[28px]">
         {/* Header */}
-        <div className="shrink-0 p-5 pb-4">
+        <div className="shrink-0 px-5 pt-5 pb-2">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold tracking-tight text-[#1e1d24]">
             Schedule
@@ -621,16 +621,16 @@ export function AppointmentsCard() {
             id="schedule-date-strip"
             role="tablist"
             aria-label="Facility calendar dates"
-            className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-2"
+            className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-3 pt-1"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
             onKeyDown={handleKeyDown}
           >
             <style>{`
               #schedule-date-strip::-webkit-scrollbar,
               #appointments-card-body::-webkit-scrollbar { display: none; }
-              @keyframes slide-in-bottom { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+              @keyframes slide-in-bottom { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
               @keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 4px rgba(39,121,121,0.2); } 50% { box-shadow: 0 0 0 8px rgba(39,121,121,0.08); } }
-              @keyframes card-enter { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+              @keyframes card-enter { from { transform: translateY(12px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
               @keyframes dot-pulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.5); opacity: 0.6; } }
               @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
             `}</style>
@@ -644,11 +644,11 @@ export function AppointmentsCard() {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => handleDateSelect(date)}
-                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-2xl hover:bg-[#f3f1f8] hover:scale-105 active:scale-95 group/date"
+                  className="shrink-0 flex flex-col items-center gap-1 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] focus-visible:outline-2 focus-visible:outline-offset-2 px-3 py-2 rounded-2xl hover:bg-[#f3f1f8] hover:scale-110 active:scale-95 group/date"
                   style={{
                     minWidth: "52px",
                     backgroundColor: isSelected ? "#15141b" : "transparent",
-                    transform: isSelected ? "scale(1.05)" : "scale(1)",
+                    transform: isSelected ? "scale(1.08)" : "scale(1)",
                   }}
                 >
                   <span className="text-[13px] font-medium leading-none transition-all duration-200" style={{ color: isSelected ? "#ffffff" : "#8d8a98" }}>
@@ -658,7 +658,7 @@ export function AppointmentsCard() {
                     {format(date, "d")}
                   </span>
                   {isTodayDate && !isSelected && (
-                    <span className="size-1.5 rounded-full -mt-1 transition-all duration-200 group-hover/date:scale-150" style={{ backgroundColor: "#15141b", animation: "dot-pulse 2s ease-in-out infinite" }} />
+                    <span className="size-1.5 rounded-full transition-all duration-200 group-hover/date:scale-150" style={{ backgroundColor: "#15141b", animation: "dot-pulse 2s ease-in-out infinite" }} />
                   )}
                 </button>
               );
@@ -667,7 +667,7 @@ export function AppointmentsCard() {
           {!isToday(selectedDay) && (
             <button
               onClick={() => handleDateSelect(today)}
-              className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] dash-pill dash-pill-active"
+              className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-110 active:scale-95 dash-pill dash-pill-active"
             >
               Today
             </button>
@@ -679,7 +679,7 @@ export function AppointmentsCard() {
       <div
         id="appointments-card-body"
         ref={scheduleBodyRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-4"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-2 pb-4"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
       >
         {selectedDayAppointments.length === 0 ? (

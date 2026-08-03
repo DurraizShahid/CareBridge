@@ -20,7 +20,19 @@ import {
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { AuthControls } from "@/components/auth-controls";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
+import { Ripple } from "@/components/ui/ripple";
+import Lightfall from "@/components/ui/lightfall";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { CareLevelCombobox } from "@/components/care-level-combobox";
+import { LandingPageLoader } from "@/components/landing-page-loader";
+import Link from "next/link";
 
 const stats = [
   { value: "85%", label: "Faster placement decisions" },
@@ -29,59 +41,115 @@ const stats = [
   { value: "1,200+", label: "Facilities onboarded" },
 ];
 
-const customerLogos = [
-  "Mount Sinai Health",
-  "Cleveland Clinic",
-  " Mayo Clinic",
-  "Johns Hopkins",
-  "Mass General",
-  "Cedars-Sinai",
-];
-
 export default function Page() {
   return (
-    <div className="flex flex-col flex-1">
-      <main className="flex-1">
-        {/* Hero Section - Full screen with background image */}
-        <section className="relative h-screen min-h-[600px] overflow-hidden">
-          {/* Background image */}
-          <Image
-            src="/Images/hero.png"
-            alt=""
-            fill
-            priority
-            className="object-cover"
-          />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#134675]/90 via-[#134675]/40 to-transparent" />
+    <LandingPageLoader>
+      <div className="flex flex-col flex-1">
+        <main className="flex-1">
+          {/* Hero Section - Full screen with Lightfall animation */}
+          <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
+          {/* Lightfall animation background */}
+          <div className="absolute inset-0 z-0">
+            <Lightfall
+              colors={["#A6C8FF", "#44BEAF", "#134675", "#5227FF"]}
+              backgroundColor="#0a1628"
+              speed={0.4}
+              streakCount={4}
+              streakWidth={1}
+              streakLength={1.2}
+              glow={0.6}
+              density={0.4}
+              twinkle={0.5}
+              zoom={3}
+              backgroundGlow={0.3}
+              opacity={0.5}
+              mouseInteraction={true}
+              mouseStrength={0.3}
+              mouseRadius={0.8}
+            />
+          </div>
+          {/* Stronger gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-[#0a1628]/50 to-[#0a1628]/30 z-[1]" />
 
           {/* Navbar */}
-          <Navbar />
+          <nav className="absolute inset-x-0 top-0 z-20">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 pt-6 lg:px-8">
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/Images/Logo.png"
+                  alt="CareBridge"
+                  width={200}
+                  height={56}
+                  className="h-14 w-auto"
+                  priority
+                />
+              </Link>
+
+              {/* Navigation */}
+              <NavigationMenu className="hidden lg:flex">
+                <NavigationMenuList className="gap-1">
+                  {[
+                    { label: "Features", href: "#features" },
+                    { label: "About", href: "#about" },
+                    { label: "Resources", href: "#resources" },
+                    { label: "Contact", href: "#contact" },
+                  ].map((item) => (
+                    <NavigationMenuItem key={item.href}>
+                      <NavigationMenuLink
+                        render={<a href={item.href} />}
+                        className="inline-flex h-9 w-max items-center justify-center rounded-3xl px-4 py-2 text-sm font-medium text-white/90 transition-colors duration-200 hover:text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                      >
+                        {item.label}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ))}
+                </NavigationMenuList>
+              </NavigationMenu>
+
+              {/* Auth Controls */}
+              <div className="flex items-center">
+                <AuthControls />
+              </div>
+            </div>
+          </nav>
 
           {/* Content - Left aligned with logo */}
           <div className="absolute inset-0 z-10 flex items-center">
             <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
-              <div className="ml-[70px] max-w-2xl">
-                <h1 className="font-heading text-4xl font-bold tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl xl:text-7xl">
+              <div className="max-w-2xl">
+                <h1 className="font-heading text-4xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] sm:text-5xl lg:text-6xl xl:text-7xl">
                   CareBridge secures{" "}
-                  <span className="text-[#44BEAF]">patient placement</span>
+                  <span className="text-[#44BEAF] drop-shadow-[0_2px_10px_rgba(68,190,175,0.4)]">patient placement</span>
                 </h1>
-                <p className="mt-4 text-lg leading-7 text-white/80 drop-shadow-md sm:text-xl sm:leading-8">
+                <p className="mt-4 text-lg leading-7 text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)] sm:text-xl sm:leading-8">
                   Connecting patients to the right care settings — from skilled
                   nursing to home health — faster, smarter, and with confidence.
                 </p>
                 <div className="mt-8 flex items-center gap-4">
-                  <a
-                    href="/sign-up"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-8 text-sm font-semibold text-[#134675] shadow-lg transition-all hover:bg-white/90 hover:shadow-xl active:translate-y-px"
-                  >
-                    Get started
-                  </a>
-                  <a
-                    href="#contact"
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/40 bg-white/10 px-8 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 active:translate-y-px"
-                  >
-                    Contact sales
+                  <Link href="/sign-up">
+                    <ShimmerButton
+                      shimmerColor="#134675"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(255, 255, 255, 1)"
+                      className="text-[#134675] font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_25px_rgba(0,0,0,0.4)] px-8 py-3 text-base"
+                    >
+                      Get started
+                    </ShimmerButton>
+                  </Link>
+                  <a href="#contact">
+                    <ShimmerButton
+                      shimmerColor="#44BEAF"
+                      shimmerSize="0.05em"
+                      shimmerDuration="3s"
+                      borderRadius="100px"
+                      background="rgba(255, 255, 255, 0.15)"
+                      className="border border-white/40 text-white font-semibold shadow-[0_4px_15px_rgba(0,0,0,0.2)] backdrop-blur-md hover:bg-white/25 px-8 py-3 text-base"
+                    >
+                      Contact sales
+                    </ShimmerButton>
                   </a>
                 </div>
               </div>
@@ -91,69 +159,37 @@ export default function Page() {
           {/* Search Bar - Bottom */}
           <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
             <div className="mx-auto max-w-7xl">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 shadow-xl backdrop-blur-md sm:p-6">
+              <div className="rounded-2xl border border-white/15 bg-white/[0.1] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-6">
                 <div className="flex flex-col items-center gap-4 sm:flex-row">
                   {/* Location input */}
-                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/50 focus-within:ring-2 focus-within:ring-[#44BEAF]/20 sm:flex-1">
-                    <MapPin className="h-5 w-5 shrink-0 text-white/60" />
+                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
+                    <MapPin className="h-5 w-5 shrink-0 text-white/70" />
                     <input
                       type="text"
                       placeholder="City, state, or ZIP code"
-                      className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none"
+                      className="w-full bg-transparent text-sm text-white placeholder-white/50 outline-none"
                       suppressHydrationWarning
                     />
                   </div>
 
                   {/* Care level select */}
-                  <div className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 transition-colors focus-within:border-[#44BEAF]/50 focus-within:ring-2 focus-within:ring-[#44BEAF]/20 sm:flex-1">
-                    <Stethoscope className="h-5 w-5 shrink-0 text-white/60" />
-                    <select
-                      defaultValue=""
-                      className="w-full appearance-none bg-transparent text-sm text-white outline-none [&>option]:bg-[#134675] [&>option]:text-white"
-                      suppressHydrationWarning
-                    >
-                      <option value="" disabled className="text-white/40">
-                        Care level needed
-                      </option>
-                      <option value="skilled-nursing">Skilled Nursing</option>
-                      <option value="rehab">Rehabilitation</option>
-                      <option value="assisted-living">Assisted Living</option>
-                      <option value="home-health">Home Health</option>
-                      <option value="memory-care">Memory Care</option>
-                      <option value="ltc">Long-Term Care</option>
-                    </select>
-                  </div>
+                  <CareLevelCombobox />
 
                   {/* Search button */}
-                  <button
-                    type="button"
-                    className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#44BEAF] px-6 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl active:translate-y-px sm:w-auto"
+                  <ShimmerButton
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="100px"
+                    background="rgba(68, 190, 175, 1)"
+                    className="h-12 w-full shrink-0 items-center justify-center gap-2 px-6 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(68,190,175,0.4)] sm:w-auto"
                     suppressHydrationWarning
                   >
                     <Search className="h-4 w-4" />
                     <span>Find Facilities</span>
-                  </button>
+                  </ShimmerButton>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Trust Bar - Company logos */}
-        <section className="border-y border-gray-200 bg-gray-100 py-12">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <p className="text-center text-base font-semibold text-gray-700">
-              Trusted by leading healthcare organizations
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-8 sm:gap-12 lg:gap-16">
-              {customerLogos.map((logo) => (
-                <span
-                  key={logo}
-                  className="text-base font-semibold text-gray-600 sm:text-lg"
-                >
-                  {logo}
-                </span>
-              ))}
             </div>
           </div>
         </section>
@@ -608,5 +644,6 @@ export default function Page() {
 
       <Footer />
     </div>
+    </LandingPageLoader>
   );
 }

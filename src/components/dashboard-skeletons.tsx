@@ -1055,3 +1055,40 @@ export function DocumentVaultPageSkeleton() {
 
 export const DocumentsPageSkeleton = DocumentVaultPageSkeleton;
 
+export function AppSidebarSkeleton() {
+  return (
+    <div className="flex h-full w-[--sidebar-width] flex-col border-r border-border bg-sidebar px-2 py-3">
+      <div className="px-2 py-2 mb-2">
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="size-8 rounded-lg" />
+          <div className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <Skeleton className="mx-2 h-3.5 w-12 group-data-[collapsible=icon]:hidden" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-xl" />
+          ))}
+        </div>
+        <div className="flex flex-col gap-1">
+          <Skeleton className="mx-2 h-3.5 w-20 group-data-[collapsible=icon]:hidden" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1 mt-auto">
+        {Array.from({ length: 1 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+

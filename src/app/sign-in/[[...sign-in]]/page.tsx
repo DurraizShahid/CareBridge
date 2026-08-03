@@ -6,6 +6,7 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { ShimmerButton } from '@/components/ui/shimmer-button';
 
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
@@ -310,29 +311,16 @@ export default function SignInPage() {
             {/* Step: Email */}
             {step === 'email' && (
               <>
-                <button
+                <ShimmerButton
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={fetchStatus === 'fetching'}
-                  style={{
-                    width: '100%',
-                    height: 42,
-                    borderRadius: 7,
-                    border: '1px solid #dedede',
-                    background: '#ffffff',
-                    color: '#252525',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 10,
-                    cursor: 'pointer',
-                    transition: 'border-color 0.15s',
-                    outline: 'none',
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c8c8c8'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#dedede'; }}
+                  shimmerColor="#c8c8c8"
+                  shimmerSize="0.05em"
+                  shimmerDuration="3s"
+                  borderRadius="7px"
+                  background="rgba(255, 255, 255, 1)"
+                  className="h-[42px] w-full border border-[#dedede] text-[13px] font-medium text-[#252525]"
                 >
                   <svg width="16" height="16" aria-hidden="true" viewBox="0 0 24 24">
                     <path d="M12.545,10.239v3.818h5.145c-0.204,1.125-1.032,2.067-2.398,2.667c-1.366,0.6-2.995,0.468-4.177-0.352c-1.182-0.82-1.831-2.088-1.831-3.365s0.649-2.545,1.831-3.365c1.182-0.82,2.811-0.952,4.177-0.352c0.655,0.288,1.168,0.717,1.557,1.239l2.141-2.141c-0.961-0.902-2.237-1.591-3.698-1.991C14.821,2.181,13.444,1.999,12,2c-5.523,0-10,4.477-10,10s4.477,10,10,10s10-4.477,10-10c0-0.298-0.013-0.591-0.038-0.877L12.545,10.239z" fill="#4285F4"/>
@@ -341,7 +329,7 @@ export default function SignInPage() {
                     <path d="M1.439,6.801C1.159,7.64,1,8.544,1,9.5s0.159,1.86,0.439,2.699l2.541-1.969c-0.178-0.533-0.279-1.087-0.279-1.669s0.101-1.136,0.279-1.669L1.439,6.801z" fill="#FBBC05"/>
                   </svg>
                   Continue with Google
-                </button>
+                </ShimmerButton>
 
                 {/* Divider */}
                 <div style={{
@@ -382,27 +370,15 @@ export default function SignInPage() {
                       {errors.fields.identifier.message}
                     </p>
                   )}
-                  <button
+                  <ShimmerButton
                     type="submit"
                     disabled={fetchStatus === 'fetching'}
-                    style={{
-                      width: '100%',
-                      height: 42,
-                      borderRadius: 7,
-                      background: '#191817',
-                      color: '#ffffff',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      border: 'none',
-                      cursor: 'pointer',
-                      marginTop: 8,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#282625'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#191817'; }}
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="7px"
+                    background="rgba(25, 24, 23, 1)"
+                    className="h-[42px] w-full border-none text-[13px] font-medium text-white mt-2"
                   >
                     {fetchStatus === 'fetching' ? (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -412,7 +388,7 @@ export default function SignInPage() {
                     ) : (
                       'Sign In with Email'
                     )}
-                  </button>
+                  </ShimmerButton>
                 </form>
 
                 <p style={{
@@ -574,26 +550,15 @@ export default function SignInPage() {
                   >
                     <ArrowLeft size={15} color="#252525" />
                   </button>
-                  <button
+                  <ShimmerButton
                     type="submit"
                     disabled={fetchStatus === 'fetching'}
-                    style={{
-                      flex: 1,
-                      height: 42,
-                      borderRadius: 7,
-                      background: '#191817',
-                      color: '#ffffff',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#282625'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#191817'; }}
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="7px"
+                    background="rgba(25, 24, 23, 1)"
+                    className="h-[42px] flex-1 border-none text-[13px] font-medium text-white"
                   >
                     {fetchStatus === 'fetching' ? (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -603,7 +568,7 @@ export default function SignInPage() {
                     ) : (
                       'Sign in'
                     )}
-                  </button>
+                  </ShimmerButton>
                 </div>
               </form>
             )}
@@ -661,26 +626,15 @@ export default function SignInPage() {
                   >
                     <ArrowLeft size={15} color="#252525" />
                   </button>
-                  <button
+                  <ShimmerButton
                     type="submit"
                     disabled={fetchStatus === 'fetching'}
-                    style={{
-                      flex: 1,
-                      height: 42,
-                      borderRadius: 7,
-                      background: '#191817',
-                      color: '#ffffff',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#282625'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#191817'; }}
+                    shimmerColor="#ffffff"
+                    shimmerSize="0.05em"
+                    shimmerDuration="3s"
+                    borderRadius="7px"
+                    background="rgba(25, 24, 23, 1)"
+                    className="h-[42px] flex-1 border-none text-[13px] font-medium text-white"
                   >
                     {fetchStatus === 'fetching' ? (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -690,7 +644,7 @@ export default function SignInPage() {
                     ) : (
                       'Verify'
                     )}
-                  </button>
+                  </ShimmerButton>
                 </div>
               </form>
             )}
