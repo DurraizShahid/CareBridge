@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Building2 } from "lucide-react";
 import type { Facility, FacilityType } from "@/types";
 
 const FACILITY_TYPE_LABELS: Record<FacilityType, string> = {
@@ -21,23 +21,14 @@ function getInterestDots(rating: number): { color: string; filled: boolean }[] {
   }));
 }
 
-const TOTAL_LOGOS = 30;
-
-function getLogoIndex(name: string): number {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
-  }
-  return (Math.abs(hash) % TOTAL_LOGOS) + 1;
-}
-
 export function FacilityCard({ facility }: { facility: Facility }) {
   const dots = getInterestDots(facility.rating);
-  const logoIndex = getLogoIndex(facility.name);
   const clipId = `card-notch-${facility.id}`;
-  const occupancyPercent = facility.capacity > 0
-    ? Math.round((facility.currentOccupancy / facility.capacity) * 100)
-    : 0;
+  const photo =
+    facility.media?.find((m) => m.type === "image")?.thumbnailUrl ??
+    facility.media?.find((m) => m.type === "image")?.url ??
+    facility.media?.[0]?.thumbnailUrl ??
+    facility.media?.[0]?.url;
 
   return (
     <Link href={`/facilities/${facility.id}`}>
@@ -69,13 +60,17 @@ export function FacilityCard({ facility }: { facility: Facility }) {
             <div className="mb-5">
               <div className="relative inline-block">
                 <div className="size-14 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center ring-2 ring-zinc-200 dark:ring-zinc-600">
-                  <Image
-                    src={`/logos/Facilities/${logoIndex}.png`}
-                    alt={facility.name}
-                    width={56}
-                    height={56}
-                    className="size-full object-cover"
-                  />
+                  {photo ? (
+                    <Image
+                      src={photo}
+                      alt={facility.name}
+                      width={56}
+                      height={56}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="size-6 text-zinc-400 dark:text-zinc-500" />
+                  )}
                 </div>
                 <span
                   className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white dark:border-zinc-800 ${

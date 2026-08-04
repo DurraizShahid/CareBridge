@@ -1,5 +1,6 @@
 "use client";
 
+import type { DashboardWidgetData } from "@/types";
 import { AppointmentsCard } from "./appointments-card";
 import { ActivityCard } from "./activity-card";
 import { VirtualCardsCard } from "./virtual-cards-card";
@@ -7,37 +8,29 @@ import { ProgressCard } from "./progress-card";
 import { ContractTypeCard } from "./contract-type-card";
 import { PlacementsByMonthCard } from "./placements-by-month-card";
 
-export default function AdminOverview() {
+interface AdminOverviewProps {
+  widgets: DashboardWidgetData;
+}
+
+export default function AdminOverview({ widgets }: AdminOverviewProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 hide-card-content">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 auto-rows-min">
       {/* Facility Calendar — tall, spans 2 rows */}
       <div className="lg:row-span-2 h-full">
-        <AppointmentsCard />
+        <AppointmentsCard events={widgets.scheduleEvents} />
       </div>
 
-      {/* Placement Activity — square */}
-      <div className="aspect-square">
-        <ActivityCard />
-      </div>
+      <ActivityCard data={widgets.activity} />
 
-      {/* Organization Wallet — square */}
-      <div className="aspect-square">
-        <VirtualCardsCard />
-      </div>
+      <VirtualCardsCard categories={widgets.facilitiesByCategory} />
 
-      {/* Progress Card — square */}
-      <div className="aspect-square">
-        <ProgressCard />
-      </div>
+      <ProgressCard data={widgets.placementsThisWeek} />
 
-      {/* Placement by Care Level — square */}
-      <div className="aspect-square">
-        <ContractTypeCard />
-      </div>
+      <ContractTypeCard data={widgets.careLevelBreakdown} />
 
-      {/* Placements by Month — free width, fills remaining space */}
-      <div className="lg:col-span-2">
-        <PlacementsByMonthCard className="h-full" />
+      {/* Placements by Month — fills remaining width */}
+      <div className="lg:col-span-2 min-h-[320px]">
+        <PlacementsByMonthCard data={widgets.placementsByMonth} className="h-full" />
       </div>
     </div>
   );

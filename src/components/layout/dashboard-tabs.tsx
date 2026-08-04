@@ -13,6 +13,8 @@ import {
   RiShieldCheckLine,
   RiHospitalLine,
   RiMapPinLine,
+  RiMegaphoneLine,
+  RiPhoneLine,
   RiSunLine,
   RiMoonLine,
   RiSettingsLine,
@@ -27,6 +29,7 @@ interface TabItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   requiredPermission?: Permission;
+  superadminOnly?: boolean;
 }
 
 const tabItems: TabItem[] = [
@@ -37,17 +40,20 @@ const tabItems: TabItem[] = [
   { href: "/placements", label: "Placements", icon: RiClipboardLine, requiredPermission: "placements:read" },
   { href: "/dashboard/users", label: "Users", icon: RiGroupLine, requiredPermission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, requiredPermission: "hospitals:manage" },
+  { href: "/dashboard/marketing", label: "Marketing", icon: RiMegaphoneLine, superadminOnly: true },
+  { href: "/dashboard/ai-dialing", label: "AI Dialing", icon: RiPhoneLine, requiredPermission: "dialing:read" },
   { href: "/admin/permissions", label: "Permissions", icon: RiShieldCheckLine, requiredPermission: "users:manage-roles" },
 ];
 
 export function DashboardTabs({ effectiveRole, scrolled }: { effectiveRole?: string | null; scrolled?: boolean }) {
   const pathname = usePathname();
-  const { can, isLoaded } = usePermissions();
+  const { can, role, isLoaded } = usePermissions();
   const { theme, toggleTheme } = useTheme();
 
   if (!isLoaded) return null;
 
   const visible = tabItems.filter((item) => {
+    if (item.superadminOnly) return role === "superadmin";
     if (item.href === "/dashboard/facility-network" && (effectiveRole === "facility-coordinator" || effectiveRole === "administrator")) return false;
     return !item.requiredPermission || can(item.requiredPermission);
   });

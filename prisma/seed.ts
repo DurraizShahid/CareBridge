@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { seedFacilityDemoPhotos } from "../scripts/facility-demo-photos";
 
 // ── Adapter ──
 const connectionString = process.env.DATABASE_URL!;
@@ -756,6 +757,16 @@ async function main() {
     },
   });
   console.log("    ✔ fac-005 — Sunrise Memory Care Center");
+
+  console.log("  Seeding facility demo photos...");
+  const photoCount = await seedFacilityDemoPhotos(prisma, [
+    "fac-001",
+    "fac-002",
+    "fac-003",
+    "fac-004",
+    "fac-005",
+  ]);
+  console.log(`    ✔ ${photoCount} facility media records`);
 
   // ── 6. Seed Placements ──
   console.log("  Seeding placements...");

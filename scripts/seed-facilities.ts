@@ -3,6 +3,7 @@ import { createClerkClient } from "@clerk/backend";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { UserRole, FacilityType, CareLevel, OrganizationType } from "../src/generated/prisma/enums";
+import { seedFacilityDemoPhotos } from "./facility-demo-photos";
 
 const connectionString = process.env.DATABASE_URL!;
 const adapter = new PrismaPg({ connectionString });
@@ -553,6 +554,13 @@ async function main() {
   for (const f of FACILITIES) {
     await seedFacility(f);
   }
+
+  console.log("\n  Facility demo photos...");
+  const photoCount = await seedFacilityDemoPhotos(
+    prisma,
+    FACILITIES.map((f) => f.id),
+  );
+  console.log(`    ✔ ${photoCount} facility media records`);
 
   console.log("\n  Facility users...");
   for (const u of FACILITY_USERS) {

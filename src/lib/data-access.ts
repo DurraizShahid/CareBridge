@@ -148,8 +148,27 @@ function uniqueStrings(values: (string | null | undefined)[]): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
 }
 
-function normalizeSearchValue(value: string): string {
+function normalizeSearchValue(value: string | null | undefined): string {
+  if (typeof value !== "string") return "";
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/** Prisma Json fields may be objects or double-encoded JSON strings from older seeds. */
+function parseJsonObject<T extends Record<string, unknown>>(value: unknown): T {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as T;
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed as T;
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return {} as T;
 }
 
 function getPatientInsuranceTerms(insurance: unknown): string[] {
@@ -220,9 +239,13 @@ function calculateFacilityScore(
   score += Math.round(facility.rating * 5);
   score -= facility.waitlistDays ?? 0;
 
-  const address = facility.address as Record<string, unknown> | null;
-  const facilityCity = typeof address?.city === "string" ? normalizeSearchValue(address.city) : "";
-  const facilityState = typeof address?.state === "string" ? normalizeSearchValue(address.state) : "";
+  const address = parseJsonObject(facility.address);
+  const facilityCity = normalizeSearchValue(
+    typeof address.city === "string" ? address.city : undefined,
+  );
+  const facilityState = normalizeSearchValue(
+    typeof address.state === "string" ? address.state : undefined,
+  );
   const preferredCity = preferredLocation?.city ? normalizeSearchValue(preferredLocation.city) : "";
   const preferredState = preferredLocation?.state ? normalizeSearchValue(preferredLocation.state) : "";
   if (preferredCity && facilityCity === preferredCity) score += 10;
@@ -259,9 +282,13 @@ function calculateFacilityScoreWithBreakdown(
   const ratingScore = Math.round(facility.rating * 5);
   const waitlistPenalty = facility.waitlistDays ?? 0;
 
-  const address = facility.address;
-  const facilityCity = normalizeSearchValue(address.city);
-  const facilityState = normalizeSearchValue(address.state);
+  const address = parseJsonObject(facility.address);
+  const facilityCity = normalizeSearchValue(
+    typeof address.city === "string" ? address.city : undefined,
+  );
+  const facilityState = normalizeSearchValue(
+    typeof address.state === "string" ? address.state : undefined,
+  );
   const preferredCity = preferredLocation?.city ? normalizeSearchValue(preferredLocation.city) : "";
   const preferredState = preferredLocation?.state ? normalizeSearchValue(preferredLocation.state) : "";
   let locationBonus = 0;
@@ -680,7 +707,7 @@ export async function getFacilities(
       name: f.name,
       description: f.description ?? undefined,
       type: toFacilityType(f.type),
-      address: f.address as any,
+      address: parseJsonObject(f.address) as any,
       phone: f.phone,
       email: f.email,
       website: f.website ?? undefined,
@@ -1877,7 +1904,7 @@ export async function getFacility(
     name: f.name,
     description: f.description ?? undefined,
     type: toFacilityType(f.type),
-    address: f.address as any,
+    address: parseJsonObject(f.address) as any,
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
@@ -1974,7 +2001,7 @@ export async function searchFacilities(params: {
     name: f.name,
     description: f.description ?? undefined,
     type: toFacilityType(f.type),
-    address: f.address as any,
+    address: parseJsonObject(f.address) as any,
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
@@ -2030,7 +2057,7 @@ export async function getFacilityById(id: string): Promise<Facility | null> {
     name: f.name,
     description: f.description ?? undefined,
     type: toFacilityType(f.type),
-    address: f.address as any,
+    address: parseJsonObject(f.address) as any,
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
@@ -2113,7 +2140,7 @@ export async function createFacility(
     name: f.name,
     description: f.description ?? undefined,
     type: toFacilityType(f.type),
-    address: f.address as any,
+    address: parseJsonObject(f.address) as any,
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
@@ -2195,7 +2222,7 @@ export async function updateFacility(
     name: f.name,
     description: f.description ?? undefined,
     type: toFacilityType(f.type),
-    address: f.address as any,
+    address: parseJsonObject(f.address) as any,
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,

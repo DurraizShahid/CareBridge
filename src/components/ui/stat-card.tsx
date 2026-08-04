@@ -33,7 +33,7 @@ export function StatCard({ title, value, icon: Icon, trend, variant = "default" 
     <Card>
       <CardContent className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-medium text-[#8d8a98]">{title}</span>
+          <span className="text-[13px] font-medium text-muted-foreground">{title}</span>
           <div
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-full",
@@ -44,7 +44,7 @@ export function StatCard({ title, value, icon: Icon, trend, variant = "default" 
           </div>
         </div>
         <div className="flex items-baseline gap-3">
-          <span className="text-[28px] font-[500] tracking-[-0.03em] tabular-nums text-[#111014]">
+          <span className="text-[28px] font-medium tracking-tight tabular-nums text-foreground">
             {value}
           </span>
           {trend && (

@@ -10,15 +10,20 @@ const DASHBOARD_PERMISSION_MAP: Record<string, Permission | Permission[]> = {
   "/dashboard": "dashboard:overview",
   "/dashboard/hospitals": "hospitals:manage",
   "/dashboard/users": ["users:manage-roles", "users:read-org"],
+  "/dashboard/ai-dialing": "dialing:read",
 };
+
+const SUPERADMIN_ONLY_ROUTES = new Set(["/dashboard/marketing"]);
 
 export function DashboardGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { can, canAny, isLoaded } = usePermissions();
+  const { can, canAny, role, isLoaded } = usePermissions();
   const required = DASHBOARD_PERMISSION_MAP[pathname];
-  const hasAccess = !required
-    || (Array.isArray(required) ? canAny(required) : can(required));
+  const hasAccess = SUPERADMIN_ONLY_ROUTES.has(pathname)
+    ? role === "superadmin"
+    : !required
+      || (Array.isArray(required) ? canAny(required) : can(required));
 
   useEffect(() => {
     if (isLoaded && !hasAccess) {

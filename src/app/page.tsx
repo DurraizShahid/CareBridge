@@ -610,7 +610,7 @@ export default function Page() {
                 </a>
               </Card>
               <Card className="group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                <a href="#" className="block p-8">
+                <a href="/lead" className="block p-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#44BEAF]/10">
                   <Phone className="h-6 w-6 text-[#44BEAF]" />
                 </div>

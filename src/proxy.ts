@@ -9,6 +9,7 @@ const authLimiter = new RateLimiter({ windowMs: 900_000, maxRequests: 20 });
 
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/lead(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/onboarding(.*)",

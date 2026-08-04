@@ -4,7 +4,7 @@ const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.storage.railway.app",
+  "img-src 'self' data: blob: https://*.storage.railway.app https://images.unsplash.com",
   "connect-src 'self' https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://*.storage.railway.app",
   "frame-src 'self' https://*.clerk.accounts.dev",
   "font-src 'self'",
@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "storage.railway.app",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
   },

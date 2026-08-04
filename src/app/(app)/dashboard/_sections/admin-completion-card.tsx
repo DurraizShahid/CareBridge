@@ -68,54 +68,6 @@ export default function AdminCompletionCard({
           action: "/placements",
         }]
       : []),
-    {
-      id: "dummy-1",
-      title: "New Referral — St. Mary's",
-      subtitle: "High-acuity patient awaiting assignment",
-      status: "warning" as const,
-    },
-    {
-      id: "dummy-2",
-      title: "Bed Availability Alert",
-      subtitle: "3 facilities at capacity in Chicago region",
-      status: "warning" as const,
-    },
-    {
-      id: "dummy-3",
-      title: "Staff Certification Expiry",
-      subtitle: "12 nurses require renewal this quarter",
-      status: "pending" as const,
-    },
-    {
-      id: "dummy-4",
-      title: "Compliance Review Due",
-      subtitle: "Q2 audit report pending submission",
-      status: "pending" as const,
-    },
-    {
-      id: "dummy-5",
-      title: "Insurance Verification — Mercy Health",
-      subtitle: "Pre-authorization pending for 3 patients",
-      status: "warning" as const,
-    },
-    {
-      id: "dummy-6",
-      title: "Discharge Summary — Northwell",
-      subtitle: "2 discharge summaries awaiting physician sign-off",
-      status: "pending" as const,
-    },
-    {
-      id: "dummy-7",
-      title: "Transport Request — County General",
-      subtitle: "Non-emergency medical transport not confirmed",
-      status: "pending" as const,
-    },
-    {
-      id: "dummy-8",
-      title: "Medication Reconciliation",
-      subtitle: "5 patients pending medication review this week",
-      status: "warning" as const,
-    },
   ];
 
   const sorted = [...queueItems].sort((a, b) => {

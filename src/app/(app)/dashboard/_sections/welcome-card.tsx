@@ -1,57 +1,84 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { Sparkles, TrendingUp, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, ArrowUpRight, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
-export default function WelcomeCard() {
-  const { user } = useUser();
+interface WelcomeCardProps {
+  data?: {
+    averagePlacementTimeDays: number;
+    successRate: number;
+    partnerFacilities: number;
+  };
+}
+
+export default function WelcomeCard({ data }: WelcomeCardProps) {
+  const successRate = data?.successRate ?? 0;
+  const partnerFacilities = data?.partnerFacilities ?? 0;
+  const avgDays = data?.averagePlacementTimeDays ?? 0;
 
   return (
-    <div className="dash-card-tint p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="size-8 rounded-full bg-white flex items-center justify-center">
-            <Sparkles className="size-4 text-[#6c7a9a]" />
+    <Card
+      className="h-full"
+      style={{ background: "color-mix(in oklab, var(--primary) 4%, var(--card))" }}
+    >
+      <CardContent className="p-6 flex flex-col gap-5 h-full">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
+              <Sparkles className="size-4 text-primary" />
+            </div>
+            <span className="text-sm font-semibold text-foreground">Network Snapshot</span>
           </div>
-          <span className="text-sm font-semibold text-[#1e1d24]">CareBridge Pro</span>
+          <Link
+            href="/dashboard/facility-network"
+            aria-label="Open facility network"
+            className="flex size-8 items-center justify-center rounded-full bg-card transition-colors hover:bg-muted"
+          >
+            <ArrowUpRight className="size-4 text-muted-foreground" />
+          </Link>
         </div>
-        <button className="size-8 rounded-full bg-white flex items-center justify-center hover:bg-[#f3f1f8] transition-colors">
-          <ArrowUpRight className="size-4 text-[#8d8a98]" />
-        </button>
-      </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 text-xs text-[#8d8a98]">
-          <span className="size-2 rounded-full bg-[#e1f26a]" />
-          15 Days Pro
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2 rounded-full bg-card px-3 py-1.5 text-xs text-muted-foreground">
+            <span className="size-2 rounded-full bg-[var(--chart-2)]" />
+            {partnerFacilities} partner facilities
+          </div>
+          <span className="text-[13px] text-muted-foreground">
+            {avgDays > 0 ? `${avgDays}d avg placement` : "Live network metrics"}
+          </span>
         </div>
-        <span className="text-[13px] text-[#8d8a98]">Active trial</span>
-      </div>
 
-      <div className="flex items-baseline gap-2">
-        <span className="text-[42px] font-[500] tracking-[-0.03em] text-[#111014] leading-none">94%</span>
-        <span className="text-[13px] text-[#8d8a98]">match accuracy</span>
-      </div>
-
-      <div className="relative h-16">
-        <svg viewBox="0 0 300 60" className="w-full h-full">
-          <defs>
-            <linearGradient id="proLine" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e9edf8" />
-              <stop offset="100%" stopColor="#6c7a9a" />
-            </linearGradient>
-          </defs>
-          <path d="M0 45 Q50 40 100 42 T200 30 T250 22 T300 18" fill="none" stroke="url(#proLine)" strokeWidth="2" />
-          <circle cx="300" cy="18" r="4" fill="#6c7a9a" />
-        </svg>
-      </div>
-
-      <button className="flex items-center justify-between bg-white rounded-full px-5 py-3 transition-all hover:shadow-sm active:scale-[0.98]">
-        <span className="text-sm font-medium text-[#1e1d24]">Unlock premium features</span>
-        <div className="size-7 rounded-full bg-[#15141b] flex items-center justify-center">
-          <TrendingUp className="size-3.5 text-white" />
+        <div className="flex items-baseline gap-2">
+          <span className="text-[42px] font-medium tracking-tight text-foreground leading-none tabular-nums">
+            {successRate}%
+          </span>
+          <span className="text-[13px] text-muted-foreground">completion rate</span>
         </div>
-      </button>
-    </div>
+
+        <div className="relative h-16">
+          <svg viewBox="0 0 300 60" className="w-full h-full" aria-hidden="true">
+            <defs>
+              <linearGradient id="networkSparkline" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="var(--chart-1)" />
+              </linearGradient>
+            </defs>
+            <path d="M0 45 Q50 40 100 42 T200 30 T250 22 T300 18" fill="none" stroke="url(#networkSparkline)" strokeWidth="2" />
+            <circle cx="300" cy="18" r="4" fill="var(--chart-1)" />
+          </svg>
+        </div>
+
+        <Link
+          href="/dashboard/facility-network"
+          className="mt-auto flex items-center justify-between rounded-full bg-card px-5 py-3 transition-all hover:shadow-sm active:scale-[0.98]"
+        >
+          <span className="text-sm font-medium text-foreground">Browse facility network</span>
+          <div className="flex size-7 items-center justify-center rounded-full bg-primary">
+            <ArrowRight className="size-3.5 text-primary-foreground" />
+          </div>
+        </Link>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   LineChart,
@@ -13,132 +12,123 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
+const CREATED_COLOR = "var(--chart-1)";
+const COMPLETED_COLOR = "var(--chart-3)";
 
-const chartData = months.map((month, i) => ({
-  month,
-  demand: [120, 100, 130, 110, 125, 115, 135, 105, 95, 120, 145][i],
-  availability: [155, 135, 120, 110, 105, 130, 95, 125, 115, 130, 120][i],
-}));
+interface PlacementsByMonthCardProps {
+  className?: string;
+  data?: { month: string; created: number; completed: number }[];
+}
 
-const TEAL = "#277979";
-const YELLOW = "#D4A843";
+interface TooltipEntry {
+  name?: string | number;
+  value?: number | string;
+}
 
-function CustomTooltip({ active, payload, nearestSeries }: any) {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  nearestSeries: "created" | "completed";
+}
+
+function CustomTooltip({ active, payload, nearestSeries }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
 
-  const demandData = payload.find((p: any) => p.name === "demand");
-  const availabilityData = payload.find((p: any) => p.name === "availability");
+  const createdData = payload.find((p) => p.name === "created");
+  const completedData = payload.find((p) => p.name === "completed");
 
-  if (!demandData && !availabilityData) return null;
+  if (!createdData && !completedData) return null;
 
-  const isDemand = nearestSeries === "demand";
-  const data = isDemand ? demandData : availabilityData;
-  const label = isDemand ? "Demand" : "Availability";
+  const isCreated = nearestSeries === "created";
+  const data = isCreated ? createdData : completedData;
+  const label = isCreated ? "Created" : "Completed";
 
   return (
     <div className="flex flex-col items-center">
-      <div
-        className="px-4 py-2 rounded-xl text-sm font-semibold text-white whitespace-nowrap shadow-lg"
-        style={{ backgroundColor: "#1C1917" }}
-      >
+      <div className="rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background whitespace-nowrap shadow-lg">
         {label} {data?.value}
       </div>
-      <div
-        className="w-px h-4"
-        style={{ backgroundColor: "#1C1917" }}
-      />
+      <div className="w-px h-4 bg-foreground" />
     </div>
   );
 }
 
-export function PlacementsByMonthCard({ className }: { className?: string }) {
-  const [nearestSeries, setNearestSeries] = useState<"demand" | "availability">("demand");
+export function PlacementsByMonthCard({
+  className,
+  data = [],
+}: PlacementsByMonthCardProps) {
+  const [nearestSeries, setNearestSeries] = useState<"created" | "completed">("created");
+  const chartData = data;
+  const year = new Date().getFullYear();
 
-  const handleMouseMove = useCallback((state: any) => {
+  const yMax = useMemo(() => {
+    const max = Math.max(
+      1,
+      ...chartData.flatMap((d) => [d.created, d.completed]),
+    );
+    return Math.ceil(max / 5) * 5 || 5;
+  }, [chartData]);
+
+  const handleMouseMove = useCallback((state: {
+    activePayload?: Array<{ name?: string | number; value?: number }>;
+    activeCoordinate?: { x: number; y: number };
+    chartWidth?: number;
+  }) => {
     if (!state?.activePayload?.length || !state?.activeCoordinate) return;
 
     const cursorY = state.activeCoordinate.y;
     const payload = state.activePayload;
 
-    const demandData = payload.find((p: any) => p.name === "demand");
-    const availabilityData = payload.find((p: any) => p.name === "availability");
+    const createdData = payload.find((p) => p.name === "created");
+    const completedData = payload.find((p) => p.name === "completed");
 
-    if (!demandData || !availabilityData) return;
+    if (createdData?.value === undefined || completedData?.value === undefined) return;
 
-    // Get chart area dimensions to calculate pixel positions
     const chartHeight = state?.chartWidth || 200;
-    const domainMin = 50;
-    const domainMax = 200;
+    const domainMin = 0;
+    const domainMax = yMax;
 
-    // Estimate Y positions based on values (higher value = lower Y position in SVG)
-    const demandValue = demandData.value;
-    const availabilityValue = availabilityData.value;
+    const createdY = ((domainMax - createdData.value) / (domainMax - domainMin)) * chartHeight;
+    const completedY = ((domainMax - completedData.value) / (domainMax - domainMin)) * chartHeight;
 
-    // Convert values to approximate Y positions (inverted because SVG Y goes down)
-    const demandY = ((domainMax - demandValue) / (domainMax - domainMin)) * chartHeight;
-    const availabilityY = ((domainMax - availabilityValue) / (domainMax - domainMin)) * chartHeight;
+    const createdDist = Math.abs(cursorY - createdY);
+    const completedDist = Math.abs(cursorY - completedY);
 
-    // Compare distances from cursor
-    const demandDist = Math.abs(cursorY - demandY);
-    const availabilityDist = Math.abs(cursorY - availabilityY);
-
-    setNearestSeries(demandDist <= availabilityDist ? "demand" : "availability");
-  }, []);
+    setNearestSeries(createdDist <= completedDist ? "created" : "completed");
+  }, [yMax]);
 
   return (
-    <Card className={cn("rounded-2xl border-border/50 shadow-sm h-full overflow-hidden", className)}>
+    <Card className={cn("h-full overflow-hidden", className)}>
       <CardContent className="flex flex-col h-full p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-6">
-            <h3 className="text-sm font-bold tracking-widest text-foreground/80 uppercase">
-              Yearly Demand
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">
+              Placements by Month
             </h3>
 
-            {/* Legend */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: YELLOW }}
+                  className="size-2.5 rounded-full"
+                  style={{ backgroundColor: CREATED_COLOR }}
                 />
-                <span className="text-sm text-foreground/70">Demand</span>
+                <span className="text-xs text-muted-foreground">Created</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: TEAL }}
+                  className="size-2.5 rounded-full"
+                  style={{ backgroundColor: COMPLETED_COLOR }}
                 />
-                <span className="text-sm text-foreground/70">Availability</span>
+                <span className="text-xs text-muted-foreground">Completed</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Year Dropdown */}
-            <button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-foreground/70 transition-colors hover:bg-muted/50 bg-muted/30"
-            >
-              2024
-              <ChevronDown className="size-4" />
-            </button>
-
-            {/* Arrow Button */}
-            <button
-              aria-label="View full statistics"
-              className="flex items-center justify-center rounded-full transition-all duration-200 hover:scale-105 active:scale-95 bg-muted/30 hover:bg-muted/50"
-              style={{
-                width: "32px",
-                height: "32px",
-              }}
-            >
-              <ArrowUpRight className="size-4 text-foreground/60" />
-            </button>
-          </div>
+          <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
+            {year}
+          </span>
         </div>
 
-        {/* Chart */}
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
@@ -150,39 +140,39 @@ export function PlacementsByMonthCard({ className }: { className?: string }) {
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: "#6B7280" }}
+                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                 dy={8}
               />
               <YAxis
-                domain={[50, 200]}
-                ticks={[50, 100, 150, 200]}
+                domain={[0, yMax]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: "#6B7280" }}
+                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                 dx={-10}
+                allowDecimals={false}
               />
               <Tooltip
                 content={<CustomTooltip nearestSeries={nearestSeries} />}
-                cursor={{ stroke: "#9CA3AF", strokeDasharray: "4 4" }}
+                cursor={{ stroke: "var(--border)", strokeDasharray: "4 4" }}
               />
               <Line
-                name="demand"
+                name="created"
                 type="monotone"
-                dataKey="demand"
-                stroke={YELLOW}
+                dataKey="created"
+                stroke={CREATED_COLOR}
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 5, fill: YELLOW, stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: CREATED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
               />
               <Line
-                name="availability"
+                name="completed"
                 type="monotone"
-                dataKey="availability"
-                stroke={TEAL}
+                dataKey="completed"
+                stroke={COMPLETED_COLOR}
                 strokeWidth={2.5}
                 strokeDasharray="6 4"
                 dot={false}
-                activeDot={{ r: 5, fill: TEAL, stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: COMPLETED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

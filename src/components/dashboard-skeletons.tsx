@@ -708,27 +708,17 @@ export function FacilityNetworkPageSkeleton() {
 export function DashboardPageSkeleton() {
   return (
     <div className="flex flex-col gap-8">
-      {/* Top nav pills */}
-      <div className="flex items-center gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[38px] w-24 rounded-full" />
-        ))}
-      </div>
-
       {/* Welcome hero */}
       <div className="flex flex-col gap-3">
-        <Skeleton className="h-[52px] w-80" />
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-12 w-80" />
         <Skeleton className="h-4 w-64" />
       </div>
 
-      {/* Pipeline + controls */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <Skeleton className="h-11 w-full sm:max-w-md rounded-full" />
-        <div className="flex items-center gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-[48px] w-[48px] rounded-full" />
-          ))}
-        </div>
+      {/* Pipeline bar */}
+      <div className="flex w-full max-w-2xl flex-col gap-3">
+        <Skeleton className="h-4 w-72" />
+        <Skeleton className="h-3 w-full rounded-full" />
       </div>
 
       {/* Stats grid */}
@@ -790,6 +780,28 @@ export function DashboardPageSkeleton() {
             <CardContent className="p-5">
               <Skeleton className="h-5 w-32 mb-4" />
               <Skeleton className="h-36 w-full rounded-2xl" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Monthly chart + network snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div className="md:col-span-8">
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-5 w-40 mb-4" />
+              <Skeleton className="h-56 w-full rounded-2xl" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-4">
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-5 w-36 mb-4" />
+              <Skeleton className="h-10 w-24 mb-3" />
+              <Skeleton className="h-16 w-full mb-3" />
+              <Skeleton className="h-11 w-full rounded-full" />
             </CardContent>
           </Card>
         </div>
@@ -1054,6 +1066,304 @@ export function DocumentVaultPageSkeleton() {
 }
 
 export const DocumentsPageSkeleton = DocumentVaultPageSkeleton;
+
+export function MarketingStatsSkeleton() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Card key={i}>
+          <CardContent className="flex flex-col gap-3 p-5">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3.5 w-16" />
+              <Skeleton className="size-9 rounded-full" />
+            </div>
+            <Skeleton className="h-8 w-12" />
+            <Skeleton className="h-3 w-24" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function MarketingAutomationSkeleton() {
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-5 w-11 rounded-full" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-6 w-28 rounded-full" />
+            ))}
+          </div>
+          <Skeleton className="h-16 w-full rounded-xl" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-6">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-4 w-40" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex gap-3">
+              <Skeleton className="mt-1 size-2 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-full" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function MarketingPostQueueSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-48" />
+        </div>
+        <Skeleton className="h-9 w-[180px] rounded-full" />
+      </div>
+      {Array.from({ length: count }).map((_, i) => (
+        <Card key={i}>
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start">
+            <Skeleton className="aspect-square w-full rounded-xl sm:w-36" />
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-28 rounded-full" />
+                <Skeleton className="size-6 rounded-md" />
+                <Skeleton className="size-6 rounded-md" />
+              </div>
+              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-3.5 w-full max-w-xl" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+            <Skeleton className="h-8 w-20 rounded-full" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function MarketingPostsPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeaderSkeleton />
+      <MarketingStatsSkeleton />
+      <Skeleton className="h-9 w-48 rounded-full" />
+      <MarketingAutomationSkeleton />
+      <MarketingPostQueueSkeleton />
+    </div>
+  );
+}
+
+export function AiDialingStatsSkeleton() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i}>
+          <CardContent className="flex flex-col gap-3 p-5">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3.5 w-16" />
+              <Skeleton className="size-9 rounded-full" />
+            </div>
+            <Skeleton className="h-8 w-14" />
+            <Skeleton className="h-3 w-28" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function AiDialingControlsSkeleton() {
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1.2fr_0.9fr_0.95fr]">
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-5 w-24 rounded-full" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-16 w-full rounded-xl" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="flex flex-col items-center gap-4 p-6">
+          <div className="w-full space-y-2">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <div className="grid w-full max-w-[260px] grid-cols-3 gap-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-2xl" />
+            ))}
+          </div>
+          <Skeleton className="size-14 rounded-full" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-6">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-4 w-40" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function AiDialingCampaignsSkeleton() {
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-6">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-4 w-56" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-3 rounded-xl border border-border/60 p-4">
+              <div className="flex justify-between gap-2">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-64" />
+                </div>
+                <Skeleton className="h-8 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-full rounded-full" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <div className="flex flex-col gap-6">
+        <Card>
+          <CardContent className="flex flex-col gap-3 p-6">
+            <Skeleton className="h-5 w-20" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-3 w-36" />
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col gap-3 p-6">
+            <Skeleton className="h-5 w-20" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex gap-3">
+                <Skeleton className="mt-1 size-2 rounded-full" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export function AiDialingQueueSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-[260px] rounded-full" />
+          <Skeleton className="h-9 w-48 rounded-full" />
+        </div>
+      </div>
+      <Card className="overflow-hidden py-0">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4 border-b border-border px-4 py-3">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className={cn(
+                  "h-4",
+                  i === 0
+                    ? "w-12"
+                    : i === 1
+                      ? "w-36 flex-1"
+                      : i === 2
+                        ? "w-40"
+                        : i === 3
+                          ? "w-24"
+                          : i === 4
+                            ? "w-20"
+                            : i === 5
+                              ? "w-24"
+                              : "w-16",
+                )}
+              />
+            ))}
+          </div>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 border-b border-border px-4 py-3.5 last:border-0"
+            >
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-40" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <Skeleton className="h-3.5 w-36" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-3.5 w-12" />
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export function AiDialingPageSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeaderSkeleton />
+      <AiDialingStatsSkeleton />
+      <AiDialingControlsSkeleton />
+      <AiDialingCampaignsSkeleton />
+      <AiDialingQueueSkeleton />
+    </div>
+  );
+}
 
 export function AppSidebarSkeleton() {
   return (

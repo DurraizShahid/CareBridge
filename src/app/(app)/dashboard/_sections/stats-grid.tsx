@@ -1,13 +1,10 @@
 import {
   Building2,
   CalendarCheck,
-  CheckCircle2,
   Clock,
   ClipboardList,
   FileSearch,
   Users,
-  Building,
-  AlertTriangle,
   Activity,
 } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
@@ -17,15 +14,33 @@ import {
 } from "@/lib/data-access";
 import type { SectionProps } from "./shared";
 
-export default async function StatsGrid({ organizationId, role }: SectionProps) {
+interface StatsGridProps extends SectionProps {
+  placementsCreatedToday?: number;
+}
+
+export default async function StatsGrid({
+  organizationId,
+  role,
+  placementsCreatedToday = 0,
+}: StatsGridProps) {
   if (role === "facility-coordinator") {
     return <FacilityStatsGrid organizationId={organizationId} role={role} />;
   }
 
-  return <DefaultStatsGrid organizationId={organizationId} role={role} />;
+  return (
+    <DefaultStatsGrid
+      organizationId={organizationId}
+      role={role}
+      placementsCreatedToday={placementsCreatedToday}
+    />
+  );
 }
 
-async function DefaultStatsGrid({ organizationId, role }: SectionProps) {
+async function DefaultStatsGrid({
+  organizationId,
+  role,
+  placementsCreatedToday = 0,
+}: StatsGridProps) {
   const scopedStats = await getDashboardStats(organizationId, role);
 
   return (
@@ -36,7 +51,14 @@ async function DefaultStatsGrid({ organizationId, role }: SectionProps) {
         value={scopedStats.activePlacements}
         icon={ClipboardList}
         variant="health"
-        trend={{ value: "2 new today", positive: true }}
+        trend={
+          placementsCreatedToday > 0
+            ? {
+                value: `${placementsCreatedToday} new today`,
+                positive: true,
+              }
+            : undefined
+        }
       />
       <StatCard title="Pending Assessments" value={scopedStats.pendingAssessments} icon={FileSearch} variant="info" />
       <StatCard title="Available Facilities" value={scopedStats.facilitiesAvailable} icon={Building2} variant="purple" />
