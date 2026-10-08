@@ -1,4 +1,5 @@
 "use client";
+import { DepositCheckout } from "@/components/payments/deposit-checkout";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, FileText, LockKeyhole, Send, ShieldCheck } from "lucide-react";
@@ -91,6 +92,7 @@ export function ContractView({id}:{id:string}){
       <button type="button" onClick={()=>void sign()} disabled={busy||!consent||name.trim().length<3}
        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#2A3908] disabled:opacity-50"><ShieldCheck size={16}/> Sign document</button>
      </section>}
+     {data.status==="signed"&&<DepositCheckout contractId={data.id}/>}
      {data.status==="sent"&&mine&&<div className="rounded-[28px] bg-white p-6 text-sm text-[#777] dark:bg-[#1D1D20]">Your signature is recorded. Waiting for the other party.</div>}
     </aside>
    </div>}

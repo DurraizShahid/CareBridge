@@ -61,8 +61,8 @@ export async function sendContract(id: string, payload: unknown) {
   const b = payload as Record<string, unknown>;
   const deposit = b.depositAmountCents;
   const terms = typeof b.facilityTerms === "string" ? b.facilityTerms.trim() : "";
-  if (typeof deposit !== "number" || !Number.isSafeInteger(deposit) || deposit < 0 || deposit > 100_000_000)
-    throw new ReferralError(400, "Deposit must be a valid amount in cents");
+  if (typeof deposit !== "number" || !Number.isSafeInteger(deposit) || deposit < 50 || deposit > 100_000_000)
+    throw new ReferralError(400, "Deposit must be at least 50 cents");
   if (terms.length < 15 || terms.length > 8000)
     throw new ReferralError(400, "Terms must contain 15 to 8000 characters");
   // Keep raw patient identifiers out of freeform contract terms.
