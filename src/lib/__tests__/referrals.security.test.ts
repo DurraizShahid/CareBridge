@@ -43,6 +43,10 @@ describe("money-loop referrals: authorization and transitions", () => {
     expect(ensureCareMatch(f, "hospice", [])).toBe(false);
     expect(ensureCareMatch(f, "skilled_nursing", ["IV therapy"])).toBe(false);
   });
+  it("rejects organizations that are neither hospitals nor facilities", async () => {
+    prismaMock.organization.findUnique.mockResolvedValue({ type: "other" });
+    await expect(referralContext()).rejects.toMatchObject({ statusCode: 403 });
+  });
   it("denies creation by facility organizations", async () => {
     prismaMock.organization.findUnique.mockResolvedValue({ type: "facility" });
     orgMock.mockResolvedValue({ organizationId: "facility-org", userId: "u", role: "facility-coordinator" });

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, X, Send } from "lucide-react";
 type Detail={ id:string; patientName:string; patientDateOfBirth:string; patientMrn:string; careLevel:string;
- requiredServices:string[]; status:string; sentAt:string|null;
+ requiredServices:string[]; status:string; sentAt:string|null; convertedPlacementId:string|null;
  facility:{name:string}; sendingOrganization:{name:string} };
 const label=(s:string)=>s.replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
 export function ReferralDetail({id}:{id:string}) {
@@ -13,6 +13,7 @@ export function ReferralDetail({id}:{id:string}) {
  const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
  const [facilityView,setFacilityView]=useState(false);
  const [contractLink,setContractLink]=useState<string|null>(null);
+ const [paymentStatus,setPaymentStatus]=useState<string|null>(null);
  useEffect(()=>{
   Promise.all([fetch("/api/referrals/"+encodeURIComponent(id),{cache:"no-store"}),fetch("/api/referrals/context",{cache:"no-store"})])
    .then(async ([r,c])=>{if(!r.ok||!c.ok)throw new Error("Unable to load referral");return [await r.json(),await c.json()]})
@@ -23,6 +24,25 @@ export function ReferralDetail({id}:{id:string}) {
   fetch("/api/referrals/"+encodeURIComponent(id)+"/contract",{cache:"no-store"})
     .then(r=>r.ok?r.json():null).then(c=>setContractLink(c?.id??null)).catch(()=>{});
  },[id,data?.status]);
+ useEffect(()=>{
+  if(!contractLink){setPaymentStatus(null);return}
+  let active=true;
+  fetch("/api/contracts/"+encodeURIComponent(contractLink)+"/payment",{cache:"no-store"})
+   .then(r=>r.ok?r.json():null)
+   .then(value=>{if(active)setPaymentStatus(value?.payment?.status??null)})
+   .catch(()=>{if(active)setPaymentStatus(null)});
+  return ()=>{active=false};
+ },[contractLink,data?.status]);
+ async function convert(){
+  setBusy(true);setError("");
+  try{
+   const result=await fetch("/api/referrals/"+encodeURIComponent(id)+"/convert",{method:"POST"});
+   const body=await result.json();
+   if(!result.ok)throw new Error(body.error??"Conversion failed");
+   setData(old=>old?{...old,status:"converted",convertedPlacementId:body.placementId}:old);
+   router.refresh();
+  }catch(e){setError(e instanceof Error?e.message:"Conversion failed")}finally{setBusy(false)}
+ }
  async function action(status:"sent"|"accepted"|"declined") {
   setBusy(true);setError("");
   try {
@@ -54,6 +74,10 @@ export function ReferralDetail({id}:{id:string}) {
   </>}
   {!facilityView&&data.status==="draft"&&<button disabled={busy} onClick={()=>void action("sent")} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#263000] disabled:opacity-50"><Send size={16}/> Send to facility</button>}
   {contractLink&&<Link href={"/contracts/"+contractLink} className="inline-flex items-center rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#293800]">View placement agreement</Link>}
+  {facilityView&&data.status==="accepted"&&(paymentStatus==="paid"||paymentStatus==="demo_paid")&&<button type="button" disabled={busy} onClick={()=>void convert()} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#293800] shadow-sm transition-colors hover:bg-[#CBEC60] disabled:opacity-50"><Check size={16}/>{busy?"Converting…":"Convert to placement"}</button>}
+  {facilityView&&data.status==="accepted"&&paymentStatus!=="paid"&&paymentStatus!=="demo_paid"&&contractLink&&<p className="text-sm text-[#777]">Placement conversion unlocks after both signatures and deposit confirmation.</p>}
+  {data.status==="converted"&&data.convertedPlacementId&&<p className="rounded-full bg-[#ECF7D2] px-5 py-3 text-sm font-semibold text-[#425F15]">Placement confirmed · Ref {data.convertedPlacementId.slice(0,8)}</p>}
+  {data.status==="converted"&&!facilityView&&data.convertedPlacementId&&<Link href={"/placements/"+data.convertedPlacementId} className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#444]">Open placement</Link>}
   {data.status==="accepted"&&!contractLink&&<p className="text-sm text-[#668035]">Accepted. Preparing agreement…</p>}
  </div>
  </>}

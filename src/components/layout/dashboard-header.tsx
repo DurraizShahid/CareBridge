@@ -39,8 +39,8 @@ const PAGE_TITLES: { match: string; title: string }[] = [
   { match: "/facilities", title: "Facilities" },
   { match: "/placements", title: "Placements" },
   { match: "/referrals", title: "Referrals" },
+  { match: "/contracts", title: "Placement Agreement" },
   { match: "/users", title: "Users" },
-  { match: "/support", title: "Help & Support" },
   { match: "/dashboard", title: "Dashboard" },
 ];
 

@@ -21,6 +21,8 @@ export async function referralContext() {
     where: { id: org.organizationId }, select: { type: true },
   });
   if (!dbOrg) throw new ReferralError(403, "Organization not found");
+  if (dbOrg.type !== "hospital" && dbOrg.type !== "facility")
+    throw new ReferralError(403, "Only hospital and facility organizations can access referrals");
   if (dbOrg.type === "hospital" && !HOSPITAL_ROLES.has(org.role))
     throw new ReferralError(403, "Hospital staff access required");
   if (dbOrg.type === "facility" && !FACILITY_ROLES.has(org.role))

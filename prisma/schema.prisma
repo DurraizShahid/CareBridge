@@ -575,6 +575,7 @@ model Referral {
   sentAt             DateTime?
   respondedAt        DateTime?
   depositIssue       String?
+  convertedPlacementId String? @unique
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
