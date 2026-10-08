@@ -116,6 +116,11 @@ enum ContractStatus {
   signed
 }
 
+enum ContractParty {
+  hospital
+  facility
+}
+
 enum PaymentStatus {
   pending
   paid
@@ -584,6 +589,7 @@ model Contract {
   currency              String         @default("usd") @db.VarChar(3)
   facilityTermsSnapshot Json
   status                ContractStatus @default(draft)
+  documentText          String?        @db.Text
   documentHash          String?
   hospitalSignedBy      String?
   hospitalSignedAt      DateTime?
@@ -595,6 +601,7 @@ model Contract {
 
   referral Referral  @relation(fields: [referralId], references: [id])
   payments Payment[]
+  signatures            ContractSignature[]
 }
 
 /// Stripe references only. Never store card data or PHI in payment metadata.
@@ -615,4 +622,24 @@ model Payment {
 
   @@index([referralId, createdAt])
   @@index([contractId])
+}
+
+/// Audit evidence contains signature name and salted/secret-hashed IP, never raw IP.
+/// The signed document is identified exclusively by documentHash.
+model ContractSignature {
+  id           String        @id @default(cuid())
+  contractId   String
+  party        ContractParty
+  typedName    String
+  signerUserId String
+  signerOrgId  String
+  consentStatement String @db.Text
+  signedAt     DateTime      @default(now())
+  ipHash       String
+  documentHash String
+  provider     String        @default("standard")
+  contract     Contract      @relation(fields: [contractId], references: [id])
+
+  @@unique([contractId, party])
+  @@index([signerOrgId, signedAt])
 }

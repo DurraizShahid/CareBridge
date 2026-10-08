@@ -4,7 +4,9 @@ const { prismaMock, orgMock } = vi.hoisted(() => ({
   prismaMock: {
     organization: { findUnique: vi.fn() },
     facility: { findFirst: vi.fn(), findMany: vi.fn(), fields: { capacity: "capacity" } },
-    referral: { findFirst: vi.fn(), updateMany: vi.fn(), create: vi.fn(), findMany: vi.fn() },
+    referral: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), updateMany: vi.fn(), create: vi.fn(), findMany: vi.fn() },
+    contract: { create: vi.fn() },
+    $transaction: vi.fn(),
   },
   orgMock: vi.fn(),
 }));
@@ -24,6 +26,7 @@ const valid = {
 describe("money-loop referrals: authorization and transitions", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock));
     orgMock.mockResolvedValue({ organizationId: "hospital-1", userId: "user-1", role: "social-worker" });
     prismaMock.organization.findUnique.mockResolvedValue({ type: "hospital" });
   });
@@ -89,6 +92,26 @@ describe("money-loop referrals: authorization and transitions", () => {
       where: { id: "ref-1", status: "sent", facility: { organizationId: "facility-org" } },
     }));
   });
+  it("accepting a referral atomically generates a hashed draft agreement without raw PHI", async () => {
+    orgMock.mockResolvedValue({ organizationId: "facility-org", userId: "u", role: "facility-coordinator" });
+    prismaMock.organization.findUnique.mockResolvedValue({ type: "facility" });
+    prismaMock.referral.findFirst.mockResolvedValue({ id: "ref-1" });
+    prismaMock.referral.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.referral.findUniqueOrThrow.mockResolvedValue({
+      id: "ref-1", facilityId: "facility-1", careLevel: "skilled_nursing",
+      requiredServices: ["Wound Care"], sendingOrganization: { name: "Hospital A" },
+      facility: { name: "Facility B" },
+      patientName: "SECRET PATIENT", patientMrn: "SECRET MRN",
+    });
+    await expect(transitionReferral("ref-1", "accepted")).resolves.toMatchObject({ status: "accepted" });
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    const args = prismaMock.contract.create.mock.calls[0][0].data;
+    expect(args.status).toBe("draft");
+    expect(args.documentText).not.toContain("SECRET PATIENT");
+    expect(args.documentText).not.toContain("SECRET MRN");
+    expect(args.documentHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
   it("does not allow patient lookups across organizations", async () => {
     prismaMock.referral.findFirst.mockResolvedValue(null);
     await expect(getReferral("another-org-ref")).rejects.toMatchObject({ statusCode: 404 });

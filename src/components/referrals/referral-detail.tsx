@@ -12,12 +12,17 @@ export function ReferralDetail({id}:{id:string}) {
  const [data,setData]=useState<Detail|null>(null);
  const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
  const [facilityView,setFacilityView]=useState(false);
+ const [contractLink,setContractLink]=useState<string|null>(null);
  useEffect(()=>{
   Promise.all([fetch("/api/referrals/"+encodeURIComponent(id),{cache:"no-store"}),fetch("/api/referrals/context",{cache:"no-store"})])
    .then(async ([r,c])=>{if(!r.ok||!c.ok)throw new Error("Unable to load referral");return [await r.json(),await c.json()]})
    .then(([r,c])=>{setData(r);setFacilityView(c.type==="facility")})
    .catch(()=>setError("Referral unavailable."));
  },[id]);
+ useEffect(()=>{
+  fetch("/api/referrals/"+encodeURIComponent(id)+"/contract",{cache:"no-store"})
+    .then(r=>r.ok?r.json():null).then(c=>setContractLink(c?.id??null)).catch(()=>{});
+ },[id,data?.status]);
  async function action(status:"sent"|"accepted"|"declined") {
   setBusy(true);setError("");
   try {
@@ -48,7 +53,8 @@ export function ReferralDetail({id}:{id:string}) {
    <button disabled={busy} onClick={()=>void action("declined")} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#555] disabled:opacity-50 dark:bg-white/10 dark:text-white"><X size={16}/> Decline</button>
   </>}
   {!facilityView&&data.status==="draft"&&<button disabled={busy} onClick={()=>void action("sent")} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#263000] disabled:opacity-50"><Send size={16}/> Send to facility</button>}
-  {data.status==="accepted"&&<p className="text-sm text-[#668035]">Accepted. Contract preparation will be available in slice 2.</p>}
+  {contractLink&&<Link href={"/contracts/"+contractLink} className="inline-flex items-center rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#293800]">View placement agreement</Link>}
+  {data.status==="accepted"&&!contractLink&&<p className="text-sm text-[#668035]">Accepted. Preparing agreement…</p>}
  </div>
  </>}
  </div></main>;

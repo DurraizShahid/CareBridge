@@ -1,3 +1,4 @@
+import { renderContract, documentSha256 } from "@/lib/esign/document";
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getServerOrganization } from "@/lib/server-organization";
@@ -148,15 +149,50 @@ export async function transitionReferral(id: string, next: ReferralStatus) {
     select: { id: true },
   });
   if (!existing) throw new ReferralError(409, "Referral unavailable or already processed");
-  // Atomic CAS blocks double acceptance / response races.
-  const result = await prisma.referral.updateMany({
-    where: { id, status: expected,
-      ...(ctx.type === "hospital" ? { sendingOrgId: ctx.organizationId }
-        : { facility: { organizationId: ctx.organizationId } }) },
-    data: { status: next, ...(next === "sent" ? { sentAt: new Date() } : { respondedAt: new Date() }) },
+  // A single transaction commits the acceptance and the draft contract together.
+  // Unique Contract.referralId and the status CAS make repeated acceptance idempotent-safe.
+  return prisma.$transaction(async tx => {
+    const result = await tx.referral.updateMany({
+      where: { id, status: expected,
+        ...(ctx.type === "hospital" ? { sendingOrgId: ctx.organizationId }
+          : { facility: { organizationId: ctx.organizationId } }) },
+      data: { status: next, ...(next === "sent" ? { sentAt: new Date() } : { respondedAt: new Date() }) },
+    });
+    if (!result.count) throw new ReferralError(409, "Referral already processed");
+    if (next === "accepted") {
+      const referral = await tx.referral.findUniqueOrThrow({
+        where: { id },
+        include: {
+          sendingOrganization: { select: { name: true } },
+          facility: { select: { name: true } },
+        },
+      });
+      const snapshot = {
+        referralId: referral.id,
+        hospitalName: referral.sendingOrganization.name,
+        facilityName: referral.facility.name,
+        facilityId: referral.facilityId,
+        careLevel: referral.careLevel,
+        requiredServices: referral.requiredServices,
+        depositAmountCents: 0,
+        currency: "usd",
+        facilityTerms: "Terms and deposit to be agreed before sending.",
+      };
+      const documentText = renderContract(snapshot);
+      await tx.contract.create({
+        data: {
+          referralId: id,
+          depositAmountCents: 0,
+          currency: "usd",
+          facilityTermsSnapshot: snapshot,
+          status: "draft",
+          documentText,
+          documentHash: documentSha256(documentText),
+        },
+      });
+    }
+    return { id, status: next };
   });
-  if (!result.count) throw new ReferralError(409, "Referral already processed");
-  return { id, status: next };
 }
 
 export function referralFailure(error: unknown) {
