@@ -36,6 +36,7 @@ const tabItems: TabItem[] = [
   { href: "/dashboard/facility-network", label: "Facility Network", icon: RiMapPinLine, requiredPermission: "placements:read" },
   { href: "/facilities", label: "Facilities", icon: RiBuildingLine, requiredPermission: "facilities:read" },
   { href: "/placements", label: "Placements", icon: RiClipboardLine, requiredPermission: "placements:read" },
+  { href: "/referrals", label: "Referrals", icon: RiClipboardLine },
   { href: "/dashboard/users", label: "Users", icon: RiGroupLine, requiredPermission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, requiredPermission: "hospitals:manage" },
   { href: "/admin/permissions", label: "Permissions", icon: RiShieldCheckLine, requiredPermission: "users:manage-roles" },

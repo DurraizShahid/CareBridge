@@ -1,4 +1,4 @@
-// ─── CareBridge Prisma Schema ───
+// ΓöÇΓöÇΓöÇ CareBridge Prisma Schema ΓöÇΓöÇΓöÇ
 // Maps to CareBridge domain types from src/types/index.ts
 
 generator client {
@@ -10,7 +10,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Enums ──
+// ΓöÇΓöÇ Enums ΓöÇΓöÇ
 
 enum InsuranceType {
   medicare
@@ -102,13 +102,33 @@ enum OrganizationType {
   facility
 }
 
+enum ReferralStatus {
+  draft
+  sent
+  accepted
+  declined
+  converted
+}
+
+enum ContractStatus {
+  draft
+  sent
+  signed
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  demo_paid
+}
 enum JoinRequestStatus {
   pending
   approved
   denied
 }
 
-// ── Models ──
+// ΓöÇΓöÇ Models ΓöÇΓöÇ
 
 model Organization {
   id        String           @id
@@ -129,6 +149,7 @@ model Organization {
   chats                Chat[]
   documents            Document[]
   documentUploadTokens DocumentUploadToken[]
+  sentReferrals Referral[] @relation("ReferralSender")
 }
 
 model InviteCode {
@@ -264,6 +285,7 @@ model Facility {
   organization       Organization     @relation(fields: [organizationId], references: [id])
   placements         Placement[]
   media              FacilityMedia[]
+  referrals         Referral[]
 }
 
 model FacilityMedia {
@@ -335,7 +357,7 @@ model Placement {
   socialWorker         User            @relation(fields: [socialWorkerId], references: [id])
 }
 
-// ── HIPAA Documentation Vault Models ──
+// ΓöÇΓöÇ HIPAA Documentation Vault Models ΓöÇΓöÇ
 
 enum DocumentCategory {
   patient_records
@@ -526,4 +548,71 @@ model ChatMessage {
   chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId])
+}
+
+/// PHI: patientName, patientDateOfBirth and patientMrn are sensitive identifiers.
+/// Never log these or send them to Stripe metadata.
+model Referral {
+  id                 String         @id @default(cuid())
+  patientName        String
+  patientDateOfBirth DateTime       @db.Date
+  patientMrn         String
+  careLevel          CareLevel
+  requiredServices   String[]       @default([])
+  status             ReferralStatus @default(draft)
+  sendingOrgId       String
+  facilityId         String
+  createdById        String
+  sentAt             DateTime?
+  respondedAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  sendingOrganization Organization @relation("ReferralSender", fields: [sendingOrgId], references: [id])
+  facility            Facility     @relation(fields: [facilityId], references: [id])
+  contract            Contract?
+  payments            Payment[]
+
+  @@index([sendingOrgId, status, createdAt])
+  @@index([facilityId, status, createdAt])
+}
+
+model Contract {
+  id                    String         @id @default(cuid())
+  referralId            String         @unique
+  depositAmountCents    Int
+  currency              String         @default("usd") @db.VarChar(3)
+  facilityTermsSnapshot Json
+  status                ContractStatus @default(draft)
+  documentHash          String?
+  hospitalSignedBy      String?
+  hospitalSignedAt      DateTime?
+  facilitySignedBy      String?
+  facilitySignedAt      DateTime?
+  sentAt                DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  referral Referral  @relation(fields: [referralId], references: [id])
+  payments Payment[]
+}
+
+/// Stripe references only. Never store card data or PHI in payment metadata.
+model Payment {
+  id                    String        @id @default(cuid())
+  referralId            String
+  contractId            String?
+  amountCents           Int
+  currency              String        @default("usd") @db.VarChar(3)
+  stripePaymentIntentId String?       @unique
+  status                PaymentStatus @default(pending)
+  demo                  Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  referral Referral  @relation(fields: [referralId], references: [id])
+  contract Contract? @relation(fields: [contractId], references: [id])
+
+  @@index([referralId, createdAt])
+  @@index([contractId])
 }

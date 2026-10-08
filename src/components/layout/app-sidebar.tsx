@@ -43,6 +43,7 @@ const mainNavItems: NavItem[] = [
   { href: "/patients", label: "Patients", icon: Users, badge: "12" },
   { href: "/facilities", label: "Facilities", icon: BuildingOffice },
   { href: "/placements", label: "Placements", icon: HouseSimple, badge: "3" },
+  { href: "/referrals", label: "Referrals", icon: FileText },
 ];
 
 const managementNavItems: NavItem[] = [
