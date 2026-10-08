@@ -21,8 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SocialPlatformIcon } from "@/components/marketing/social-platform-icons";
-import type { SocialPlatform } from "@/components/marketing/social-platform-icons";
 
 type OrgType = "hospital" | "facility";
 
@@ -44,7 +42,6 @@ const highlights = [
   },
 ];
 
-const channels: SocialPlatform[] = ["linkedin", "x", "facebook", "instagram"];
 
 export function LeadGenClient() {
   const [orgType, setOrgType] = useState<OrgType>("hospital");
@@ -92,11 +89,6 @@ export function LeadGenClient() {
               priority
             />
           </Link>
-          <div className="flex items-center gap-2">
-            {channels.map((platform) => (
-              <SocialPlatformIcon key={platform} platform={platform} className="size-7" />
-            ))}
-          </div>
         </header>
 
         <main className="mt-10 grid flex-1 items-center gap-12 lg:mt-0 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">

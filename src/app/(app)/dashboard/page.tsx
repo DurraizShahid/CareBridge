@@ -9,10 +9,8 @@ import AdminOverview from "./_sections/admin-overview";
 import StatsGrid from "./_sections/stats-grid";
 import { AppointmentsCard } from "./_sections/appointments-card";
 import { ActivityCard } from "./_sections/activity-card";
-import { VirtualCardsCard } from "./_sections/virtual-cards-card";
 import { ProgressCard } from "./_sections/progress-card";
 import { AdvantagesCard } from "./_sections/advantages-card";
-import { TotalSpentCard } from "./_sections/total-spent-card";
 import { ContractTypeCard } from "./_sections/contract-type-card";
 import { PlacementsByMonthCard } from "./_sections/placements-by-month-card";
 import WelcomeCard from "./_sections/welcome-card";
@@ -71,20 +69,12 @@ export default async function DashboardPage() {
               <AppointmentsCard events={widgets.scheduleEvents} />
             </div>
 
-            <div className="md:col-span-7">
-              <TotalSpentCard data={widgets.priorityPlacements} />
-            </div>
-
             <div className="md:col-span-4">
               <ActivityCard data={widgets.activity} />
             </div>
 
             <div className="md:col-span-3">
               <ProgressCard data={widgets.placementsThisWeek} />
-            </div>
-
-            <div className="md:col-span-4">
-              <VirtualCardsCard categories={widgets.facilitiesByCategory} />
             </div>
 
             <div className="md:col-span-4">

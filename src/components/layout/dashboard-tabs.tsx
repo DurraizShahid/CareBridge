@@ -13,8 +13,6 @@ import {
   RiShieldCheckLine,
   RiHospitalLine,
   RiMapPinLine,
-  RiMegaphoneLine,
-  RiPhoneLine,
   RiSunLine,
   RiMoonLine,
   RiSettingsLine,
@@ -40,8 +38,6 @@ const tabItems: TabItem[] = [
   { href: "/placements", label: "Placements", icon: RiClipboardLine, requiredPermission: "placements:read" },
   { href: "/dashboard/users", label: "Users", icon: RiGroupLine, requiredPermission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, requiredPermission: "hospitals:manage" },
-  { href: "/dashboard/marketing", label: "Marketing", icon: RiMegaphoneLine, superadminOnly: true },
-  { href: "/dashboard/ai-dialing", label: "AI Dialing", icon: RiPhoneLine, requiredPermission: "dialing:read" },
   { href: "/admin/permissions", label: "Permissions", icon: RiShieldCheckLine, requiredPermission: "users:manage-roles" },
 ];
 

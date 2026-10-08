@@ -49,8 +49,6 @@ export const PERMISSIONS = [
   "documents:delete",
   "documents:audit",
   // ── AI Dialing ──
-  "dialing:read",
-  "dialing:manage",
   // ── Audit ──
   "audit:view",
 ] as const satisfies `${string}:${string}`[];

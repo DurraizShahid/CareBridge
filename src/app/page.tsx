@@ -28,7 +28,6 @@ import {
   NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { Ripple } from "@/components/ui/ripple";
-import Silk from "@/components/ui/silk";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { CareLevelCombobox } from "@/components/care-level-combobox";
 import { LandingPageLoader } from "@/components/landing-page-loader";
@@ -46,18 +45,8 @@ export default function Page() {
     <LandingPageLoader>
       <div className="flex flex-col flex-1">
         <main className="flex-1">
-          {/* Hero Section - Full screen with Silk animation */}
+          {/* Hero Section */}
           <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#0a1628]">
-          {/* Silk animation background */}
-          <div className="absolute inset-0 z-0">
-            <Silk
-              speed={12}
-              scale={1.2}
-              color="#134675"
-              noiseIntensity={1.5}
-              rotation={0}
-            />
-          </div>
           {/* Stronger gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-[#0a1628]/50 to-[#0a1628]/30 z-[1]" />
 

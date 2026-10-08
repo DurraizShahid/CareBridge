@@ -3,7 +3,6 @@
 import type { DashboardWidgetData } from "@/types";
 import { AppointmentsCard } from "./appointments-card";
 import { ActivityCard } from "./activity-card";
-import { VirtualCardsCard } from "./virtual-cards-card";
 import { ProgressCard } from "./progress-card";
 import { ContractTypeCard } from "./contract-type-card";
 import { PlacementsByMonthCard } from "./placements-by-month-card";
@@ -21,8 +20,6 @@ export default function AdminOverview({ widgets }: AdminOverviewProps) {
       </div>
 
       <ActivityCard data={widgets.activity} />
-
-      <VirtualCardsCard categories={widgets.facilitiesByCategory} />
 
       <ProgressCard data={widgets.placementsThisWeek} />
 

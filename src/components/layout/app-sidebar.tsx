@@ -11,8 +11,6 @@ import {
   FileText,
   ChartBar,
   Info,
-  Megaphone,
-  PhoneCall,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -51,8 +49,6 @@ const managementNavItems: NavItem[] = [
   { href: "/dashboard/documents", label: "Documentation", icon: FileText },
   { href: "/users", label: "Users", icon: Users },
   { href: "/dashboard/facility-network", label: "Network", icon: ChartBar },
-  { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, superadminOnly: true },
-  { href: "/dashboard/ai-dialing", label: "AI Dialing", icon: PhoneCall, superadminOnly: true },
 ];
 
 const bottomNavItems: NavItem[] = [

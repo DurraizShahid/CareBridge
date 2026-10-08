@@ -9,8 +9,6 @@ import {
   RiShieldCheckLine,
   RiHospitalLine,
   RiUserLine,
-  RiMegaphoneLine,
-  RiPhoneLine,
 } from "@remixicon/react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -30,8 +28,6 @@ const dockItems: DockItem[] = [
   { href: "/admin/permissions", label: "Management", icon: RiShieldCheckLine, permission: "users:manage-roles" },
   { href: "/dashboard/users", label: "Users", icon: RiUserLine, permission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, permission: "hospitals:manage" },
-  { href: "/dashboard/marketing", label: "Marketing", icon: RiMegaphoneLine, superadminOnly: true },
-  { href: "/dashboard/ai-dialing", label: "AI Dialing", icon: RiPhoneLine, permission: "dialing:read" },
 ];
 
 export function HospitalDock() {
