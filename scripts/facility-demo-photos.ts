@@ -1,3 +1,4 @@
+import type { PrismaClient } from "../src/generated/prisma/client";
 /**
  * Demo facility exterior / care-setting photos (Unsplash).
  * Internal demo use only — not for production marketing.
@@ -93,16 +94,7 @@ export const FACILITY_DEMO_PHOTOS: Record<string, string[]> = {
   ],
 };
 
-type PrismaLike = {
-  facility: { findUnique: (args: { where: { id: string }; select: { id: true } }) => Promise<{ id: string } | null> };
-  facilityMedia: {
-    upsert: (args: {
-      where: { id: string };
-      update: Record<string, unknown>;
-      create: Record<string, unknown>;
-    }) => Promise<unknown>;
-  };
-};
+type PrismaLike = Pick<PrismaClient, "facility" | "facilityMedia">;
 
 export async function seedFacilityDemoPhotos(
   prisma: PrismaLike,
