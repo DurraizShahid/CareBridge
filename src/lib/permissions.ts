@@ -51,9 +51,6 @@ export const PERMISSION_CATALOG: {
   { key: "documents:update", label: "Update Documents", description: "Edit document metadata and content", resource: "documents" },
   { key: "documents:delete", label: "Delete Documents", description: "Archive or delete documents from the vault", resource: "documents" },
   { key: "documents:audit", label: "Document Audit", description: "View document access logs and audit trail", resource: "documents" },
-  // AI Dialing
-  { key: "dialing:read", label: "View AI Dialing", description: "View AI automated inbound and outbound dialing", resource: "dialing" },
-  { key: "dialing:manage", label: "Manage AI Dialing", description: "Configure campaigns, agents, and dialing controls", resource: "dialing" },
   // Audit
   { key: "audit:view", label: "View Audit Log", description: "View audit trail and system logs", resource: "audit" },
 ];
@@ -75,7 +72,6 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "users:read", "users:read-org", "users:create", "users:update", "users:delete", "users:manage-roles",
     "dashboard:overview", "dashboard:staff", "dashboard:facility", "dashboard:admin",
     "documents:read", "documents:create", "documents:update", "documents:delete", "documents:audit",
-    "dialing:read", "dialing:manage",
     "settings:read", "settings:write",
     "audit:view",
   ],
@@ -133,7 +129,7 @@ import { normalizeRole } from "@/lib/organization-role";
 export { normalizeRole };
 
 export function getFallbackRole(): UserRole {
-  return process.env.NODE_ENV === "development" ? "superadmin" : "customer";
+  return "customer";
 }
 
 export function resolveRole(...candidates: unknown[]): UserRole {
@@ -215,10 +211,6 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
     permissions: ["dashboard:admin"],
     redirect: "/dashboard",
   },
-  "/dashboard/marketing": {
-    roles: ["superadmin"],
-    redirect: "/dashboard",
-  },
   "/dashboard/hospitals": {
     permissions: ["hospitals:manage"],
     redirect: "/dashboard",
@@ -251,10 +243,6 @@ export const ROUTE_ACCESS: Record<string, RouteAccess> = {
   "/dashboard/documents/[id]": {
     permissions: ["documents:read"],
     redirect: "/dashboard/documents",
-  },
-  "/dashboard/ai-dialing": {
-    roles: ["superadmin"],
-    redirect: "/dashboard",
   },
   "/placements": {
     permissions: ["placements:read"],

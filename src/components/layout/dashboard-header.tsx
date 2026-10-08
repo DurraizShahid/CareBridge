@@ -31,8 +31,6 @@ interface DashboardHeaderProps {
 const PAGE_TITLES: { match: string; title: string }[] = [
   { match: "/dashboard/facility-network", title: "Facility Network" },
   { match: "/dashboard/documents", title: "Documentation" },
-  { match: "/dashboard/marketing", title: "Marketing" },
-  { match: "/dashboard/ai-dialing", title: "AI Dialing" },
   { match: "/dashboard/users", title: "Users" },
   { match: "/dashboard/hospitals", title: "Hospitals" },
   { match: "/dashboard/home", title: "AI Assistant" },
