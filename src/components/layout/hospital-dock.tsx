@@ -25,6 +25,7 @@ const dockItems: DockItem[] = [
   { href: "/dashboard/home", label: "Home", icon: RiHomeLine },
   { href: "/patients", label: "Patients", icon: RiGroupLine },
   { href: "/placements", label: "Placements", icon: RiClipboardLine },
+  { href: "/referrals", label: "Referrals", icon: RiClipboardLine },
   { href: "/admin/permissions", label: "Management", icon: RiShieldCheckLine, permission: "users:manage-roles" },
   { href: "/dashboard/users", label: "Users", icon: RiUserLine, permission: "users:read-org" },
   { href: "/dashboard/hospitals", label: "Hospitals", icon: RiHospitalLine, permission: "hospitals:manage" },

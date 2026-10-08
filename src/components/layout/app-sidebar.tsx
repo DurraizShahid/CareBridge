@@ -10,14 +10,12 @@ import {
   HouseSimple,
   FileText,
   ChartBar,
-  Info,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -40,9 +38,10 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
-  { href: "/patients", label: "Patients", icon: Users, badge: "12" },
+  { href: "/patients", label: "Patients", icon: Users },
   { href: "/facilities", label: "Facilities", icon: BuildingOffice },
-  { href: "/placements", label: "Placements", icon: HouseSimple, badge: "3" },
+  { href: "/placements", label: "Placements", icon: HouseSimple },
+  { href: "/referrals", label: "Referrals", icon: FileText },
 ];
 
 const managementNavItems: NavItem[] = [
@@ -52,7 +51,6 @@ const managementNavItems: NavItem[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
-  { href: "/support", label: "Help & Support", icon: Info },
 ];
 
 function NavButton({
@@ -211,17 +209,6 @@ export function AppSidebar({ locked }: { locked: boolean }) {
           </>
         )}
       </SidebarContent>
-
-      <SidebarFooter className="px-1 pb-3">
-        <div className="mx-3 mb-2 h-px bg-sidebar-border" />
-        <SidebarMenu className="gap-0.5">
-          {bottomNavItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <NavButton item={item} isActive={isActive(item.href)} />
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

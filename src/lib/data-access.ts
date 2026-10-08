@@ -427,7 +427,7 @@ export async function getFacilityPatientMatches(
     .slice(0, 5);
 }
 
-async function recalculateFacilityOccupancy(
+export async function recalculateFacilityOccupancy(
   tx: any,
   facilityIds: (string | null | undefined)[],
 ): Promise<void> {
@@ -442,11 +442,13 @@ async function recalculateFacilityOccupancy(
       }),
     ]);
     if (!facility) return;
+    const reservationCount = await tx.bedReservation.count({ where: { facilityId } });
+    const totalOccupied = activeCount + reservationCount;
     await tx.facility.update({
       where: { id: facilityId },
       data: {
-        currentOccupancy: activeCount,
-        hasAvailability: activeCount < facility.capacity,
+        currentOccupancy: totalOccupied,
+        hasAvailability: totalOccupied < facility.capacity,
       },
     });
   }));
@@ -487,7 +489,7 @@ async function countBedOccupyingPlacements(
  * - Confirming a placement that already holds a bed at this facility is
  *   idempotent: it is not double-counted and is not gated on availability.
  */
-async function assertFacilityCapacityAvailable(
+export async function assertFacilityCapacityAvailable(
   tx: any,
   facilityId: string | null | undefined,
   placementId: string | null | undefined,
@@ -516,7 +518,8 @@ async function assertFacilityCapacityAvailable(
   }
 
   const otherOccupying = await countBedOccupyingPlacements(tx, facilityId, placementId);
-  const projectedOccupancy = otherOccupying + (newlyOccupies ? 1 : 0);
+  const reservedBeds = await tx.bedReservation.count({ where: { facilityId } });
+  const projectedOccupancy = otherOccupying + reservedBeds + (newlyOccupies ? 1 : 0);
   if (projectedOccupancy > facility.capacity) {
     throw new DataAccessError(409, "Selected facility has no current availability");
   }

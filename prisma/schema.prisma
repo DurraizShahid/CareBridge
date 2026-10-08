@@ -1,4 +1,4 @@
-// ─── CareBridge Prisma Schema ───
+// ΓöÇΓöÇΓöÇ CareBridge Prisma Schema ΓöÇΓöÇΓöÇ
 // Maps to CareBridge domain types from src/types/index.ts
 
 generator client {
@@ -10,7 +10,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Enums ──
+// ΓöÇΓöÇ Enums ΓöÇΓöÇ
 
 enum InsuranceType {
   medicare
@@ -102,13 +102,41 @@ enum OrganizationType {
   facility
 }
 
+enum ReferralStatus {
+  draft
+  sent
+  accepted
+  declined
+  converted
+}
+
+enum ContractStatus {
+  draft
+  sent
+  signed
+}
+
+enum ContractParty {
+  hospital
+  facility
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  demo_paid
+  refund_pending
+  refunded
+  demo_refunded
+}
 enum JoinRequestStatus {
   pending
   approved
   denied
 }
 
-// ── Models ──
+// ΓöÇΓöÇ Models ΓöÇΓöÇ
 
 model Organization {
   id        String           @id
@@ -129,6 +157,7 @@ model Organization {
   chats                Chat[]
   documents            Document[]
   documentUploadTokens DocumentUploadToken[]
+  sentReferrals Referral[] @relation("ReferralSender")
 }
 
 model InviteCode {
@@ -264,6 +293,8 @@ model Facility {
   organization       Organization     @relation(fields: [organizationId], references: [id])
   placements         Placement[]
   media              FacilityMedia[]
+  bedReservations   BedReservation[]
+  referrals         Referral[]
 }
 
 model FacilityMedia {
@@ -335,7 +366,7 @@ model Placement {
   socialWorker         User            @relation(fields: [socialWorkerId], references: [id])
 }
 
-// ── HIPAA Documentation Vault Models ──
+// ΓöÇΓöÇ HIPAA Documentation Vault Models ΓöÇΓöÇ
 
 enum DocumentCategory {
   patient_records
@@ -526,4 +557,126 @@ model ChatMessage {
   chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId])
+}
+
+/// PHI: patientName, patientDateOfBirth and patientMrn are sensitive identifiers.
+/// Never log these or send them to Stripe metadata.
+model Referral {
+  id                 String         @id @default(cuid())
+  patientName        String
+  patientDateOfBirth DateTime       @db.Date
+  patientMrn         String
+  careLevel          CareLevel
+  requiredServices   String[]       @default([])
+  status             ReferralStatus @default(draft)
+  sendingOrgId       String
+  facilityId         String
+  createdById        String
+  sentAt             DateTime?
+  respondedAt        DateTime?
+  depositIssue       String?
+  convertedPlacementId String? @unique
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  sendingOrganization Organization @relation("ReferralSender", fields: [sendingOrgId], references: [id])
+  facility            Facility     @relation(fields: [facilityId], references: [id])
+  contract            Contract?
+  payments            Payment[]
+  bedReservation     BedReservation?
+
+  @@index([sendingOrgId, status, createdAt])
+  @@index([facilityId, status, createdAt])
+}
+
+model Contract {
+  id                    String         @id @default(cuid())
+  referralId            String         @unique
+  depositAmountCents    Int
+  currency              String         @default("usd") @db.VarChar(3)
+  facilityTermsSnapshot Json
+  status                ContractStatus @default(draft)
+  documentText          String?        @db.Text
+  documentHash          String?
+  hospitalSignedBy      String?
+  hospitalSignedAt      DateTime?
+  facilitySignedBy      String?
+  facilitySignedAt      DateTime?
+  sentAt                DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  referral Referral  @relation(fields: [referralId], references: [id])
+  payments Payment[]
+  signatures            ContractSignature[]
+}
+
+/// Stripe references only. Never store card data or PHI in payment metadata.
+model Payment {
+  id                    String        @id @default(cuid())
+  referralId            String
+  contractId            String?
+  amountCents           Int
+  currency              String        @default("usd") @db.VarChar(3)
+  stripePaymentIntentId String?       @unique
+  status                PaymentStatus @default(pending)
+  isDemo                Boolean       @default(false) @map("demo")
+  refundId              String?
+  failureReason         String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  referral Referral  @relation(fields: [referralId], references: [id])
+  contract Contract? @relation(fields: [contractId], references: [id])
+  bedReservation        BedReservation?
+  webhookEvents         PaymentWebhookEvent[]
+
+  @@index([referralId, createdAt])
+  @@index([contractId])
+}
+
+/// Audit evidence contains signature name and salted/secret-hashed IP, never raw IP.
+/// The signed document is identified exclusively by documentHash.
+model ContractSignature {
+  id           String        @id @default(cuid())
+  contractId   String
+  party        ContractParty
+  typedName    String
+  signerUserId String
+  signerOrgId  String
+  consentStatement String @db.Text
+  signedAt     DateTime      @default(now())
+  ipHash       String
+  documentHash String
+  provider     String        @default("standard")
+  contract     Contract      @relation(fields: [contractId], references: [id])
+
+  @@unique([contractId, party])
+  @@index([signerOrgId, signedAt])
+}
+/// A deposit-backed bed claim. Convert to a placement by releasing this
+/// reservation within the same row-locked transaction (future slice).
+model BedReservation {
+  id          String   @id @default(cuid())
+  referralId  String   @unique
+  paymentId   String   @unique
+  facilityId  String
+  createdAt   DateTime @default(now())
+  referral    Referral @relation(fields: [referralId], references: [id])
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+  facility    Facility @relation(fields: [facilityId], references: [id])
+  @@index([facilityId])
+}
+
+/// Durable idempotency ledger for Stripe and demo events.
+model PaymentWebhookEvent {
+  id           String   @id @default(cuid())
+  externalId   String   @unique
+  paymentId    String
+  kind         String
+  processed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  processedAt  DateTime?
+  payment      Payment  @relation(fields: [paymentId], references: [id])
+  @@index([paymentId, processed])
 }
