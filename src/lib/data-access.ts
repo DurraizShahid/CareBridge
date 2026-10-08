@@ -597,7 +597,7 @@ async function validatePlacementReferences(
     }
   }
 
-  const bedFacilityId = isConfirmedPlacementStatus(status)
+  const bedFacilityId = isBedOccupyingStatus(status)
     ? selectedFacilityId ?? requestedFacilityId
     : null;
   if (bedFacilityId) {
