@@ -9,6 +9,7 @@ interface StatCardProps {
   trend?: {
     value: string;
     positive: boolean;
+    neutral?: boolean;
   };
   variant?: "default" | "health" | "info" | "purple" | "pink" | "orange" | "facility";
 }
@@ -26,6 +27,7 @@ const iconStyles: Record<string, string> = {
 const trendStyles = {
   positive: "text-[var(--stat-health)] bg-[var(--stat-health-bg)]",
   negative: "text-destructive bg-destructive/10",
+  neutral: "text-[#63788F] bg-[#EEF4FC] dark:text-[#DCEBFF] dark:bg-[#26364E]",
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
@@ -51,10 +53,10 @@ export function StatCard({ title, value, icon: Icon, trend, variant = "default" 
             <span
               className={cn(
                 "inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full",
-                trendStyles[trend.positive ? "positive" : "negative"],
+                trendStyles[trend.neutral ? "neutral" : trend.positive ? "positive" : "negative"],
               )}
             >
-              {trend.positive ? "↑" : "↓"}
+              {trend.neutral ? "" : trend.positive ? "↑" : "↓"}
               {trend.value}
             </span>
           )}

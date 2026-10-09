@@ -61,7 +61,7 @@ export default function AdminStatusDistribution({
               style={{ width: `${cat.pct}%` }}
             >
               {cat.pct > 10 ? (
-                <span className={cat.label === "Completed" ? "text-[#102A43]" : "text-[#44BEB1]"}>
+                <span className={cat.label === "Completed" ? "text-[#102A43]" : "text-[#6EA8F2]"}>
                   {cat.pct}%
                 </span>
               ) : null}

@@ -79,7 +79,7 @@ async function FacilityStatsGrid({ organizationId, role }: SectionProps) {
         value={scopedStats.availableBeds}
         icon={Building2}
         variant="health"
-        trend={{ value: `${scopedStats.occupancyRate}% full`, positive: scopedStats.availableBeds > 5 }}
+        trend={{ value: `${scopedStats.occupancyRate}% full`, positive: false, neutral: true }}
       />
       <StatCard title="Pending Referrals" value={scopedStats.pendingReferrals} icon={ClipboardList} variant="info" />
       <StatCard title="Pending Admissions" value={scopedStats.pendingAdmissions} icon={Activity} variant="default" />

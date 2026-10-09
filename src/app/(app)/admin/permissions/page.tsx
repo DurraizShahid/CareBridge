@@ -15,7 +15,7 @@ const roleDisplayConfig: Record<string, { label: string; color: string }> = {
   administrator: { label: "Administrator", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
   "social-worker": { label: "Social Worker", color: "bg-health/10 text-health dark:bg-health/20" },
   "discharge-planner": { label: "Discharge Planner", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  "facility-coordinator": { label: "Facility Coordinator", color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300" },
+  "facility-coordinator": { label: "Facility Coordinator", color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]" },
   customer: { label: "Customer", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
 };
 

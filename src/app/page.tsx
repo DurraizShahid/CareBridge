@@ -53,18 +53,18 @@ export default function HomePage() {
             <div aria-hidden="true" className="absolute -inset-8 rounded-full bg-brand-azure/25 blur-3xl" />
             <div className="brand-float relative overflow-hidden p-6 sm:p-9">
               <div className="flex items-center justify-between">
-                <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#8BA0BA]">THE CAREBRIDGE PATHWAY</p>
-                  <h2 className="mt-2 text-xl font-semibold tracking-tight">One connected journey</h2>
+                <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#8BA0BA] dark:text-[#DCEBFF]">THE CAREBRIDGE PATHWAY</p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-brand-navy dark:text-[#EEF4FC]">One connected journey</h2>
                 </div>
                 <div className="rounded-[20px] bg-brand-mist p-2.5"><BrandMark tone="blue" className="size-10"/></div>
               </div>
               <div className="mt-8 space-y-2">
-                {steps.map(({number,title,Icon},index)=><div key={number} className="flex items-center gap-4 rounded-[22px] bg-[#F7F9FD] px-4 py-4">
+                {steps.map(({number,title,Icon},index)=><div key={number} className="flex items-center gap-4 rounded-[22px] bg-[#F7F9FD] px-4 py-4 dark:bg-[#252A36]">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-blue shadow-[0_4px_18px_rgba(16,43,78,.03)]">
                     <Icon size={21} strokeWidth={1.8}/>
                   </div>
                   <div className="min-w-0 flex-1"><span className="text-[10px] font-semibold text-[#90A1B8]">STEP {number}</span>
-                    <p className="text-sm font-semibold text-brand-navy">{title}</p></div>
+                    <p className="text-sm font-semibold text-brand-navy dark:text-[#EEF4FC]">{title}</p></div>
                   {index === steps.length - 1 ? <span className="rounded-full bg-[#D9F477] px-3 py-1 text-[10px] font-semibold text-[#344A15]">Complete</span> : <ArrowRight size={17} className="text-[#A3B2C5]"/>}
                 </div>)}
               </div>
@@ -84,10 +84,10 @@ export default function HomePage() {
           {steps.map(({number,title,detail,Icon})=><article key={number} className="brand-float group min-h-64 p-8 transition-transform duration-300 hover:-translate-y-1">
             <div className="flex items-start justify-between">
               <div className="flex size-12 items-center justify-center rounded-[17px] bg-brand-mist text-brand-blue"><Icon size={23} strokeWidth={1.8}/></div>
-              <span className="brand-dot-stat text-4xl" aria-label={"Step "+number}>{number}</span>
+              <span className="brand-dot-stat text-4xl dark:text-[#DCEBFF]" aria-label={"Step "+number}>{number}</span>
             </div>
-            <h3 className="mt-9 text-xl font-semibold tracking-tight">{title}</h3>
-            <p className="mt-3 text-sm leading-7 text-[#70839B]">{detail}</p>
+            <h3 className="mt-9 text-xl font-semibold tracking-tight text-brand-navy dark:text-[#EEF4FC]">{title}</h3>
+            <p className="mt-3 text-sm leading-7 text-[#70839B] dark:text-[#DCEBFF]">{detail}</p>
           </article>)}
           <article className="relative flex min-h-64 flex-col justify-between overflow-hidden rounded-[30px] bg-brand-navy p-8 text-white">
             <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-10 size-48 rounded-full bg-brand-blue/60 blur-[70px]"/>

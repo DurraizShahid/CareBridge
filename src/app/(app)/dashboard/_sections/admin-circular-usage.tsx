@@ -55,7 +55,7 @@ export default function AdminCircularUsage({
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
-              className="transition-all duration-700 ease-out stroke-[#44BEB1] dark:stroke-[#00b4d8]"
+              className="transition-all duration-700 ease-out stroke-[#6EA8F2] dark:stroke-[#255DCE]"
             />
             <circle
               cx="60"
@@ -67,7 +67,7 @@ export default function AdminCircularUsage({
               strokeDasharray={circumference}
               strokeDashoffset={offset > circumference * 0.25 ? offset : circumference}
               opacity={rate >= 75 ? 0 : 1}
-              className="transition-all duration-700 ease-out stroke-[#134675] dark:stroke-[#00b4d8]"
+              className="transition-all duration-700 ease-out stroke-[#255DCE] dark:stroke-[#255DCE]"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">

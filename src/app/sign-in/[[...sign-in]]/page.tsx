@@ -164,20 +164,20 @@ export default function SignInPage() {
       <div className="brand-auth-visual" style={{
         position: 'relative',
         overflow: 'hidden',
-        background: '#102B4E',
+        background: '#DCEBFF',
         minHeight: '100dvh',
       }}>
         <div style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'radial-gradient(ellipse at 78% 15%, rgba(110,168,242,.62), transparent 49%), radial-gradient(ellipse at 16% 84%, rgba(37,93,206,.35), transparent 55%), linear-gradient(145deg,#102B4E,#255DCE)',
+          backgroundImage: 'radial-gradient(ellipse at 78% 15%, rgba(110,168,242,.48), transparent 53%), radial-gradient(ellipse at 16% 84%, rgba(209,226,255,.90), transparent 58%), radial-gradient(ellipse at 35% 40%, rgba(255,255,255,.62), transparent 62%), linear-gradient(145deg,#EEF4FC,#B8D4FA)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(16,43,78,.08), rgba(16,43,78,.28))',
+          background: 'linear-gradient(180deg, rgba(16,43,78,.03), rgba(37,93,206,.12))',
         }} />
         {/* Logo */}
         <div style={{
@@ -189,7 +189,7 @@ export default function SignInPage() {
           gap: 8,
           zIndex: 1,
         }}>
-          <BrandLogo tone="white" className="w-[196px]" priority />
+          <BrandLogo tone="navy" className="w-[196px]" priority />
         </div>
         {/* Testimonial */}
         <div style={{
@@ -203,7 +203,7 @@ export default function SignInPage() {
             fontSize: 14,
             lineHeight: 1.55,
             fontWeight: 400,
-            color: 'rgba(255, 255, 255, 0.78)',
+            color: '#26466C',
             margin: 0,
           }}>
             A calm place to coordinate every transition, from hospital discharge to supported care.
@@ -212,7 +212,7 @@ export default function SignInPage() {
             fontSize: 13,
             lineHeight: 1.5,
             fontWeight: 400,
-            color: 'rgba(255, 255, 255, 0.5)',
+            color: '#557397',
             margin: '4px 0 0',
           }}>
             CareBridge Health · Placement coordination

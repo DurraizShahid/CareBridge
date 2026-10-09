@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Image from "next/image";
 import {
   Loader2,
   Building2,
@@ -49,6 +50,8 @@ export default function OnboardingPage() {
     const checkUserStatus = async () => {
       try {
         const res = await fetch("/api/me");
+        // Clerk redirects signed-out requests to HTML sign-in pages; do not parse them as JSON.
+        if (!res.ok || res.redirected || !res.headers.get("content-type")?.includes("application/json")) return;
         const data = await res.json();
         if (data && data.organizationId) {
           router.push("/dashboard");
@@ -160,8 +163,8 @@ export default function OnboardingPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-white/10 border-t-[#44BEAF] animate-spin" />
-          <Sparkles className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-[#44BEAF]" />
+          <div className="h-12 w-12 rounded-full border-4 border-white/10 border-t-[#C6F135] animate-spin" />
+          <Sparkles className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-[#C6F135]" />
         </div>
         <p className="text-sm text-white/50">Setting things up...</p>
       </div>
@@ -172,12 +175,7 @@ export default function OnboardingPage() {
     <div className="mx-auto w-full max-w-[520px]">
       {/* Logo */}
       <div className="mb-8 flex justify-center">
-        <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#44BEAF]">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-white">CareBridge</span>
-        </div>
+        <Image src="/brand/carebridge-logo-white.svg" alt="CareBridge" width={180} height={48} className="h-10 w-auto" />
       </div>
 
       {/* Step Indicator */}
@@ -188,7 +186,7 @@ export default function OnboardingPage() {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
                   step >= s
-                    ? "bg-[#44BEAF] text-white shadow-[0_0_20px_rgba(68,190,175,0.4)]"
+                    ? "bg-[#C6F135] text-[#0E0E10] shadow-[0_0_20px_rgba(198,241,53,0.16)]"
                     : "bg-white/10 text-white/40"
                 }`}
               >
@@ -201,7 +199,7 @@ export default function OnboardingPage() {
               {s < 2 && (
                 <div
                   className={`h-0.5 w-16 rounded-full transition-all duration-500 ${
-                    step > s ? "bg-[#44BEAF]" : "bg-white/10"
+                    step > s ? "bg-[#C6F135]" : "bg-white/10"
                   }`}
                 />
               )}
@@ -237,7 +235,7 @@ export default function OnboardingPage() {
             <div
               className={`flex items-center gap-2 rounded-xl px-4 py-3 ${
                 message.type === "success"
-                  ? "bg-[#44BEAF]/10 text-[#44BEAF]"
+                  ? "bg-[#C6F135]/10 text-[#C6F135]"
                   : "bg-red-500/10 text-red-400"
               }`}
             >
@@ -270,10 +268,10 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => handleTypeSelect("hospital")}
-                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#44BEAF]/40 hover:bg-[#44BEAF]/5 hover:shadow-[0_0_30px_rgba(68,190,175,0.1)]"
+                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#6EA8F2]/40 hover:bg-[#6EA8F2]/5 hover:shadow-[0_0_30px_rgba(110,168,242,0.1)]"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#134675]/50 transition-colors group-hover:bg-[#134675]">
-                  <Building2 className="h-7 w-7 text-[#44BEAF]" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#255DCE]/15 transition-colors group-hover:bg-[#255DCE]/25">
+                  <Building2 className="h-7 w-7 text-[#6EA8F2]" />
                 </div>
                 <div className="text-center">
                   <span className="text-sm font-semibold text-white">
@@ -288,10 +286,10 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => handleTypeSelect("facility")}
-                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#44BEAF]/40 hover:bg-[#44BEAF]/5 hover:shadow-[0_0_30px_rgba(68,190,175,0.1)]"
+                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#6EA8F2]/40 hover:bg-[#6EA8F2]/5 hover:shadow-[0_0_30px_rgba(110,168,242,0.1)]"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#134675]/50 transition-colors group-hover:bg-[#134675]">
-                  <Home className="h-7 w-7 text-[#44BEAF]" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#255DCE]/15 transition-colors group-hover:bg-[#255DCE]/25">
+                  <Home className="h-7 w-7 text-[#6EA8F2]" />
                 </div>
                 <div className="text-center">
                   <span className="text-sm font-semibold text-white">
@@ -331,17 +329,17 @@ export default function OnboardingPage() {
             </div>
 
             <Tabs defaultValue="create">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-white/5 p-1">
+              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-white/10 p-1">
                 <TabsTrigger
                   value="create"
-                  className="flex items-center gap-2 rounded-lg py-2.5 text-sm data-[state=active]:bg-[#44BEAF] data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(68,190,175,0.3)]"
+                  className="carebridge-onboarding-tab flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
                 >
                   <Plus className="h-4 w-4" />
                   Create New
                 </TabsTrigger>
                 <TabsTrigger
                   value="join"
-                  className="flex items-center gap-2 rounded-lg py-2.5 text-sm data-[state=active]:bg-[#44BEAF] data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(68,190,175,0.3)]"
+                  className="carebridge-onboarding-tab flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
                 >
                   <Users className="h-4 w-4" />
                   Join Existing
@@ -370,7 +368,7 @@ export default function OnboardingPage() {
                         );
                       }}
                       placeholder="e.g., Mercy General Hospital"
-                      className="h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder-white/30 focus:border-[#44BEAF]/50 focus:ring-[#44BEAF]/20"
+                      className="h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
                       required
                     />
                   </div>
@@ -394,7 +392,7 @@ export default function OnboardingPage() {
                           )
                         }
                         placeholder="e.g., mercy-general"
-                        className="h-12 rounded-xl border-white/10 bg-white/5 pr-10 text-white placeholder-white/30 focus:border-[#44BEAF]/50 focus:ring-[#44BEAF]/20"
+                        className="h-12 rounded-xl border-white/10 bg-white/5 pr-10 text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
                         required
                       />
                       {orgSlug && (
@@ -404,7 +402,7 @@ export default function OnboardingPage() {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
                         >
                           {copied ? (
-                            <Check className="h-4 w-4 text-[#44BEAF]" />
+                            <Check className="h-4 w-4 text-[#C6F135]" />
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}
@@ -424,8 +422,8 @@ export default function OnboardingPage() {
                     shimmerSize="0.05em"
                     shimmerDuration="3s"
                     borderRadius="12px"
-                    background="rgba(68, 190, 175, 1)"
-                    className="h-12 w-full rounded-xl text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)]"
+                    background="#C6F135"
+                    className="carebridge-onboarding-submit h-12 w-full rounded-xl shadow-[0_4px_20px_rgba(198,241,53,0.18)]"
                     disabled={isLoading || !orgName || !orgSlug}
                   >
                     {isLoading ? (
@@ -456,7 +454,7 @@ export default function OnboardingPage() {
                         setInviteCode(e.target.value.toUpperCase())
                       }
                       placeholder="Enter your invite code"
-                      className="h-12 rounded-xl border-white/10 bg-white/5 text-center font-mono text-lg tracking-widest text-white placeholder-white/30 focus:border-[#44BEAF]/50 focus:ring-[#44BEAF]/20"
+                      className="h-12 rounded-xl border-white/10 bg-white/5 text-center font-mono text-lg tracking-widest text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
                       required
                     />
                     <p className="text-center text-xs text-white/30">
@@ -470,8 +468,8 @@ export default function OnboardingPage() {
                     shimmerSize="0.05em"
                     shimmerDuration="3s"
                     borderRadius="12px"
-                    background="rgba(68, 190, 175, 1)"
-                    className="h-12 w-full rounded-xl text-white shadow-[0_4px_20px_rgba(68,190,175,0.3)]"
+                    background="#C6F135"
+                    className="carebridge-onboarding-submit h-12 w-full rounded-xl shadow-[0_4px_20px_rgba(198,241,53,0.18)]"
                     disabled={isLoading || !inviteCode}
                   >
                     {isLoading ? (
@@ -495,7 +493,7 @@ export default function OnboardingPage() {
         Need help?{" "}
         <a
           href="mailto:support@carebridge.health"
-          className="text-[#44BEAF]/70 hover:text-[#44BEAF]"
+          className="text-[#6EA8F2] hover:text-[#DCEBFF]"
         >
           Contact support
         </a>

@@ -153,7 +153,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
               size="lg"
               className="p-2 hover:bg-transparent data-[state=open]:bg-transparent"
             >
-              <BrandMark tone="blue" className="size-10 shrink-0" />
+              <BrandMark tone="blue" className="hidden size-10 shrink-0 group-data-[collapsible=icon]:block" />
               <BrandLogo tone="navy" className="w-[152px] group-data-[collapsible=icon]:hidden dark:hidden" />
               <BrandLogo tone="white" className="hidden w-[152px] group-data-[collapsible=icon]:hidden dark:block" />
             </SidebarMenuButton>
