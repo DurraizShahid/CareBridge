@@ -29,13 +29,13 @@ export const metadata: Metadata = {
     description: "A modern placement workflow connecting hospitals, discharge planners, and care facilities.",
     type: "website",
     siteName: "CareBridge Health",
-    images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: "CareBridge Health placement platform" }],
+    images: [{ url: "/brand/carebridge-app-icon-512.png", width: 512, height: 512, alt: "CareBridge Health placement platform" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "CareBridge Health | Hospital-to-Care-Home Placement",
     description: "Connect patients with the right care setting through one coordinated workflow.",
-    images: ["/brand/og-image.png"],
+    images: ["/brand/carebridge-app-icon-512.png"],
   },
   icons: {
     icon: [{ url: "/brand/carebridge-favicon.svg", type: "image/svg+xml" }, { url: "/brand/carebridge-favicon-32.png", sizes: "32x32", type: "image/png" }],
