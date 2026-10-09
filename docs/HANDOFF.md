@@ -39,7 +39,7 @@
 | Branch | Owner | Task | Status |
 |---|---|---|---|
 | `fix/security-major-upgrades` | ChatGPT ("Check Remote Connection" chat) | Major-version upgrades for 34 npm vulns (Prisma → Next → shadcn/Radix), tsc+build+tests per group | In progress (2026-10-09) |
-| `fix/demo-seed` | ChatGPT (Remote Desktop Commander) | Synthetic demo seed, Docker 127.0.0.1:5433 + tsc verified, PR to master (do not merge) | Ready for PR review (2026-10-09) |
+| `fix/demo-seed` | ChatGPT (Remote Desktop Commander) | Synthetic demo seed, Docker 127.0.0.1:5433 + tsc verified | PR #10 open — awaiting Maya (2026-10-09) |
 
 ## Pending (needs a human)
 - **Authenticated visual QA**: dashboard, patients, permissions, referrals inbox,
