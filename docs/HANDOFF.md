@@ -38,9 +38,9 @@
 ## Active workstreams (check before starting — avoid conflicts)
 | Branch | Owner | Task | Status |
 |---|---|---|---|
-| `fix/security-major-upgrades` | ChatGPT ("Check Remote Connection" chat) | Major-version upgrades for 34 npm vulns (Prisma → Next → shadcn/Radix), tsc+build+tests per group | In progress (2026-10-09) |
 
 ## Pending (needs a human)
+- **Security PR (Maya review)**: fix/security-major-upgrades preserves Prisma 7.x, updates Next.js to 16.4.0, resolves 21 reported audit vulnerabilities (13 high remain), removes unused Lightfall/OGL remnants, and adds an npm test script. TypeScript and production build pass; 109 tests pass and 3 integration tests are skipped. Maya coordinates PR review and merge.
 - **Authenticated visual QA**: dashboard, patients, permissions, referrals inbox,
   deposit checkout + demo banner — needs signed-in screenshots (user will provide).
 - **Two-org Clerk walkthrough**: needs the user driving two logins.
