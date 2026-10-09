@@ -5,8 +5,8 @@ import { useSignUp, useAuth, useClerk } from '@clerk/nextjs';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand-logo';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { ShimmerButton } from '@/components/ui/shimmer-button';
 
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
@@ -112,9 +112,9 @@ export default function SignUpPage() {
   const inputStyle: React.CSSProperties = {
     height: 42,
     width: '100%',
-    borderRadius: 7,
+    borderRadius: 22,
     border: '1px solid #dedede',
-    background: '#ffffff',
+    background: '#F7F7F5',
     padding: '0 13px',
     fontSize: 13,
     color: '#202020',
@@ -129,30 +129,29 @@ export default function SignUpPage() {
   };
 
   return (
-    <div style={{
+    <div className="brand-auth-layout" style={{
       display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
       minHeight: '100dvh',
-      background: '#ffffff',
+      background: '#F7F7F5',
     }}>
       {/* Left — Visual Panel */}
-      <div style={{
+      <div className="brand-auth-visual" style={{
         position: 'relative',
         overflow: 'hidden',
-        background: '#2a211f',
+        background: '#102B4E',
         minHeight: '100dvh',
       }}>
         <div style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/abstract-bg.svg)',
+          backgroundImage: 'radial-gradient(ellipse at 78% 15%, rgba(110,168,242,.62), transparent 49%), radial-gradient(ellipse at 16% 84%, rgba(37,93,206,.35), transparent 55%), linear-gradient(145deg,#102B4E,#255DCE)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(18, 12, 10, 0.12) 0%, rgba(18, 12, 10, 0.04) 55%, rgba(18, 12, 10, 0.38) 100%)',
+          background: 'linear-gradient(180deg, rgba(16,43,78,.08), rgba(16,43,78,.28))',
         }} />
         {/* Logo */}
         <div style={{
@@ -164,17 +163,7 @@ export default function SignUpPage() {
           gap: 8,
           zIndex: 1,
         }}>
-          <svg width="18" height="18" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.94 }}>
-            <path fillRule="evenodd" clipRule="evenodd" d="M20 0C17.3922 1.99605e-07 15.1183 1.45568 13.5342 3.63379C13.4379 3.76624 13.3435 3.90193 13.252 4.04004C13.156 4.02057 13.0605 4.00028 12.9648 3.9834C10.312 3.51529 7.67909 4.03688 5.85742 5.8584C4.03613 7.68009 3.5143 10.3131 3.98242 12.9658C3.99931 13.0615 4.02057 13.157 4.04004 13.2529C3.90199 13.3444 3.76618 13.4379 3.63379 13.5342C1.45574 15.1183 0.000113546 17.3923 0 20C0.000113558 22.6077 1.45574 24.8817 3.63379 26.4658C3.76614 26.5621 3.90204 26.6556 4.04004 26.7471C4.0205 26.8433 3.99936 26.9392 3.98242 27.0352C3.51446 29.6879 4.03684 32.321 5.8584 34.1426C7.67994 35.9637 10.3124 36.4855 12.9648 36.0176C13.0606 36.0007 13.1559 35.9794 13.252 35.96C13.3436 36.0981 13.4378 36.2337 13.5342 36.3662C15.1183 38.5443 17.3922 40 20 40C22.6078 40 24.8817 38.5443 26.4658 36.3662C26.5623 36.2335 26.6573 36.0983 26.749 35.96C26.8447 35.9794 26.9398 36.0007 27.0352 36.0176C29.6878 36.4855 32.32 35.963 34.1416 34.1416C35.9629 32.3201 36.4845 29.6877 36.0166 27.0352C35.9997 26.9396 35.9794 26.8439 35.96 26.748C36.0981 26.6565 36.2337 26.5622 36.3662 26.4658C38.5443 24.8817 39.9999 22.6077 40 20C39.9999 17.3923 38.5443 15.1183 36.3662 13.5342C36.2335 13.4376 36.0974 13.3437 35.959 13.252C35.9784 13.1561 35.9987 13.0604 36.0156 12.9648C36.4837 10.3121 35.963 7.67909 34.1416 5.85742C32.3199 4.03599 29.687 3.51526 27.0342 3.9834C26.9391 4.00018 26.8444 4.02071 26.749 4.04004C26.6574 3.90177 26.5622 3.76638 26.4658 3.63379C24.8817 1.45568 22.6078 3.54835e-07 20 0Z" fill="white" fillOpacity="0.94"/>
-          </svg>
-          <span style={{
-            fontSize: 15,
-            fontWeight: 500,
-            color: 'rgba(255, 255, 255, 0.94)',
-            letterSpacing: '-0.01em',
-          }}>
-            CareBridge
-          </span>
+          <BrandLogo tone="white" className="w-[196px]" priority />
         </div>
         {/* Testimonial */}
         <div style={{
@@ -191,7 +180,7 @@ export default function SignUpPage() {
             color: 'rgba(255, 255, 255, 0.78)',
             margin: 0,
           }}>
-            &ldquo;CareBridge has transformed how we place patients. What used to take days now takes hours.&rdquo;
+            A calm place to coordinate every transition, from hospital discharge to supported care.
           </p>
           <p style={{
             fontSize: 13,
@@ -200,14 +189,14 @@ export default function SignUpPage() {
             color: 'rgba(255, 255, 255, 0.5)',
             margin: '4px 0 0',
           }}>
-            &mdash; Sarah Johnson, Senior Social Worker
+            CareBridge Health · Placement coordination
           </p>
         </div>
       </div>
 
       {/* Right — Form Panel */}
-      <div style={{
-        background: '#ffffff',
+      <div className="brand-auth-panel" style={{
+        background: '#F7F7F5',
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
@@ -223,7 +212,7 @@ export default function SignUpPage() {
             right: 38,
             fontSize: 13,
             fontWeight: 500,
-            color: '#171717',
+            color: '#102B4E',
             textDecoration: 'none',
           }}
         >
@@ -232,7 +221,7 @@ export default function SignUpPage() {
 
         <div style={{
           width: '100%',
-          maxWidth: 360,
+          maxWidth: 410,
         }}>
           {/* Heading */}
           <h1 style={{
@@ -241,7 +230,7 @@ export default function SignUpPage() {
             fontWeight: 600,
             letterSpacing: '-0.035em',
             textAlign: 'center',
-            color: '#161616',
+            color: '#102B4E',
             margin: 0,
           }}>
             {step === 'info' ? 'Create an account' : 'Verify your email'}
@@ -267,7 +256,7 @@ export default function SignUpPage() {
                 role="alert"
                 style={{
                   marginBottom: 16,
-                  borderRadius: 7,
+                  borderRadius: 22,
                   border: '1px solid rgba(220, 38, 38, 0.2)',
                   background: 'rgba(254, 226, 226, 0.5)',
                   padding: '10px 13px',
@@ -296,16 +285,11 @@ export default function SignUpPage() {
             {/* Step: Info */}
             {step === 'info' && (
               <>
-                <ShimmerButton
+                <button
                   type="button"
                   onClick={handleGoogleSignUp}
                   disabled={fetchStatus === 'fetching'}
-                  shimmerColor="#c8c8c8"
-                  shimmerSize="0.05em"
-                  shimmerDuration="3s"
-                  borderRadius="7px"
-                  background="rgba(255, 255, 255, 1)"
-                  className="h-[42px] w-full border border-[#dedede] text-[13px] font-medium text-[#252525]"
+                  className="h-[42px] w-full border-0 bg-white shadow-[0_8px_24px_rgba(16,43,78,0.055)] text-[13px] font-medium text-[#252525]"
                 >
                   <svg width="16" height="16" aria-hidden="true" viewBox="0 0 24 24">
                     <path d="M12.545,10.239v3.818h5.145c-0.204,1.125-1.032,2.067-2.398,2.667c-1.366,0.6-2.995,0.468-4.177-0.352c-1.182-0.82-1.831-2.088-1.831-3.365s0.649-2.545,1.831-3.365c1.182-0.82,2.811-0.952,4.177-0.352c0.655,0.288,1.168,0.717,1.557,1.239l2.141-2.141c-0.961-0.902-2.237-1.591-3.698-1.991C14.821,2.181,13.444,1.999,12,2c-5.523,0-10,4.477-10,10s4.477,10,10,10s10-4.477,10-10c0-0.298-0.013-0.591-0.038-0.877L12.545,10.239z" fill="#4285F4"/>
@@ -314,7 +298,7 @@ export default function SignUpPage() {
                     <path d="M1.439,6.801C1.159,7.64,1,8.544,1,9.5s0.159,1.86,0.439,2.699l2.541-1.969c-0.178-0.533-0.279-1.087-0.279-1.669s0.101-1.136,0.279-1.669L1.439,6.801z" fill="#FBBC05"/>
                   </svg>
                   Continue with Google
-                </ShimmerButton>
+                </button>
 
                 {/* Divider */}
                 <div style={{
@@ -439,14 +423,9 @@ export default function SignUpPage() {
                     </p>
                   )}
 
-                  <ShimmerButton
+                  <button
                     type="submit"
                     disabled={fetchStatus === 'fetching'}
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="7px"
-                    background="rgba(25, 24, 23, 1)"
                     className="h-[42px] w-full border-none text-[13px] font-medium text-white mt-2"
                   >
                     {fetchStatus === 'fetching' ? (
@@ -457,7 +436,7 @@ export default function SignUpPage() {
                     ) : (
                       'Sign In with Email'
                     )}
-                  </ShimmerButton>
+                  </button>
                 </form>
 
                 <p style={{
@@ -523,9 +502,9 @@ export default function SignUpPage() {
                     style={{
                       width: 42,
                       height: 42,
-                      borderRadius: 7,
+                      borderRadius: 22,
                       border: '1px solid #dedede',
-                      background: '#ffffff',
+                      background: '#F7F7F5',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -536,14 +515,9 @@ export default function SignUpPage() {
                   >
                     <ArrowLeft size={15} color="#252525" />
                   </button>
-                  <ShimmerButton
+                  <button
                     type="submit"
                     disabled={fetchStatus === 'fetching'}
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="7px"
-                    background="rgba(25, 24, 23, 1)"
                     className="h-[42px] flex-1 border-none text-[13px] font-medium text-white"
                   >
                     {fetchStatus === 'fetching' ? (
@@ -554,7 +528,7 @@ export default function SignUpPage() {
                     ) : (
                       'Verify email'
                     )}
-                  </ShimmerButton>
+                  </button>
                 </div>
 
                 <button
@@ -580,9 +554,9 @@ export default function SignUpPage() {
                   style={{
                     width: '100%',
                     height: 42,
-                    borderRadius: 7,
+                    borderRadius: 22,
                     border: '1px solid #dedede',
-                    background: '#ffffff',
+                    background: '#F7F7F5',
                     color: '#252525',
                     fontSize: 13,
                     fontWeight: 500,

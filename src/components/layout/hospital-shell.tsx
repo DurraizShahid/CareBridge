@@ -34,7 +34,7 @@ function HospitalShellInner({ children }: { children: React.ReactNode }) {
         {isFullWidth ? (
           children
         ) : (
-          <div className="mx-auto w-full max-w-7xl px-6 py-8 pb-24">
+          <div className="mx-auto w-full max-w-7xl px-6 py-9 pb-24 lg:px-10">
             {children}
           </div>
         )}

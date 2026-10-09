@@ -51,15 +51,15 @@ export function ReferralDetail({id}:{id:string}) {
    setData(old=>old?{...old,status}:old);router.refresh();
   }catch(e){setError(e instanceof Error?e.message:"Action failed")}finally{setBusy(false)}
  }
- return <main className="min-h-screen bg-[#F7F7F5] px-5 py-10 text-[#1A1A1A] dark:bg-[#0E0E10] dark:text-white md:px-10">
- <div className="mx-auto max-w-4xl"><Link href="/referrals" className="inline-flex items-center gap-2 text-sm text-[#888]"><ArrowLeft size={16}/> All referrals</Link>
+ return <main className="min-h-screen bg-[#F7F7F5] px-5 py-10 text-[#102B4E] dark:bg-[#0E0E10] dark:text-white md:px-10">
+ <div className="mx-auto max-w-4xl"><Link href="/referrals" className="inline-flex items-center gap-2 text-sm text-[#8291A4]"><ArrowLeft size={16}/> All referrals</Link>
  {error&&<p role="alert" className="mt-6 text-sm text-red-700">{error}</p>}
- {!data?<p className="mt-8 text-sm text-[#888]">Loading referral...</p>:
+ {!data?<p className="mt-8 text-sm text-[#8291A4]">Loading referral...</p>:
  <>
  <div className="mt-8"><span className="rounded-full bg-[#EAF6C2] px-4 py-1.5 text-xs font-semibold text-[#344600]">{label(data.status)}</span>
  <h1 className="mt-5 text-4xl font-semibold tracking-tight">Referral details</h1>
- <p className="mt-2 text-sm text-[#888]">{data.sendingOrganization.name} → {data.facility.name}</p></div>
- <section className="mt-8 rounded-[30px] bg-white p-7 shadow-[0_15px_45px_rgba(0,0,0,0.035)] dark:bg-[#1D1D20]">
+ <p className="mt-2 text-sm text-[#8291A4]">{data.sendingOrganization.name} → {data.facility.name}</p></div>
+ <section className="mt-8 rounded-[30px] bg-white p-7 shadow-[0_20px_60px_rgba(16,43,78,0.055)] dark:bg-[#1D1D20]">
   <h2 className="text-lg font-semibold">Patient & care requirements</h2>
   <dl className="mt-6 grid gap-6 sm:grid-cols-2">
    {[["Patient",data.patientName],["MRN",data.patientMrn],["Date of birth",data.patientDateOfBirth.slice(0,10)],
@@ -73,9 +73,9 @@ export function ReferralDetail({id}:{id:string}) {
    <button disabled={busy} onClick={()=>void action("declined")} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#555] disabled:opacity-50 dark:bg-white/10 dark:text-white"><X size={16}/> Decline</button>
   </>}
   {!facilityView&&data.status==="draft"&&<button disabled={busy} onClick={()=>void action("sent")} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#263000] disabled:opacity-50"><Send size={16}/> Send to facility</button>}
-  {contractLink&&<Link href={"/contracts/"+contractLink} className="inline-flex items-center rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#293800]">View placement agreement</Link>}
-  {facilityView&&data.status==="accepted"&&(paymentStatus==="paid"||paymentStatus==="demo_paid")&&<button type="button" disabled={busy} onClick={()=>void convert()} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#293800] shadow-sm transition-colors hover:bg-[#CBEC60] disabled:opacity-50"><Check size={16}/>{busy?"Converting…":"Convert to placement"}</button>}
-  {facilityView&&data.status==="accepted"&&paymentStatus!=="paid"&&paymentStatus!=="demo_paid"&&contractLink&&<p className="text-sm text-[#777]">Placement conversion unlocks after both signatures and deposit confirmation.</p>}
+  {contractLink&&<Link href={"/contracts/"+contractLink} className="inline-flex items-center rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A]">View placement agreement</Link>}
+  {facilityView&&data.status==="accepted"&&(paymentStatus==="paid"||paymentStatus==="demo_paid")&&<button type="button" disabled={busy} onClick={()=>void convert()} className="inline-flex items-center gap-2 rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] shadow-sm transition-colors hover:bg-[#CBEC60] disabled:opacity-50"><Check size={16}/>{busy?"Converting…":"Convert to placement"}</button>}
+  {facilityView&&data.status==="accepted"&&paymentStatus!=="paid"&&paymentStatus!=="demo_paid"&&contractLink&&<p className="text-sm text-[#74859A]">Placement conversion unlocks after both signatures and deposit confirmation.</p>}
   {data.status==="converted"&&data.convertedPlacementId&&<p className="rounded-full bg-[#ECF7D2] px-5 py-3 text-sm font-semibold text-[#425F15]">Placement confirmed · Ref {data.convertedPlacementId.slice(0,8)}</p>}
   {data.status==="converted"&&!facilityView&&data.convertedPlacementId&&<Link href={"/placements/"+data.convertedPlacementId} className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#444]">Open placement</Link>}
   {data.status==="accepted"&&!contractLink&&<p className="text-sm text-[#668035]">Accepted. Preparing agreement…</p>}

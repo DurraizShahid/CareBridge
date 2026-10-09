@@ -5,6 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-brand-navy: #102B4E;
+  --color-brand-blue: #255DCE;
+  --color-brand-azure: #6EA8F2;
+  --color-brand-ice: #DCEBFF;
+  --color-brand-mist: #EEF4FC;
+  --color-brand-canvas: #F7F7F5;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
@@ -563,3 +569,82 @@ select option {
     transform: translateY(0);
   }
 }
+/* Approved Care Weave identity; minimal clinical surfaces. */
+:root {
+  --brand-navy: #102B4E; --brand-blue: #255DCE;
+  --brand-azure: #6EA8F2; --brand-ice: #DCEBFF;
+  --brand-mist: #EEF4FC; --brand-canvas: #F7F7F5;
+  --brand-lime: #D9F477;
+  --background: #F7F7F5; --foreground: #102B4E;
+  --card: #FFFFFF; --card-foreground: #102B4E;
+  --popover: #FFFFFF; --popover-foreground: #102B4E;
+  --primary: #255DCE; --primary-foreground: #FFFFFF;
+  --secondary: #EEF4FC; --secondary-foreground: #102B4E;
+  --muted: #EEF4FC; --muted-foreground: #74859A;
+  --accent: #DCEBFF; --accent-foreground: #102B4E;
+  --ring: #6EA8F2; --border: #E7EEF8; --input: #E7EEF8;
+  --sidebar: #FFFFFF; --sidebar-foreground: #102B4E;
+  --sidebar-accent: #EEF4FC; --sidebar-accent-foreground: #255DCE;
+  --sidebar-primary: #255DCE; --sidebar-border: #EEF4FC;
+  --radius: 1.75rem;
+  --dash-bg: #F7F7F5; --dash-card: #FFFFFF;
+  --dash-card-border: transparent; --dash-canvas: #F7F7F5;
+  --dash-text-primary: #102B4E; --dash-text-body: #203951;
+  --dash-text-muted: #8291A4; --dash-text-secondary: #74859A;
+  --dash-accent-lime: #D9F477;
+}
+.dark {
+  --background: #0E0E10; --foreground: #F7FAFF;
+  --card: #1A1C22; --card-foreground: #F7FAFF;
+  --popover: #1A1C22; --popover-foreground: #F7FAFF;
+  --secondary: #19283D; --muted: #1B2737;
+  --muted-foreground: #9CABC0; --sidebar: #151A24;
+  --sidebar-foreground: #F7FAFF; --sidebar-accent: #1C3050;
+  --sidebar-accent-foreground: #DCEBFF; --dash-bg: #0E0E10;
+  --dash-canvas: #0E0E10; --dash-card: #1A1C22;
+  --dash-text-primary: #FFFFFF;
+}
+body { background: var(--background); color: var(--foreground); }
+.dashboard-gradient, .dashboard-canvas { background: var(--dash-bg); }
+.brand-float {
+  border-radius: 30px; background: var(--card);
+  box-shadow: 0 20px 60px rgba(16,43,78,.055), 0 3px 12px rgba(16,43,78,.025);
+}
+.brand-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+  border-radius: 999px; background: var(--brand-lime); color: #26390A;
+  font-weight: 650; transition: transform .2s ease, box-shadow .2s ease;
+}
+.brand-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(108,141,27,.16); }
+.brand-mesh {
+  background:
+    radial-gradient(ellipse at 82% 15%, rgba(110,168,242,.36), transparent 38%),
+    radial-gradient(ellipse at 20% 84%, rgba(220,235,255,.85), transparent 44%),
+    linear-gradient(135deg, #EEF4FC, #F7F7F5 75%);
+}
+.brand-dot-stat {
+  display: inline-block; font-weight: 800; font-variant-numeric: tabular-nums;
+  letter-spacing: -.065em; color: var(--brand-navy);
+  -webkit-mask-image: radial-gradient(circle,#000 1.5px,transparent 1.8px);
+  mask-image: radial-gradient(circle,#000 1.5px,transparent 1.8px);
+  -webkit-mask-size: 5px 5px; mask-size: 5px 5px;
+}
+.brand-auth-layout { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.brand-auth-layout input { border-radius: 14px !important; }
+.brand-auth-layout .brand-auth-panel { background: var(--brand-canvas) !important; }
+@media(max-width:850px) {
+  .brand-auth-layout { display: flex !important; flex-direction: column; }
+  .brand-auth-visual { min-height: 230px !important; }
+  .brand-auth-panel { min-height: 75vh; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .brand-cta { transition: none; }
+  .brand-cta:hover { transform: none; }
+}
+.brand-auth-layout button[type="submit"] {
+  background: #D9F477 !important;
+  color: #26390A !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+.brand-auth-layout button[type="button"] { border-radius: 999px !important; }
