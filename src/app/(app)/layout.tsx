@@ -86,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarInset className={`flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
               <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
               <ScrollArea className="flex-1 min-h-0">
-                <div className="dashboard-canvas" style={{ animation: "content-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards" }}>
+                <div className="dashboard-canvas px-3 py-3 md:px-6 md:py-5" style={{ animation: "content-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards" }}>
                   {children}
                 </div>
               </ScrollArea>

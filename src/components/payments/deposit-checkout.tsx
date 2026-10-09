@@ -29,8 +29,8 @@ function CardPayment({after}:{after:()=>Promise<void>}) {
  }
  return <form onSubmit={submit} className="mt-5 space-y-4">
   <PaymentElement/>
-  {message&&<p role="status" className="text-xs text-[#777]">{message}</p>}
-  <button type="submit" disabled={!stripe||!elements||busy} className="w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#253300] disabled:opacity-50">
+  {message&&<p role="status" className="text-xs text-[#74859A]">{message}</p>}
+  <button type="submit" disabled={!stripe||!elements||busy} className="w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">
    {busy?"Processing…":"Pay securely with Stripe"}
   </button>
  </form>;
@@ -66,13 +66,13 @@ export function DepositCheckout({contractId}:{contractId:string}){
    await refresh();
   }catch(e){setError(e instanceof Error?e.message:"Simulation failed")}finally{setBusy(false)}
  }
- if(!current)return <section className="rounded-[28px] bg-white p-6 text-sm text-[#777] dark:bg-[#1D1D20]">Loading deposit…</section>;
+ if(!current)return <section className="rounded-[28px] bg-white p-6 text-sm text-[#74859A] dark:bg-[#1D1D20]">Loading deposit…</section>;
  const isDemo=current.mode==="demo";
  const status=current.payment?.status;
  const complete=status==="paid"||status==="demo_paid";
  const reversed=status==="refunded"||status==="demo_refunded"||status==="refund_pending";
- return <section className="rounded-[28px] bg-white p-6 shadow-[0_16px_48px_rgba(0,0,0,0.04)] dark:bg-[#1D1D20]">
-  <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-[#77962F]"/><h2 className="text-lg font-semibold">Placement deposit</h2></div>
+ return <section className="rounded-[28px] bg-white p-6 shadow-[0_20px_60px_rgba(16,43,78,0.055)] dark:bg-[#1D1D20]">
+  <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-[#255DCE]"/><h2 className="text-lg font-semibold">Placement deposit</h2></div>
   {isDemo&&<div role="status" className="mt-4 rounded-2xl bg-[#FFF3D6] p-4 text-sm font-semibold leading-6 text-[#79541B]">
    DEMO MODE — add your Stripe keys to accept real payments. No money will be charged.
   </div>}
@@ -82,16 +82,16 @@ export function DepositCheckout({contractId}:{contractId:string}){
   {complete&&<div className="mt-5 rounded-2xl bg-[#EDF9D9] p-4 text-sm font-semibold text-[#476514]"><CheckCircle2 size={17} className="mr-2 inline"/>Payment confirmed. Bed reserved.{isDemo?" (Demo only)":""}</div>}
   {reversed&&<div role="alert" className="mt-5 rounded-2xl bg-[#FFF0E9] p-4 text-sm text-[#8A4C30]">Capacity is no longer available. {status==="refund_pending"?"Refund being processed.":"Deposit refunded."} Contact the referring hospital to select another facility.</div>}
   {status==="failed"&&<p role="alert" className="mt-4 text-sm text-red-700">Payment failed. You can retry with a new intent.</p>}
-  {status==="failed"&&current.canPay&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-4 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#273300] disabled:opacity-50">Retry deposit</button>}
+  {status==="failed"&&current.canPay&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-4 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">Retry deposit</button>}
   {error&&<p role="alert" className="mt-4 text-sm text-red-700">{error}</p>}
-  {!current.canPay&&!complete&&<p className="mt-5 text-sm text-[#888]">The sending hospital will arrange this deposit.</p>}
+  {!current.canPay&&!complete&&<p className="mt-5 text-sm text-[#8291A4]">The sending hospital will arrange this deposit.</p>}
   {current.canPay&&!complete&&!reversed&&status!=="failed"&&<>
-    {!intent&&!status&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#273300] disabled:opacity-50">{busy?"Preparing…":"Continue to deposit"}</button>}
-    {!intent&&status==="pending"&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#273300] disabled:opacity-50">Resume checkout</button>}
-    {intent?.isDemo&&<button type="button" disabled={busy} onClick={()=>void demoFinish()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#273300] disabled:opacity-50">{busy?"Simulating…":"Simulate successful payment"}</button>}
+    {!intent&&!status&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">{busy?"Preparing…":"Continue to deposit"}</button>}
+    {!intent&&status==="pending"&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">Resume checkout</button>}
+    {intent?.isDemo&&<button type="button" disabled={busy} onClick={()=>void demoFinish()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">{busy?"Simulating…":"Simulate successful payment"}</button>}
     {intent&&!intent.isDemo&&stripe&&<Elements stripe={stripe} options={{clientSecret:intent.clientSecret,appearance:{theme:"stripe",variables:{borderRadius:"16px"}}}}><CardPayment after={refresh}/></Elements>}
     {intent&&!intent.isDemo&&!stripe&&<p className="mt-4 text-sm text-red-700">Missing Stripe publishable test key.</p>}
   </>}
-  <button type="button" onClick={()=>void refresh().catch(()=>setError("Unable to refresh status"))} className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-[#888]"><RefreshCcw size={14}/> Refresh status</button>
+  <button type="button" onClick={()=>void refresh().catch(()=>setError("Unable to refresh status"))} className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-[#8291A4]"><RefreshCcw size={14}/> Refresh status</button>
  </section>;
 }

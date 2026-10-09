@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { BrandLogo, BrandMark } from "@/components/brand-logo";
 import { usePathname } from "next/navigation";
 import {
   SquaresFour,
@@ -66,17 +66,15 @@ function NavButton({
       isActive={isActive}
       tooltip={item.label}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-200",
+        "group relative flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors duration-200",
         isActive
-          ? "bg-primary/10 text-primary shadow-none hover:bg-primary/15 hover:text-primary"
-          : "bg-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          ? "bg-[#EEF4FC] text-[#255DCE] shadow-none hover:bg-[#DCEBFF] hover:text-[#255DCE] dark:bg-[#1C3050]"
+          : "bg-transparent text-sidebar-foreground/75 hover:bg-[#EEF4FC] hover:text-[#255DCE] dark:hover:bg-[#1C3050]",
         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
         "group-data-[collapsible=icon]:size-10!"
       )}
     >
-      {isActive && (
-        <div className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
-      )}
+
 
       <div className="relative flex items-center justify-center">
         <item.icon
@@ -139,7 +137,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
     <Sidebar
       variant="floating"
       collapsible="icon"
-      className="group/sidebar"
+      className="group/sidebar border-0 bg-white dark:bg-[#151A24]"
       onMouseEnter={() => {
         if (!locked) setOpen(true);
       }}
@@ -155,19 +153,9 @@ export function AppSidebar({ locked }: { locked: boolean }) {
               size="lg"
               className="p-2 hover:bg-transparent data-[state=open]:bg-transparent"
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary shadow-sm">
-                <Image
-                  src="/carebridge.svg"
-                  alt="CareBridge"
-                  width={20}
-                  height={20}
-                  className="shrink-0 brightness-0 invert"
-                  priority
-                />
-              </div>
-              <span className="flex-1 truncate text-left text-sm font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-                CareBridge
-              </span>
+              <BrandMark tone="blue" className="size-10 shrink-0" />
+              <BrandLogo tone="navy" className="w-[152px] group-data-[collapsible=icon]:hidden dark:hidden" />
+              <BrandLogo tone="white" className="hidden w-[152px] group-data-[collapsible=icon]:hidden dark:block" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

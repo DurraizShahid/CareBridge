@@ -29,6 +29,15 @@ export const metadata: Metadata = {
   },
   description:
     "CareBridge Health helps hospital social workers and discharge planners place patients into appropriate care settings when they cannot safely return home.",
+  applicationName: "CareBridge Health",
+  icons: {
+    icon: [
+      { url: "/brand/carebridge-favicon.svg", type: "image/svg+xml" },
+      { url: "/brand/carebridge-favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/carebridge-app-icon-512.png", sizes: "512x512" }],
+    shortcut: "/brand/favicon.ico",
+  },
   keywords: [
     "care coordination",
     "patient placement",

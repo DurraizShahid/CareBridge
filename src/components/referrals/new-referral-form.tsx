@@ -46,28 +46,28 @@ export function NewReferralForm() {
  }
  const field = "w-full rounded-2xl bg-[#F5F5F2] px-4 py-3 text-sm outline-none ring-0 focus:ring-2 focus:ring-[#CBE56A] dark:bg-white/10";
  return (
-  <main className="min-h-screen bg-[#F7F7F5] px-5 py-10 text-[#1A1A1A] dark:bg-[#0E0E10] dark:text-white md:px-10">
+  <main className="min-h-screen bg-[#F7F7F5] px-5 py-10 text-[#102B4E] dark:bg-[#0E0E10] dark:text-white md:px-10">
   <div className="mx-auto max-w-4xl">
-   <Link href="/referrals" className="inline-flex items-center gap-2 text-sm text-[#777] hover:text-black"><ArrowLeft size={16}/> Back to referrals</Link>
+   <Link href="/referrals" className="inline-flex items-center gap-2 text-sm text-[#74859A] hover:text-black"><ArrowLeft size={16}/> Back to referrals</Link>
    <div className="mt-8"><span className="rounded-full bg-[#EAF6C2] px-4 py-1.5 text-xs font-semibold text-[#354500]">NEW REFERRAL</span>
     <h1 className="mt-5 text-4xl font-semibold tracking-tight">Find the right next step.</h1>
-    <p className="mt-2 text-sm text-[#777]">Enter only the information needed to request care-home placement.</p>
+    <p className="mt-2 text-sm text-[#74859A]">Enter only the information needed to request care-home placement.</p>
    </div>
    <form onSubmit={e => {e.preventDefault();void submit("sent");}} className="mt-8 space-y-6">
-    <section className="rounded-[30px] bg-white p-7 shadow-[0_15px_45px_rgba(0,0,0,0.035)] dark:bg-[#1D1D20]">
+    <section className="rounded-[30px] bg-white p-7 shadow-[0_20px_60px_rgba(16,43,78,0.055)] dark:bg-[#1D1D20]">
      <h2 className="mb-5 text-lg font-semibold">01 · Patient essentials</h2>
      <div className="grid gap-4 sm:grid-cols-2">
-      <label className="space-y-2 text-xs font-medium text-[#777]">Patient full name <input required maxLength={160} value={patientName} onChange={e=>setPatientName(e.target.value)} className={field} placeholder="Full name" autoComplete="off"/></label>
-      <label className="space-y-2 text-xs font-medium text-[#777]">Medical record number <input required maxLength={80} value={patientMrn} onChange={e=>setPatientMrn(e.target.value)} className={field} placeholder="MRN" autoComplete="off"/></label>
-      <label className="space-y-2 text-xs font-medium text-[#777]">Date of birth <input required type="date" value={dob} onChange={e=>setDob(e.target.value)} max={new Date().toISOString().slice(0,10)} className={field}/></label>
-      <label className="space-y-2 text-xs font-medium text-[#777]">Care level <select value={careLevel} onChange={e=>setCareLevel(e.target.value)} className={field}>{CARE_LEVELS.map(level=><option key={level} value={level}>{label(level)}</option>)}</select></label>
+      <label className="space-y-2 text-xs font-medium text-[#74859A]">Patient full name <input required maxLength={160} value={patientName} onChange={e=>setPatientName(e.target.value)} className={field} placeholder="Full name" autoComplete="off"/></label>
+      <label className="space-y-2 text-xs font-medium text-[#74859A]">Medical record number <input required maxLength={80} value={patientMrn} onChange={e=>setPatientMrn(e.target.value)} className={field} placeholder="MRN" autoComplete="off"/></label>
+      <label className="space-y-2 text-xs font-medium text-[#74859A]">Date of birth <input required type="date" value={dob} onChange={e=>setDob(e.target.value)} max={new Date().toISOString().slice(0,10)} className={field}/></label>
+      <label className="space-y-2 text-xs font-medium text-[#74859A]">Care level <select value={careLevel} onChange={e=>setCareLevel(e.target.value)} className={field}>{CARE_LEVELS.map(level=><option key={level} value={level}>{label(level)}</option>)}</select></label>
      </div>
-     <label className="mt-5 block space-y-2 text-xs font-medium text-[#777]">Required services <span className="font-normal">(comma-separated; only if needed)</span><input value={serviceText} onChange={e=>setServiceText(e.target.value)} className={field} placeholder="e.g. physical therapy, wound care" maxLength={400}/></label>
+     <label className="mt-5 block space-y-2 text-xs font-medium text-[#74859A]">Required services <span className="font-normal">(comma-separated; only if needed)</span><input value={serviceText} onChange={e=>setServiceText(e.target.value)} className={field} placeholder="e.g. physical therapy, wound care" maxLength={400}/></label>
     </section>
-    <section className="rounded-[30px] bg-white p-7 shadow-[0_15px_45px_rgba(0,0,0,0.035)] dark:bg-[#1D1D20]">
-     <h2 className="mb-2 text-lg font-semibold">02 · Matched facilities</h2><p className="mb-5 text-sm text-[#888]">Candidates support the care level, required specialties, and have an open bed.</p>
-     {loading ? <p className="text-sm text-[#777]">Checking facility availability...</p> :
-      candidates.length===0 ? <p className="rounded-2xl bg-[#F7F7F5] p-5 text-sm text-[#777]">No eligible facilities are available. Adjust care needs or check facility profiles.</p>
+    <section className="rounded-[30px] bg-white p-7 shadow-[0_20px_60px_rgba(16,43,78,0.055)] dark:bg-[#1D1D20]">
+     <h2 className="mb-2 text-lg font-semibold">02 · Matched facilities</h2><p className="mb-5 text-sm text-[#8291A4]">Candidates support the care level, required specialties, and have an open bed.</p>
+     {loading ? <p className="text-sm text-[#74859A]">Checking facility availability...</p> :
+      candidates.length===0 ? <p className="rounded-2xl bg-[#F7F7F5] p-5 text-sm text-[#74859A]">No eligible facilities are available. Adjust care needs or check facility profiles.</p>
       :<div className="space-y-3">{candidates.map(c=><label key={c.id} className={"flex cursor-pointer items-center gap-4 rounded-[20px] p-4 transition-colors " + (facilityId===c.id ? "bg-[#EFF8CE]" : "bg-[#F7F7F5] hover:bg-[#F1F4E8]")}>
         <input type="radio" name="facilityId" checked={facilityId===c.id} onChange={()=>setFacilityId(c.id)} className="accent-[#758F22]"/>
         <Building2 className="text-[#728159]" size={22}/><span className="flex-1 font-semibold text-[#232323]">{c.name}</span><span className="rounded-full bg-white px-3 py-1 text-xs text-[#4B6136]">{c.availableBeds} beds</span>

@@ -43,7 +43,7 @@ export function CareBridgeLoader({ onComplete, className, dark = false }: CareBr
     <div
       className={cn(
         "fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 ease-out",
-        dark ? "bg-[#0a1628]" : "bg-[#faf9fc]",
+        dark ? "bg-[#0E0E10]" : "bg-[#F7F7F5]",
         isVisible ? "opacity-100" : "opacity-0 pointer-events-none",
         className
       )}
@@ -55,8 +55,8 @@ export function CareBridgeLoader({ onComplete, className, dark = false }: CareBr
           className="absolute inset-0 -m-4 rounded-full opacity-30 blur-xl"
           style={{
             background: dark
-              ? "radial-gradient(circle, rgba(68,190,175,0.2) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(26,26,46,0.15) 0%, transparent 70%)",
+              ? "radial-gradient(circle, rgba(110,168,242,0.25) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(37,93,206,0.14) 0%, transparent 70%)",
             animation: "loader-pulse-glow 2s ease-in-out infinite",
           }}
         />
@@ -67,7 +67,7 @@ export function CareBridgeLoader({ onComplete, className, dark = false }: CareBr
           style={{ animation: "loader-logo-enter 0.8s cubic-bezier(0.16,1,0.3,1) forwards" }}
         >
           <Image
-            src="/carebridge.svg"
+            src="/brand/carebridge-mark-blue.svg"
             alt="CareBridge"
             width={64}
             height={64}
@@ -81,7 +81,7 @@ export function CareBridgeLoader({ onComplete, className, dark = false }: CareBr
       <h1
         className={cn(
           "text-2xl font-semibold tracking-tight mb-8",
-          dark ? "text-white" : "text-[#1a1a2e]"
+          dark ? "text-white" : "text-[#102B4E]"
         )}
         style={{ animation: "loader-text-enter 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
       >

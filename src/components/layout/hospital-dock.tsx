@@ -46,13 +46,7 @@ export function HospitalDock() {
       aria-label="Main navigation"
     >
       <div
-        className="flex flex-col items-center gap-2 p-2 bg-white dark:bg-[#2a201b]"
-        style={{
-          borderRadius: "20px",
-          border: "1.5px solid var(--border, #e4e4e6)",
-          boxShadow:
-            "0 14px 30px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
-        }}
+        className="flex flex-col items-center gap-2 rounded-[28px] bg-white p-2 shadow-[0_20px_50px_rgba(16,43,78,0.1)] dark:bg-[#1A1C22]"
       >
         {visibleItems.map((item) => {
           const isActive =
@@ -76,10 +70,9 @@ export function HospitalDock() {
                           width: "44px",
                           height: "44px",
                           borderRadius: "14px",
-                          background: "var(--health, #3a8bbf)",
-                          border: "2px solid rgba(255,255,255,0.15)",
-                          boxShadow:
-                            "0 8px 18px rgba(58,139,191,0.3), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 4px rgba(20,60,100,0.2)",
+                          background: "#255DCE",
+
+                          boxShadow: "0 8px 22px rgba(37,93,206,0.16)",
                         }}
                       >
                         <item.icon className="size-[20px] text-white" />
