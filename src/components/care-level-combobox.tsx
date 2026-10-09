@@ -29,7 +29,7 @@ export function CareLevelCombobox() {
   const [value, setValue] = React.useState<CareLevel | null>(null)
 
   return (
-    <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-1.5 transition-colors focus-within:border-[#44BEAF]/60 focus-within:ring-2 focus-within:ring-[#44BEAF]/30 sm:flex-1">
+    <div className="flex w-full items-center gap-3 rounded-xl border border-white/20 bg-white/[0.08] px-4 py-1.5 transition-colors focus-within:border-[#C6F135]/60 focus-within:ring-2 focus-within:ring-[#C6F135]/30 sm:flex-1">
       <Stethoscope className="h-5 w-5 shrink-0 text-white/70" />
       <Combobox
         items={careLevels}

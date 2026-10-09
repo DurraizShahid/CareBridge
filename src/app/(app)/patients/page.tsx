@@ -14,9 +14,9 @@ import { getServerOrganization } from "@/lib/server-organization";
 const statusStyles: Record<string, string> = {
   admitted: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   "assessment-in-progress":
-    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+    "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   "assessment_in_progress":
-    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+    "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   "ready-for-discharge":
     "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   "ready_for_discharge":

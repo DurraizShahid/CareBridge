@@ -64,12 +64,12 @@ const CATEGORY_LABELS: Record<DocumentCategory, string> = {
 
 const CATEGORY_COLORS: Record<DocumentCategory, string> = {
   "patient-records": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  "medical-documentation": "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+  "medical-documentation": "bg-[#6EA8F2]/10 text-[#255DCE] dark:text-[#DCEBFF]",
   "consent-forms": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
   "insurance-documents": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   "compliance-documents": "bg-red-500/10 text-red-600 dark:text-red-400",
   policies: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
-  procedures: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+  procedures: "bg-[#6EA8F2]/10 text-[#255DCE] dark:text-[#DCEBFF]",
   "audit-documents": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   "employee-training-records": "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
   "business-associate-agreements": "bg-orange-500/10 text-orange-600 dark:text-orange-400",

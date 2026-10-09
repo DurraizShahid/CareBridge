@@ -141,7 +141,7 @@ export default function AdminCompletionCard({
       </div>
 
       {/* Action Queue panel — absolute, starts just below the legend, fills to bottom */}
-      <section className="absolute left-[5px] right-[5px] bottom-[5px] top-[115px] z-10 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#134675]">
+      <section className="absolute left-[5px] right-[5px] bottom-[5px] top-[115px] z-10 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#102B4E]">
         {/* Queue header */}
         <div className="flex items-center justify-between shrink-0 px-4 pt-3 pb-2 border-b border-white/10">
           <h4 className="text-sm font-semibold text-white">Action Queue</h4>

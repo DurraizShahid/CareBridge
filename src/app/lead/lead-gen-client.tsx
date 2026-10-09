@@ -65,7 +65,7 @@ export function LeadGenClient() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 55% at 15% 10%, rgba(68,190,175,0.28), transparent 55%), radial-gradient(ellipse 70% 50% at 90% 0%, rgba(19,70,117,0.55), transparent 50%), linear-gradient(180deg, #07111f 0%, #0a1628 45%, #10243a 100%)",
+            "radial-gradient(ellipse 80% 55% at 15% 10%, rgba(198,241,53,0.28), transparent 55%), radial-gradient(ellipse 70% 50% at 90% 0%, rgba(19,70,117,0.55), transparent 50%), linear-gradient(180deg, #07111f 0%, #0a1628 45%, #10243a 100%)",
         }}
       />
       <div
@@ -107,7 +107,7 @@ export function LeadGenClient() {
             <ul className="mt-10 space-y-5">
               {highlights.map((item) => (
                 <li key={item.title} className="flex gap-3">
-                  <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#44BEAF]/15 text-[#7FE0D3]">
+                  <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#C6F135]/15 text-[#C6F135]">
                     <item.icon className="size-4" />
                   </span>
                   <div>
@@ -123,7 +123,7 @@ export function LeadGenClient() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-8">
               {submitted ? (
                 <div className="flex flex-col items-start gap-4 py-6">
-                  <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-[#44BEAF]/20 text-[#7FE0D3]">
+                  <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-[#C6F135]/20 text-[#C6F135]">
                     <RiCheckboxCircleLine className="size-6" />
                   </span>
                   <div>
@@ -248,7 +248,7 @@ export function LeadGenClient() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="h-11 w-full bg-[#44BEAF] text-[#06201c] hover:bg-[#5acbbb]"
+                    className="h-11 w-full bg-[#C6F135] text-[#06201c] hover:bg-[#D9F477]"
                   >
                     {submitting ? "Sending…" : "Request walkthrough"}
                     <RiArrowRightLine data-icon className="size-4" />

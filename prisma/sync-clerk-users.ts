@@ -17,7 +17,7 @@ async function main() {
     { id: "org-fac-002", name: "Willamette Valley Senior Care", slug: "willamette-valley-senior-care", type: "facility" as const },
     { id: "org-fac-003", name: "Cascade Health Partners", slug: "cascade-health-partners", type: "facility" as const },
     { id: "org-fac-004", name: "Oregon Community Care", slug: "oregon-community-care", type: "facility" as const },
-    { id: "dd1ad99e-2169-4944-9c86-dd7ae2724285", name: "Helptribe Health", slug: "helptribe-health", type: "facility" as const },
+    { id: "dd1ad99e-2169-4944-9c86-dd7ae2724285", name: "Mercy General", slug: "mercy-general", type: "facility" as const },
     { id: "c7d71253-caea-4d7f-a986-336a70b072b0", name: "Dilivygo Medical", slug: "dilivygo-medical", type: "hospital" as const },
     { id: "203b4d6c-7b4f-4c56-95d1-57273bca2078", name: "Shahid Care Network", slug: "shahid-care-network", type: "facility" as const },
     { id: "a78ccc4e-0469-4b7d-9932-13111d6f86f7", name: "Zain Medical", slug: "zain-medical", type: "hospital" as const },

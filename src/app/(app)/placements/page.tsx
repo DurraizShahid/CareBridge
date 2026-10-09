@@ -19,11 +19,11 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   },
   searching: {
     label: "Searching",
-    color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   },
   matching: {
     label: "Matching",
-    color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
+    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   },
   "pending-approval": {
     label: "Pending Approval",
@@ -39,11 +39,11 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   },
   "in-progress": {
     label: "In Progress",
-    color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   },
   "in_progress": {
     label: "In Progress",
-    color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
   },
   completed: {
     label: "Completed",
@@ -186,7 +186,7 @@ export default async function PlacementsPage() {
                       plc.priority === "high" || plc.priority === "emergency"
                         ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                         : plc.priority === "medium"
-                        ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
+                        ? "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]"
                         : "bg-muted text-muted-foreground"
                     }>
                       {plc.priority} priority

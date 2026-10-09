@@ -104,7 +104,7 @@ export function CareBridgeLoader({ onComplete, className, dark = false }: CareBr
                 style={{
                   width: `${Math.min(progress, target)}%`,
                   backgroundColor: dark
-                    ? (target === 100 ? "#44BEAF" : "rgba(255,255,255,0.6)")
+                    ? (target === 100 ? "#C6F135" : "rgba(255,255,255,0.6)")
                     : (target === 100 ? "#1a1a2e" : "#6c7a9a"),
                   opacity: 0.15 + (index * 0.175),
                   transitionDelay: `${index * 50}ms`,
