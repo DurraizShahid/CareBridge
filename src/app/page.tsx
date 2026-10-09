@@ -107,8 +107,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
-      <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-10">
+      {/* TRUST STRIP — overlaps the hero bottom edge */}
+      <section className="relative z-10 mx-auto -mt-14 max-w-7xl px-6 lg:px-10">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {trustItems.map(({title, detail, Icon}) => <div key={title} className="brand-float flex gap-4 p-6">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-mist text-brand-blue"><Icon size={21} strokeWidth={1.8}/></div>
@@ -137,9 +137,10 @@ export default function HomePage() {
       </section>
 
       {/* BUILT FOR BOTH SIDES */}
-      <section id="both-sides" className="mx-auto max-w-7xl px-6 pb-24 lg:px-10 lg:pb-32">
+      <section id="both-sides" className="mt-24 bg-[#F2F6FB] py-24 lg:mt-32 lg:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="max-w-2xl">
-          <span className="rounded-full bg-brand-mist px-4 py-2 text-xs font-semibold tracking-[.1em] text-brand-blue">BUILT FOR BOTH SIDES</span>
+          <span className="rounded-full bg-white px-4 py-2 text-xs font-semibold tracking-[.1em] text-brand-blue shadow-[0_8px_24px_rgba(16,43,78,.05)]">BUILT FOR BOTH SIDES</span>
           <h2 className="mt-6 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Placement takes two teams.</h2>
         </div>
         <div className="mt-12 grid gap-4 lg:grid-cols-2">
@@ -162,6 +163,7 @@ export default function HomePage() {
               <li className="flex gap-3"><Check size={18} className="mt-1 shrink-0 text-[#D9F477]"/> Sign the agreement and collect the deposit in the same flow.</li>
             </ul>
           </article>
+        </div>
         </div>
       </section>
 
