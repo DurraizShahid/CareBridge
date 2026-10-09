@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { seedFacilityDemoPhotos } from "../scripts/facility-demo-photos";
+import { seedDemoPolish } from "./seed-demo-polish";
 
 // ── Adapter ──
 const connectionString = process.env.DATABASE_URL!;
@@ -23,36 +24,36 @@ async function main() {
     update: {},
     create: {
       id: "org-001",
-      name: "Mercy Hospital Portland",
-      slug: "mercy-hospital-portland",
+      name: "Mercy General",
+      slug: "mercy-general",
       type: "hospital",
     },
   });
-  console.log("    ✔ org-001 — Mercy Hospital Portland");
+  console.log("    ✔ org-001 — Mercy General");
 
   await prisma.organization.upsert({
     where: { id: "org-002" },
     update: {},
     create: {
       id: "org-002",
-      name: "Providence Health System",
-      slug: "providence-health",
+      name: "Pinecrest Regional Health (Demo)",
+      slug: "pinecrest-regional-demo",
       type: "hospital",
     },
   });
-  console.log("    ✔ org-002 — Providence Health System");
+  console.log("    ✔ org-002 — Pinecrest Regional Health (Demo)");
 
   await prisma.organization.upsert({
     where: { id: "org-003" },
     update: {},
     create: {
       id: "org-003",
-      name: "OHSU Health",
-      slug: "ohsu-health",
-      type: "hospital",
+      name: "Juniper Demo Care Network",
+      slug: "juniper-demo-care",
+      type: "facility",
     },
   });
-  console.log("    ✔ org-003 — OHSU Health");
+  console.log("    ✔ org-003 — Juniper Demo Care Network");
 
   // ── 2. Seed Users ──
   console.log("  Seeding users...");
@@ -63,7 +64,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-001",
-      email: "sjohnson@mercyhospital.org",
+      email: "sjohnson@demo.carebridge.example",
       firstName: "Sarah",
       lastName: "Johnson",
       role: "social_worker",
@@ -83,7 +84,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-002",
-      email: "jdoe@mercyhospital.org",
+      email: "jdoe@demo.carebridge.example",
       firstName: "James",
       lastName: "Doe",
       role: "discharge_planner",
@@ -103,7 +104,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-003",
-      email: "asmith@mercyhospital.org",
+      email: "asmith@demo.carebridge.example",
       firstName: "Amanda",
       lastName: "Smith",
       role: "administrator",
@@ -124,7 +125,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-fac-001",
-      email: "pmoore@willametterehab.org",
+      email: "pmoore@demo.carebridge.example",
       firstName: "Patricia",
       lastName: "Moore",
       role: "facility_coordinator",
@@ -144,7 +145,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-fac-002",
-      email: "mchen@stfranciscare.org",
+      email: "mchen@demo.carebridge.example",
       firstName: "Michael",
       lastName: "Chen",
       role: "facility_coordinator",
@@ -165,7 +166,7 @@ async function main() {
     update: {},
     create: {
       id: "usr-admin-001",
-      email: "admin@carebridgehealth.com",
+      email: "admin@demo.carebridge.example",
       firstName: "Admin",
       lastName: "User",
       role: "superadmin",
@@ -188,7 +189,7 @@ async function main() {
     update: {},
     create: {
       id: "hosp-001",
-      name: "Mercy Hospital Portland",
+      name: "Mercy General",
       address: JSON.stringify({
         street: "1000 Medical Center Drive",
         city: "Portland",
@@ -200,14 +201,14 @@ async function main() {
       organization: { connect: { id: "org-001" } },
     },
   });
-  console.log("    ✔ hosp-001 — Mercy Hospital Portland");
+  console.log("    ✔ hosp-001 — Mercy General");
 
   await prisma.hospital.upsert({
     where: { id: "hosp-002" },
     update: {},
     create: {
       id: "hosp-002",
-      name: "Providence St. Vincent Medical Center",
+      name: "Pinecrest Regional Hospital (Demo)",
       address: JSON.stringify({
         street: "9205 SW Barnes Road",
         city: "Portland",
@@ -219,58 +220,20 @@ async function main() {
       organization: { connect: { id: "org-002" } },
     },
   });
-  console.log("    ✔ hosp-002 — Providence St. Vincent Medical Center");
-
-  await prisma.hospital.upsert({
-    where: { id: "hosp-003" },
-    update: {},
-    create: {
-      id: "hosp-003",
-      name: "Oregon Health & Science University",
-      address: JSON.stringify({
-        street: "3181 SW Sam Jackson Park Road",
-        city: "Portland",
-        state: "OR",
-        zipCode: "97239",
-      }),
-      phone: "(503) 555-0300",
-      npi: "1234567892",
-      organization: { connect: { id: "org-003" } },
-    },
-  });
-  console.log("    ✔ hosp-003 — Oregon Health & Science University");
-
-  await prisma.hospital.upsert({
-    where: { id: "hosp-004" },
-    update: {},
-    create: {
-      id: "hosp-004",
-      name: "Legacy Emanuel Medical Center",
-      address: JSON.stringify({
-        street: "2801 N Gantenbein Avenue",
-        city: "Portland",
-        state: "OR",
-        zipCode: "97227",
-      }),
-      phone: "(503) 555-0400",
-      npi: "1234567893",
-      organization: { connect: { id: "org-001" } },
-    },
-  });
-  console.log("    ✔ hosp-004 — Legacy Emanuel Medical Center");
+  console.log("    ✔ hosp-002 — Pinecrest Regional Hospital (Demo)");
 
   // ── 4. Seed Patients ──
   console.log("  Seeding patients...");
 
-  // Patient 1: Eleanor Roosevelt
+  // Patient 1: Avery Whitcomb
   await prisma.patient.upsert({
     where: { id: "pat-001" },
     update: {},
     create: {
       id: "pat-001",
-      mrn: "MRN-88472",
+      mrn: "DEMO-MRN-001",
       firstName: "Eleanor",
-      lastName: "Roosevelt",
+      lastName: "Whitcomb",
       dateOfBirth: new Date("1942-03-15"),
       age: 84,
       gender: "female",
@@ -283,10 +246,10 @@ async function main() {
       }),
       phone: "(503) 555-1212",
       emergencyContact: JSON.stringify({
-        name: "James Roosevelt",
+        name: "Jordan Whitcomb",
         role: "Son",
         phone: "(503) 555-3434",
-        email: "james.r@email.com",
+        email: "james.r@demo.carebridge.example",
       }),
       insurance: JSON.stringify([
         {
@@ -311,17 +274,17 @@ async function main() {
       updatedAt: new Date("2026-07-07T09:00:00Z"),
     },
   });
-  console.log("    ✔ pat-001 — Eleanor Roosevelt");
+  console.log("    ✔ pat-001 — Avery Whitcomb");
 
-  // Patient 2: George Washington
+  // Patient 2: Miles Ellery
   await prisma.patient.upsert({
     where: { id: "pat-002" },
     update: {},
     create: {
       id: "pat-002",
-      mrn: "MRN-89103",
+      mrn: "DEMO-MRN-002",
       firstName: "George",
-      lastName: "Washington",
+      lastName: "Ellery",
       dateOfBirth: new Date("1938-07-22"),
       age: 87,
       gender: "male",
@@ -333,10 +296,10 @@ async function main() {
       }),
       phone: "(503) 555-9876",
       emergencyContact: JSON.stringify({
-        name: "Martha Washington",
+        name: "Dana Ellery",
         role: "Daughter",
         phone: "(503) 555-5656",
-        email: "martha.w@email.com",
+        email: "martha.w@demo.carebridge.example",
       }),
       insurance: JSON.stringify([
         {
@@ -367,17 +330,17 @@ async function main() {
       updatedAt: new Date("2026-07-06T16:00:00Z"),
     },
   });
-  console.log("    ✔ pat-002 — George Washington");
+  console.log("    ✔ pat-002 — Miles Ellery");
 
-  // Patient 3: Maria Garcia
+  // Patient 3: Nora Bellamy
   await prisma.patient.upsert({
     where: { id: "pat-003" },
     update: {},
     create: {
       id: "pat-003",
-      mrn: "MRN-90345",
+      mrn: "DEMO-MRN-003",
       firstName: "Maria",
-      lastName: "Garcia",
+      lastName: "Bellamy",
       dateOfBirth: new Date("1955-11-02"),
       age: 70,
       gender: "female",
@@ -390,10 +353,10 @@ async function main() {
       }),
       phone: "(503) 555-3344",
       emergencyContact: JSON.stringify({
-        name: "Carlos Garcia",
+        name: "Leo Bellamy",
         role: "Spouse",
         phone: "(503) 555-2233",
-        email: "carlos.g@email.com",
+        email: "carlos.g@demo.carebridge.example",
       }),
       insurance: JSON.stringify([
         {
@@ -418,9 +381,9 @@ async function main() {
       updatedAt: new Date("2026-07-07T11:00:00Z"),
     },
   });
-  console.log("    ✔ pat-003 — Maria Garcia");
+  console.log("    ✔ pat-003 — Nora Bellamy");
 
-  // Patient 4: Robert Frost
+  // Patient 4: Caleb Merritt
   await prisma.patient.upsert({
     where: { id: "pat-004" },
     update: {},
@@ -428,7 +391,7 @@ async function main() {
       id: "pat-004",
       mrn: "MRN-91456",
       firstName: "Robert",
-      lastName: "Frost",
+      lastName: "Merritt",
       dateOfBirth: new Date("1948-12-26"),
       age: 77,
       gender: "male",
@@ -440,10 +403,10 @@ async function main() {
       }),
       phone: "(503) 555-7788",
       emergencyContact: JSON.stringify({
-        name: "Emily Frost",
+        name: "Maya Merritt",
         role: "Daughter",
         phone: "(503) 555-9900",
-        email: "emily.f@email.com",
+        email: "emily.f@demo.carebridge.example",
       }),
       insurance: JSON.stringify([
         {
@@ -467,9 +430,9 @@ async function main() {
       updatedAt: new Date("2026-07-06T10:00:00Z"),
     },
   });
-  console.log("    ✔ pat-004 — Robert Frost");
+  console.log("    ✔ pat-004 — Caleb Merritt");
 
-  // Patient 5: Yuki Tanaka
+  // Patient 5: Lina Ashford
   await prisma.patient.upsert({
     where: { id: "pat-005" },
     update: {},
@@ -477,7 +440,7 @@ async function main() {
       id: "pat-005",
       mrn: "MRN-92789",
       firstName: "Yuki",
-      lastName: "Tanaka",
+      lastName: "Ashford",
       dateOfBirth: new Date("1963-05-18"),
       age: 63,
       gender: "female",
@@ -489,10 +452,10 @@ async function main() {
       }),
       phone: "(503) 555-4455",
       emergencyContact: JSON.stringify({
-        name: "Ken Tanaka",
+        name: "Noah Ashford",
         role: "Brother",
         phone: "(503) 555-6677",
-        email: "ken.t@email.com",
+        email: "ken.t@demo.carebridge.example",
       }),
       insurance: JSON.stringify([
         {
@@ -517,18 +480,18 @@ async function main() {
       updatedAt: new Date("2026-07-05T14:00:00Z"),
     },
   });
-  console.log("    ✔ pat-005 — Yuki Tanaka");
+  console.log("    ✔ pat-005 — Lina Ashford");
 
   // ── 5. Seed Facilities ──
   console.log("  Seeding facilities...");
 
-  // Facility 1: Willamette Valley Rehabilitation Center
+  // Facility 1: Willow Harbor Rehabilitation (Demo)
   await prisma.facility.upsert({
     where: { id: "fac-001" },
     update: {},
     create: {
       id: "fac-001",
-      name: "Willamette Valley Rehabilitation Center",
+      name: "Willow Harbor Rehabilitation (Demo)",
       type: "rehabilitation_center",
       address: JSON.stringify({
         street: "4500 Health Way",
@@ -538,14 +501,14 @@ async function main() {
         county: "Multnomah",
       }),
       phone: "(503) 555-1000",
-      email: "admissions@willametterehab.org",
-      website: "https://willametterehab.org",
+      email: "admissions@demo.carebridge.example",
+      website: "https://demo.carebridge.example",
       contacts: JSON.stringify([
         {
           name: "Patricia Moore",
           role: "Admissions Director",
           phone: "(503) 555-1001",
-          email: "pmoore@willametterehab.org",
+          email: "pmoore@demo.carebridge.example",
         },
       ]),
       licensure: ["OR-DHS-8821", "CARF-Accredited"],
@@ -566,7 +529,7 @@ async function main() {
       updatedAt: new Date("2026-07-01T00:00:00Z"),
     },
   });
-  console.log("    ✔ fac-001 — Willamette Valley Rehabilitation Center");
+  console.log("    ✔ fac-001 — Willow Harbor Rehabilitation (Demo)");
 
   // Facility 2: St. Francis Assisted Living
   await prisma.facility.upsert({
@@ -574,7 +537,7 @@ async function main() {
     update: {},
     create: {
       id: "fac-002",
-      name: "St. Francis Assisted Living Community",
+      name: "Juniper Grove Assisted Living (Demo)",
       type: "assisted_living",
       address: JSON.stringify({
         street: "2200 Peaceful Drive",
@@ -584,13 +547,13 @@ async function main() {
         county: "Multnomah",
       }),
       phone: "(503) 555-2000",
-      email: "info@stfranciscare.org",
+      email: "info@demo.carebridge.example",
       contacts: JSON.stringify([
         {
           name: "Michael Chen",
           role: "Executive Director",
           phone: "(503) 555-2001",
-          email: "mchen@stfranciscare.org",
+          email: "mchen@demo.carebridge.example",
         },
       ]),
       licensure: ["OR-DHS-6634"],
@@ -611,15 +574,15 @@ async function main() {
       updatedAt: new Date("2026-06-28T00:00:00Z"),
     },
   });
-  console.log("    ✔ fac-002 — St. Francis Assisted Living Community");
+  console.log("    ✔ fac-002 — Juniper Grove Assisted Living (Demo)");
 
-  // Facility 3: Columbia River Skilled Nursing Facility
+  // Facility 3: Cedar Bay Skilled Nursing (Demo)
   await prisma.facility.upsert({
     where: { id: "fac-003" },
     update: {},
     create: {
       id: "fac-003",
-      name: "Columbia River Skilled Nursing Facility",
+      name: "Cedar Bay Skilled Nursing (Demo)",
       type: "skilled_nursing_facility",
       address: JSON.stringify({
         street: "890 River Road",
@@ -629,19 +592,19 @@ async function main() {
         county: "Multnomah",
       }),
       phone: "(503) 555-3000",
-      email: "admissions@columbiasnf.org",
+      email: "admissions@demo.carebridge.example",
       contacts: JSON.stringify([
         {
           name: "David Williams",
           role: "Director of Nursing",
           phone: "(503) 555-3001",
-          email: "dwilliams@columbiasnf.org",
+          email: "dwilliams@demo.carebridge.example",
         },
         {
           name: "Amanda Torres",
           role: "Admissions Coordinator",
           phone: "(503) 555-3002",
-          email: "atorres@columbiasnf.org",
+          email: "atorres@demo.carebridge.example",
         },
       ]),
       licensure: ["OR-DHS-4412", "CMS-Certified"],
@@ -661,15 +624,15 @@ async function main() {
       updatedAt: new Date("2026-07-02T00:00:00Z"),
     },
   });
-  console.log("    ✔ fac-003 — Columbia River Skilled Nursing Facility");
+  console.log("    ✔ fac-003 — Cedar Bay Skilled Nursing (Demo)");
 
-  // Facility 4: Healing Hearts Home Health Agency
+  // Facility 4: Harbor Light Home Health (Demo)
   await prisma.facility.upsert({
     where: { id: "fac-004" },
     update: {},
     create: {
       id: "fac-004",
-      name: "Healing Hearts Home Health Agency",
+      name: "Harbor Light Home Health (Demo)",
       type: "home_health_agency",
       address: JSON.stringify({
         street: "555 Care Lane",
@@ -679,13 +642,13 @@ async function main() {
         county: "Washington",
       }),
       phone: "(503) 555-4000",
-      email: "care@healinghearts.org",
+      email: "care@demo.carebridge.example",
       contacts: JSON.stringify([
         {
           name: "Rachel Green",
           role: "Clinical Director",
           phone: "(503) 555-4001",
-          email: "rgreen@healinghearts.org",
+          email: "rgreen@demo.carebridge.example",
         },
       ]),
       licensure: ["OR-DHS-3341", "CHAP-Accredited"],
@@ -711,15 +674,15 @@ async function main() {
       updatedAt: new Date("2026-06-30T00:00:00Z"),
     },
   });
-  console.log("    ✔ fac-004 — Healing Hearts Home Health Agency");
+  console.log("    ✔ fac-004 — Harbor Light Home Health (Demo)");
 
-  // Facility 5: Sunrise Memory Care Center
+  // Facility 5: Maple Rise Memory Care (Demo)
   await prisma.facility.upsert({
     where: { id: "fac-005" },
     update: {},
     create: {
       id: "fac-005",
-      name: "Sunrise Memory Care Center",
+      name: "Maple Rise Memory Care (Demo)",
       type: "assisted_living",
       address: JSON.stringify({
         street: "1200 Sunrise Boulevard",
@@ -729,13 +692,13 @@ async function main() {
         county: "Multnomah",
       }),
       phone: "(503) 555-5000",
-      email: "info@sunrisememory.org",
+      email: "info@demo.carebridge.example",
       contacts: JSON.stringify([
         {
           name: "Lisa Park",
           role: "Community Relations",
           phone: "(503) 555-5001",
-          email: "lpark@sunrisememory.org",
+          email: "lpark@demo.carebridge.example",
         },
       ]),
       licensure: ["OR-DHS-7712"],
@@ -756,7 +719,7 @@ async function main() {
       updatedAt: new Date("2026-07-05T00:00:00Z"),
     },
   });
-  console.log("    ✔ fac-005 — Sunrise Memory Care Center");
+  console.log("    ✔ fac-005 — Maple Rise Memory Care (Demo)");
 
   console.log("  Seeding facility demo photos...");
   const photoCount = await seedFacilityDemoPhotos(prisma, [
@@ -799,7 +762,7 @@ async function main() {
       updatedAt: new Date("2026-07-07T14:00:00Z"),
     },
   });
-  console.log("    ✔ plc-001 — Eleanor Roosevelt → Columbia River SNF");
+  console.log("    ✔ plc-001 — Avery Whitcomb → Columbia River SNF");
 
   // Placement 2
   await prisma.placement.upsert({
@@ -828,7 +791,7 @@ async function main() {
       updatedAt: new Date("2026-07-07T11:00:00Z"),
     },
   });
-  console.log("    ✔ plc-002 — George Washington → Searching");
+  console.log("    ✔ plc-002 — Miles Ellery → Searching");
 
   // Placement 3
   await prisma.placement.upsert({
@@ -857,7 +820,7 @@ async function main() {
       updatedAt: new Date("2026-07-07T09:00:00Z"),
     },
   });
-  console.log("    ✔ plc-003 — Maria Garcia → Assessment");
+  console.log("    ✔ plc-003 — Nora Bellamy → Assessment");
 
   // ── 7. Seed Activity Events ──
   console.log("  Seeding activity events...");
@@ -870,8 +833,8 @@ async function main() {
       type: "placement",
       title: "Placement pending approval",
       description:
-        "Eleanor Roosevelt's placement at Columbia River SNF submitted for approval.",
-      patientName: "Eleanor Roosevelt",
+        "Avery Whitcomb's placement at Columbia River SNF submitted for approval.",
+      patientName: "Avery Whitcomb",
       patientId: "pat-001",
       timestamp: new Date("2026-07-07T14:00:00Z"),
       userId: "usr-001",
@@ -886,8 +849,8 @@ async function main() {
       id: "act-002",
       type: "assessment",
       title: "Assessment completed",
-      description: "Maria Garcia assessed for home health needs. Healing Hearts recommended.",
-      patientName: "Maria Garcia",
+      description: "Nora Bellamy assessed for home health needs. Healing Hearts recommended.",
+      patientName: "Nora Bellamy",
       patientId: "pat-003",
       timestamp: new Date("2026-07-07T09:00:00Z"),
       userId: "usr-001",
@@ -903,8 +866,8 @@ async function main() {
       type: "milestone",
       title: "Insurance verified",
       description:
-        "George Washington's Aetna supplemental coverage confirmed for inpatient rehab.",
-      patientName: "George Washington",
+        "Miles Ellery's Aetna supplemental coverage confirmed for inpatient rehab.",
+      patientName: "Miles Ellery",
       patientId: "pat-002",
       timestamp: new Date("2026-07-06T16:00:00Z"),
       userId: "usr-001",
@@ -919,8 +882,8 @@ async function main() {
       id: "act-004",
       type: "admission",
       title: "New patient admitted",
-      description: "Robert Frost admitted for advanced Alzheimer's care assessment.",
-      patientName: "Robert Frost",
+      description: "Caleb Merritt admitted for advanced Alzheimer's care assessment.",
+      patientName: "Caleb Merritt",
       patientId: "pat-004",
       timestamp: new Date("2026-07-05T16:00:00Z"),
       userId: "usr-001",
@@ -936,8 +899,8 @@ async function main() {
       type: "placement",
       title: "Facilities matched",
       description:
-        "3 skilled nursing facilities matched for Eleanor Roosevelt's care needs.",
-      patientName: "Eleanor Roosevelt",
+        "3 skilled nursing facilities matched for Avery Whitcomb's care needs.",
+      patientName: "Avery Whitcomb",
       patientId: "pat-001",
       timestamp: new Date("2026-07-04T11:00:00Z"),
       userId: "usr-001",
@@ -953,8 +916,8 @@ async function main() {
       type: "note",
       title: "Care plan updated",
       description:
-        "Yuki Tanaka's rehab goals updated. Extended stay recommended by PT team.",
-      patientName: "Yuki Tanaka",
+        "Lina Ashford's rehab goals updated. Extended stay recommended by PT team.",
+      patientName: "Lina Ashford",
       patientId: "pat-005",
       timestamp: new Date("2026-07-05T14:00:00Z"),
       userId: "usr-001",
@@ -974,14 +937,14 @@ async function main() {
       id: "doc-001",
       organizationId: "org-001",
       uploadedById: "usr-001",
-      title: "Patient Consent Form - Eleanor Roosevelt",
+      title: "Patient Consent Form - Avery Whitcomb",
       description: "Signed patient consent for treatment and data sharing authorization for post-discharge care coordination.",
       category: "consent_forms",
-      tags: ["consent", "hipaa", "release-of-information", "eleanor-roosevelt", "mrn-88472"],
-      fileName: "consent_form_roosevelt_eleanor_20260701.pdf",
+      tags: ["consent", "hipaa", "release-of-information", "avery-whitcomb", "demo-mrn-001"],
+      fileName: "consent_form_whitcomb_avery_20260701.pdf",
       fileType: "application/pdf",
       fileSize: 245760,
-      storageKey: "orgs/org-001/documents/a1b2c3d4-consent_form_roosevelt_eleanor_20260701.pdf",
+      storageKey: "orgs/org-001/documents/a1b2c3d4-consent_form_whitcomb_avery_20260701.pdf",
       storageBucket: "carebridge-storage",
       storageEndpoint: "https://storage.railway.app",
       checksum: "a4f8c2d9e1b7a3f6c8d0e2b4a6c8e0d2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c1d",
@@ -995,7 +958,7 @@ async function main() {
       updatedAt: new Date("2026-07-01T10:30:00Z"),
     },
   });
-  console.log("    ✔ doc-001 — Patient Consent Form - Eleanor Roosevelt");
+  console.log("    ✔ doc-001 — Patient Consent Form - Avery Whitcomb");
 
   // ── Document 2: Business Associate Agreement ──
   await prisma.document.upsert({
@@ -1005,8 +968,8 @@ async function main() {
       id: "doc-002",
       organizationId: "org-001",
       uploadedById: "usr-003",
-      title: "Mercy Hospital BAA - Willamette Rehab 2026",
-      description: "Business Associate Agreement between Mercy Hospital Portland and Willamette Valley Rehabilitation Center for 2026-2027 term.",
+      title: "Mercy General Demo BAA - Willow Harbor Rehab 2026",
+      description: "Business Associate Agreement between Mercy General and Willow Harbor Rehabilitation (Demo) for 2026-2027 term.",
       category: "business_associate_agreements",
       tags: ["baa", "hipaa", "willamette-rehab", "vendor-agreement", "fac-001"],
       fileName: "baa_mercy_willamette_rehab_2026_signed.pdf",
@@ -1026,7 +989,7 @@ async function main() {
       updatedAt: new Date("2026-06-15T14:00:00Z"),
     },
   });
-  console.log("    ✔ doc-002 — Mercy Hospital BAA - Willamette Rehab 2026");
+  console.log("    ✔ doc-002 — Mercy General Demo BAA - Willow Harbor Rehab 2026");
 
   // ── Document 3: HIPAA Privacy Practices Notice ──
   await prisma.document.upsert({
@@ -1129,14 +1092,14 @@ async function main() {
       id: "doc-006",
       organizationId: "org-001",
       uploadedById: "usr-001",
-      title: "Washington Placement Assessment - MRN-89103",
-      description: "Comprehensive placement assessment for George Washington including functional status, care needs, and facility matching recommendations.",
+      title: "Ellery Placement Assessment - DEMO-MRN-002",
+      description: "Comprehensive placement assessment for Miles Ellery including functional status, care needs, and facility matching recommendations.",
       category: "patient_records",
-      tags: ["placement-assessment", "george-washington", "mrn-89103", "functional-status", "facility-matching"],
-      fileName: "washington_george_placement_assessment_20260702.pdf",
+      tags: ["placement-assessment", "miles-ellery", "demo-mrn-002", "functional-status", "facility-matching"],
+      fileName: "ellery_miles_placement_assessment_20260702.pdf",
       fileType: "application/pdf",
       fileSize: 4300800,
-      storageKey: "orgs/org-001/documents/f6a7b8c9-washington_george_placement_assessment_20260702.pdf",
+      storageKey: "orgs/org-001/documents/f6a7b8c9-ellery_miles_placement_assessment_20260702.pdf",
       storageBucket: "carebridge-storage",
       storageEndpoint: "https://storage.railway.app",
       checksum: "f9e3a7b4c6d1e8f0a2b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d5e7f8",
@@ -1150,7 +1113,7 @@ async function main() {
       updatedAt: new Date("2026-07-02T15:00:00Z"),
     },
   });
-  console.log("    ✔ doc-006 — Washington Placement Assessment - MRN-89103");
+  console.log("    ✔ doc-006 — Ellery Placement Assessment - DEMO-MRN-002");
 
   // ── Document 7: Monthly Compliance Report ──
   await prisma.document.upsert({
@@ -1222,14 +1185,14 @@ async function main() {
       id: "doc-009",
       organizationId: "org-001",
       uploadedById: "usr-002",
-      title: "Insurance Pre-Authorization - Garcia MRN-90345",
-      description: "Pre-authorization approval documentation for Maria Garcia's home health services under BCBS policy BCBS-77203.",
+      title: "Insurance Pre-Authorization - Bellamy DEMO-MRN-003",
+      description: "Pre-authorization approval documentation for Nora Bellamy's home health services under BCBS policy BCBS-77203.",
       category: "insurance_documents",
-      tags: ["insurance", "pre-authorization", "maria-garcia", "mrn-90345", "bcbs"],
-      fileName: "garcia_maria_preauth_BCBS77203_20260703.pdf",
+      tags: ["insurance", "pre-authorization", "nora-bellamy", "demo-mrn-003", "bcbs"],
+      fileName: "bellamy_nora_preauth_DEMOPOLICY003_20260703.pdf",
       fileType: "application/pdf",
       fileSize: 327680,
-      storageKey: "orgs/org-001/documents/c9d0e1f2-garcia_maria_preauth_BCBS77203_20260703.pdf",
+      storageKey: "orgs/org-001/documents/c9d0e1f2-bellamy_nora_preauth_DEMOPOLICY003_20260703.pdf",
       storageBucket: "carebridge-storage",
       storageEndpoint: "https://storage.railway.app",
       checksum: "c2d6e0f4a8b2c6d0e4f8a2b6c0d4e8f2a6b0c4d8e2f6a0b4c8d2e6f0a4b8c2d6",
@@ -1243,7 +1206,7 @@ async function main() {
       updatedAt: new Date("2026-07-03T16:00:00Z"),
     },
   });
-  console.log("    ✔ doc-009 — Insurance Pre-Authorization - Garcia MRN-90345");
+  console.log("    ✔ doc-009 — Insurance Pre-Authorization - Bellamy DEMO-MRN-003");
 
   // ── Document 10: Security Incident Report ──
   await prisma.document.upsert({
@@ -1284,14 +1247,14 @@ async function main() {
       id: "doc-011",
       organizationId: "org-001",
       uploadedById: "usr-001",
-      title: "Discharge Summary - Roosevelt MRN-88472",
-      description: "Discharge summary for Eleanor Roosevelt including medication reconciliation, follow-up appointments, and post-discharge care instructions.",
+      title: "Discharge Summary - Whitcomb DEMO-MRN-001",
+      description: "Discharge summary for Avery Whitcomb including medication reconciliation, follow-up appointments, and post-discharge care instructions.",
       category: "medical_documentation",
-      tags: ["discharge-summary", "eleanor-roosevelt", "mrn-88472", "medication-reconciliation", "follow-up"],
-      fileName: "roosevelt_eleanor_discharge_summary_20260706.pdf",
+      tags: ["discharge-summary", "avery-whitcomb", "demo-mrn-001", "medication-reconciliation", "follow-up"],
+      fileName: "whitcomb_avery_discharge_summary_20260706.pdf",
       fileType: "application/pdf",
       fileSize: 1572864,
-      storageKey: "orgs/org-001/documents/e1f2a3b4-roosevelt_eleanor_discharge_summary_20260706.pdf",
+      storageKey: "orgs/org-001/documents/e1f2a3b4-whitcomb_avery_discharge_summary_20260706.pdf",
       storageBucket: "carebridge-storage",
       storageEndpoint: "https://storage.railway.app",
       checksum: "e4f8a2b6c0d4e8f2a6b0c4d8e2f6a0b4c8d2e6f0a4b8c2d6e0f4a8b2c6d0e4f8",
@@ -1305,7 +1268,7 @@ async function main() {
       updatedAt: new Date("2026-07-06T09:00:00Z"),
     },
   });
-  console.log("    ✔ doc-011 — Discharge Summary - Roosevelt MRN-88472");
+  console.log("    ✔ doc-011 — Discharge Summary - Whitcomb DEMO-MRN-001");
 
   // ── Document 12: Facility Audit Checklist ──
   await prisma.document.upsert({
@@ -1316,7 +1279,7 @@ async function main() {
       organizationId: "org-001",
       uploadedById: "usr-fac-001",
       title: "Facility Audit Checklist - Q2 2026",
-      description: "Completed Q2 2026 audit checklist for Willamette Valley Rehabilitation Center covering safety, compliance, and operational standards.",
+      description: "Completed Q2 2026 audit checklist for Willow Harbor Rehabilitation (Demo) covering safety, compliance, and operational standards.",
       category: "audit_documents",
       tags: ["audit", "checklist", "q2-2026", "willamette-rehab", "fac-001", "safety"],
       fileName: "facility_audit_checklist_q2_2026_willamette.pdf",
@@ -1346,14 +1309,14 @@ async function main() {
       id: "doc-013",
       organizationId: "org-001",
       uploadedById: "usr-001",
-      title: "Advance Directive - Washington MRN-89103",
-      description: "Notarized advance directive and living will for George Washington including healthcare power of attorney designation.",
+      title: "Advance Directive - Ellery DEMO-MRN-002",
+      description: "Notarized advance directive and living will for Miles Ellery including healthcare power of attorney designation.",
       category: "consent_forms",
-      tags: ["advance-directive", "living-will", "george-washington", "mrn-89103", "power-of-attorney"],
-      fileName: "advance_directive_washington_george_20260702.pdf",
+      tags: ["advance-directive", "living-will", "miles-ellery", "demo-mrn-002", "power-of-attorney"],
+      fileName: "advance_directive_ellery_miles_20260702.pdf",
       fileType: "application/pdf",
       fileSize: 184320,
-      storageKey: "orgs/org-001/documents/a3b4c5d6-advance_directive_washington_george_20260702.pdf",
+      storageKey: "orgs/org-001/documents/a3b4c5d6-advance_directive_ellery_miles_20260702.pdf",
       storageBucket: "carebridge-storage",
       storageEndpoint: "https://storage.railway.app",
       checksum: "a6b0c4d8e2f6a0b4c8d2e6f0a4b8c2d6e0f4a8b2c6d0e4f8a2b6c0d4e8f2a6b0",
@@ -1367,7 +1330,7 @@ async function main() {
       updatedAt: new Date("2026-07-02T11:00:00Z"),
     },
   });
-  console.log("    ✔ doc-013 — Advance Directive - Washington MRN-89103");
+  console.log("    ✔ doc-013 — Advance Directive - Ellery DEMO-MRN-002");
 
   // ── Document 14: Procedure Manual ──
   await prisma.document.upsert({
@@ -1520,10 +1483,10 @@ async function main() {
       id: "dv-005",
       documentId: "doc-011",
       version: 1,
-      fileName: "roosevelt_eleanor_discharge_summary_draft.pdf",
+      fileName: "whitcomb_avery_discharge_summary_draft.pdf",
       fileType: "application/pdf",
       fileSize: 1048576,
-      storageKey: "orgs/org-001/documents/roosevelt_discharge_v1_20260701.pdf",
+      storageKey: "orgs/org-001/documents/whitcomb_discharge_v1_20260701.pdf",
       storageBucket: "carebridge-storage",
       checksum: "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
       uploadedById: "usr-001",
@@ -1569,6 +1532,7 @@ async function main() {
   await prisma.documentAccessLog.upsert({ where: { id: "dal-030" }, update: {}, create: { id: "dal-030", documentId: "doc-010", userId: "usr-001", action: "VIEW", timestamp: new Date("2026-06-29T10:00:00Z"), ipAddress: "10.0.1.45", userAgent: "Mozilla/5.0", success: true, details: "Social work notified of security incident" } });
   console.log("    ✔ 30 document access log records seeded");
 
+  await seedDemoPolish(prisma);
   console.log("\n✅ Seed completed successfully!");
 }
 
