@@ -46,6 +46,14 @@
 - **Two-org Clerk walkthrough**: needs the user driving two logins.
 - **Real Stripe test keys**: blocked until Anam creates the Stripe account.
 
+## Roadmap (planned features)
+- **Facility 3D virtual tours with Gaussian splats** (noted 2026-10-09, not started):
+  facilities can showcase their property with an interactive virtual 3D tour built
+  from Gaussian splats. Needs: photo/video capture + upload flow, splat generation
+  pipeline, and an embedded web viewer on facility profiles. Shortlist for the
+  viewer: `@mkkellogg/gaussian-splats-3d` (three.js), PlayCanvas splat support.
+  Generation options to evaluate: self-hosted pipeline vs managed APIs.
+
 ## Hard rules
 - **Never invent** stats, testimonials, customer logos, metrics, or verification results.
 - **Landing stays light**: keep the `landing-root` class on the page root and the
