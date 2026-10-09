@@ -46,7 +46,7 @@ export async function createDepositIntent(referralId: string, amountMinor: numbe
   if (!Number.isSafeInteger(amountMinor) || amountMinor < minimumDeposit)
     throw new ReferralError(400, "Deposit must be at least 50 cents");
   const contract = await prisma.contract.findFirst({
-    where: { referralId, status: "signed", referral: { sendingOrgId: ctx.organizationId, status: { in: ["accepted", "converted"] } } },
+    where: { referralId, status: "signed", referral: { sendingOrgId: ctx.organizationId, status: "accepted" } },
     select: { id: true, referralId: true, depositAmountCents: true, currency: true },
   });
   if (!contract) throw new ReferralError(409, "Signed contract not found");
