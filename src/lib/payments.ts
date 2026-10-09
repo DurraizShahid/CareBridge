@@ -46,7 +46,7 @@ export async function createDepositIntent(referralId: string, amountMinor: numbe
   if (!Number.isSafeInteger(amountMinor) || amountMinor < minimumDeposit)
     throw new ReferralError(400, "Deposit must be at least 50 cents");
   const contract = await prisma.contract.findFirst({
-    where: { referralId, status: "signed", referral: { sendingOrgId: ctx.organizationId, status: "accepted" } },
+    where: { referralId, status: "signed", referral: { sendingOrgId: ctx.organizationId, status: { in: ["accepted", "converted"] } } },
     select: { id: true, referralId: true, depositAmountCents: true, currency: true },
   });
   if (!contract) throw new ReferralError(409, "Signed contract not found");
@@ -213,7 +213,7 @@ export async function simulateDemoDeposit(paymentId: string) {
   if (getPaymentMode() !== "demo") throw new ReferralError(403, "Demo payment endpoint disabled");
   const payment = await prisma.payment.findFirst({
     where: { id: paymentId, isDemo: true, contract: { status: "signed" },
-      referral: { sendingOrgId: ctx.organizationId, status: "accepted" } },
+      referral: { sendingOrgId: ctx.organizationId, status: { in: ["accepted", "converted"] } } },
   });
   if (!payment) throw new ReferralError(404, "Demo payment not found");
   return processDepositSuccess({

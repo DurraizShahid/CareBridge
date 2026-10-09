@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
+// Prefer local development settings; explicitly exported environment variables still win.
+config({ path: ".env.local" });
+config({ path: ".env" });
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
