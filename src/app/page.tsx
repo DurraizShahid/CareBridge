@@ -52,7 +52,7 @@ export default function HomePage() {
               <span className="size-2 rounded-full bg-brand-blue" /> HOSPITAL-TO-CARE-HOME PLACEMENT
             </span>
             <h1 className="mt-8 text-[clamp(2.9rem,5.2vw,5.25rem)] font-semibold leading-[1.06] tracking-[-.06em]">
-              From hospital discharge to <span className="text-brand-blue">confirmed placement</span> — without the phone tag.
+              From hospital discharge to <span className="text-brand-blue">confirmed placement</span>. Without the phone tag.
             </h1>
             <p className="mt-7 max-w-lg text-base leading-8 text-[#5D718A] sm:text-lg">
               CareBridge is the shared workspace for discharge planners and care facilities: build the intake, match the right facility, send the referral, e-sign the contract, and lock the bed with a deposit — in one flow, not five tools.
@@ -70,7 +70,7 @@ export default function HomePage() {
           {/* Product visual: referral card over placement status */}
           <div className="relative mx-auto w-full max-w-[540px]">
             <div aria-hidden="true" className="brand-breathe absolute -inset-8 rounded-full bg-brand-azure/25 blur-3xl" />
-            <div className="brand-float relative rotate-2 p-6 opacity-90 sm:p-7" aria-hidden="true">
+            <div className="brand-float relative rotate-1 p-6 opacity-90 sm:p-7" aria-hidden="true">
               <div className="flex items-center gap-3">
                 <span className="flex size-9 items-center justify-center rounded-full bg-[#D9F477] text-[#344A15]"><Check size={18} strokeWidth={2.5}/></span>
                 <div><p className="text-sm font-semibold">Placement confirmed</p><p className="text-xs text-[#75869A]">Mercy General → Oakwood Care Home</p></div>
@@ -144,7 +144,6 @@ export default function HomePage() {
         </div>
         <div className="mt-12 grid gap-4 lg:grid-cols-2">
           <article className="brand-float relative overflow-hidden p-8 sm:p-10">
-            <div aria-hidden="true" className="brand-breathe pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand-azure/20 blur-3xl"/>
             <div className="relative flex size-12 items-center justify-center rounded-[17px] bg-brand-mist text-brand-blue"><Hospital size={23} strokeWidth={1.8}/></div>
             <h3 className="relative mt-6 text-2xl font-semibold tracking-tight">For hospital discharge planners</h3>
             <ul className="relative mt-5 space-y-3 text-[15px] leading-7 text-[#5D718A]">
@@ -200,7 +199,7 @@ export default function HomePage() {
           <div className="brand-float p-7">
             <p className="flex items-center justify-between text-sm font-semibold">Deposit checkout <span className="rounded-full bg-[#D9F477] px-3 py-1 text-[11px] font-semibold text-[#344A15]">DEMO MODE</span></p>
             <div className="mt-5 rounded-2xl bg-[#F7F9FD] p-5">
-              <div className="flex items-baseline justify-between"><p className="text-xs text-[#75869A]">Placement deposit</p><p className="brand-dot-stat text-3xl">$1,500</p></div>
+              <div className="flex items-baseline justify-between"><p className="text-xs text-[#75869A]">Placement deposit</p><p className="text-3xl font-extrabold tabular-nums tracking-tight text-brand-navy">$1,500</p></div>
               <div className="mt-4 flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-[0_4px_18px_rgba(16,43,78,.05)]">
                 <CreditCard size={18} className="text-brand-blue"/><p className="text-sm font-medium tracking-widest">4242</p><p className="ml-auto text-xs text-[#75869A]">Illustrative</p>
               </div>
