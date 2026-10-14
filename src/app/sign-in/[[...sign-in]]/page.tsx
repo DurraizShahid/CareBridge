@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSignIn, useAuth, useClerk } from '@clerk/nextjs';
+import { SignInButton, useSignIn, useAuth, useClerk } from '@clerk/nextjs';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -47,23 +47,6 @@ export default function SignInPage() {
   if (isSignedIn) {
     return null;
   }
-
-  const handleGoogleSignIn = async () => {
-    setErrorMessage(null);
-    try {
-      await signIn.sso({
-        strategy: 'oauth_google',
-        redirectUrl: '/onboarding',
-        redirectCallbackUrl: '/sign-in',
-      });
-    } catch (err: unknown) {
-      if (isClerkAPIResponseError(err)) {
-        setErrorMessage(err.errors[0]?.message ?? 'Something went wrong. Please try again.');
-      } else {
-        setErrorMessage('Something went wrong. Please try again.');
-      }
-    }
-  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,20 +282,21 @@ export default function SignInPage() {
             {/* Step: Email */}
             {step === 'email' && (
               <>
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={fetchStatus === 'fetching'}
-                  className="h-[42px] w-full border-0 bg-white shadow-[0_8px_24px_rgba(16,43,78,0.055)] text-[13px] font-medium text-[#252525]"
-                >
-                  <svg width="16" height="16" aria-hidden="true" viewBox="0 0 24 24">
-                    <path d="M12.545,10.239v3.818h5.145c-0.204,1.125-1.032,2.067-2.398,2.667c-1.366,0.6-2.995,0.468-4.177-0.352c-1.182-0.82-1.831-2.088-1.831-3.365s0.649-2.545,1.831-3.365c1.182-0.82,2.811-0.952,4.177-0.352c0.655,0.288,1.168,0.717,1.557,1.239l2.141-2.141c-0.961-0.902-2.237-1.591-3.698-1.991C14.821,2.181,13.444,1.999,12,2c-5.523,0-10,4.477-10,10s4.477,10,10,10s10-4.477,10-10c0-0.298-0.013-0.591-0.038-0.877L12.545,10.239z" fill="#4285F4"/>
-                    <path d="M3.59,7.543l2.475,1.857C7.111,5.999,9.397,4.65,12,4.65c1.444,0,2.821,0.182,4.034,0.511c1.213,0.329,2.291,0.822,3.165,1.436l2.141-2.141C19.632,2.695,16.098,1,12,1C7.306,1,3.264,3.491,1.478,7.199L3.59,7.543z" fill="#EA4335"/>
-                    <path d="M12,23c4.098,0,7.632-1.695,10.198-4.445l-2.24-1.941c-1.95,1.311-4.436,2.086-7.958,2.086c-2.603,0-4.889-1.349-6.256-3.515l-2.45,1.901C3.762,20.535,7.588,23,12,23z" fill="#34A853"/>
-                    <path d="M1.439,6.801C1.159,7.64,1,8.544,1,9.5s0.159,1.86,0.439,2.699l2.541-1.969c-0.178-0.533-0.279-1.087-0.279-1.669s0.101-1.136,0.279-1.669L1.439,6.801z" fill="#FBBC05"/>
-                  </svg>
-                  Continue with Google
-                </button>
+                <SignInButton mode="redirect" forceRedirectUrl="/onboarding">
+                  <button
+                    type="button"
+                    disabled={fetchStatus === 'fetching'}
+                    className="h-[42px] w-full border-0 bg-white shadow-[0_8px_24px_rgba(16,43,78,0.055)] text-[13px] font-medium text-[#252525]"
+                  >
+                    <svg width="16" height="16" aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M12.545,10.239v3.818h5.145c-0.204,1.125-1.032,2.067-2.398,2.667c-1.366,0.6-2.995,0.468-4.177-0.352c-1.182-0.82-1.831-2.088-1.831-3.365s0.649-2.545,1.831-3.365c1.182-0.82,2.811-0.952,4.177-0.352c0.655,0.288,1.168,0.717,1.557,1.239l2.141-2.141c-0.961-0.902-2.237-1.591-3.698-1.991C14.821,2.181,13.444,1.999,12,2c-5.523,0-10,4.477-10,10s4.477,10,10,10s10-4.477,10-10c0-0.298-0.013-0.591-0.038-0.877L12.545,10.239z" fill="#4285F4"/>
+                      <path d="M3.59,7.543l2.475,1.857C7.111,5.999,9.397,4.65,12,4.65c1.444,0,2.821,0.182,4.034,0.511c1.213,0.329,2.291,0.822,3.165,1.436l2.141-2.141C19.632,2.695,16.098,1,12,1C7.306,1,3.264,3.491,1.478,7.199L3.59,7.543z" fill="#EA4335"/>
+                      <path d="M12,23c4.098,0,7.632-1.695,10.198-4.445l-2.24-1.941c-1.95,1.311-4.436,2.086-7.958,2.086c-2.603,0-4.889-1.349-6.256-3.515l-2.45,1.901C3.762,20.535,7.588,23,12,23z" fill="#34A853"/>
+                      <path d="M1.439,6.801C1.159,7.64,1,8.544,1,9.5s0.159,1.86,0.439,2.699l2.541-1.969c-0.178-0.533-0.279-1.087-0.279-1.669s0.101-1.136,0.279-1.669L1.439,6.801z" fill="#FBBC05"/>
+                    </svg>
+                    Continue with Google
+                  </button>
+                </SignInButton>
 
                 {/* Divider */}
                 <div style={{
