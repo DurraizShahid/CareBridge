@@ -15,12 +15,12 @@ A malformed key fails closed. Both tests and demo charge no real money.
 
 **Test:** Set the three Stripe variables using a Stripe *test-mode* account.
 Set Stripe's webhook endpoint to POST /api/webhooks/stripe and subscribe to
-payment_intent.succeeded and payment_intent.payment_failed. Stripe CLI forwarding
+payment_intent.succeeded, payment_intent.payment_failed, and charge.refunded. Stripe CLI forwarding
 can be used locally. Use test cards with Stripe Elements.
 
 **Production later:** After finance, legal, privacy, and payments approvals, use
 matching live keys and deliberately set STRIPE_ENABLE_LIVE_CHARGES=true. No code
-changes are needed. Never enable live charges during Slice 3. Changing
+changes are needed. See STRIPE_LIVE_GO_LIVE.md for the go-live steps. Changing
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY requires a new client build/deployment.
 
 MIN_DEPOSIT_CENTS configures the minimum. The actual deposit is a hospital-

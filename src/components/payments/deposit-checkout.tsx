@@ -42,7 +42,8 @@ export function DepositCheckout({contractId}:{contractId:string}){
  const [intent,setIntent]=useState<Intent|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState("");
  const publishable=process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
- const stripe=useMemo(()=>(current?.mode==="test"||current?.mode==="live") && (publishable?.startsWith("pk_test_")||publishable?.startsWith("pk_live_")) ? loadStripe(publishable) : null,[publishable,current?.mode]);
+ // Browser only ever sees the publishable key, and its prefix must match the server mode.
+ const stripe=useMemo(()=>(current?.mode==="test"&&publishable?.startsWith("pk_test_"))||(current?.mode==="live"&&publishable?.startsWith("pk_live_")) ? loadStripe(publishable) : null,[publishable,current?.mode]);
  async function refresh(){
   const r=await fetch("/api/contracts/"+encodeURIComponent(contractId)+"/payment",{cache:"no-store"});
   const body=await r.json();
@@ -90,7 +91,7 @@ export function DepositCheckout({contractId}:{contractId:string}){
     {!intent&&status==="pending"&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">Resume checkout</button>}
     {intent?.isDemo&&<button type="button" disabled={busy} onClick={()=>void demoFinish()} className="mt-5 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">{busy?"Simulating…":"Simulate successful payment"}</button>}
     {intent&&!intent.isDemo&&stripe&&<Elements stripe={stripe} options={{clientSecret:intent.clientSecret,appearance:{theme:"stripe",variables:{borderRadius:"16px"}}}}><CardPayment after={refresh}/></Elements>}
-    {intent&&!intent.isDemo&&!stripe&&<p className="mt-4 text-sm text-red-700">Missing Stripe publishable test key.</p>}
+    {intent&&!intent.isDemo&&!stripe&&<p className="mt-4 text-sm text-red-700">Stripe publishable key is missing or does not match the payment mode.</p>}
   </>}
   <button type="button" onClick={()=>void refresh().catch(()=>setError("Unable to refresh status"))} className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-[#8291A4]"><RefreshCcw size={14}/> Refresh status</button>
  </section>;

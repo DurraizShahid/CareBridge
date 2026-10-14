@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getPaymentMode } from "@/lib/payment-mode";
-import { stripeClient, processDepositFailed, processDepositSuccess } from "@/lib/payments";
+import { stripeClient, processDepositFailed, processDepositRefunded, processDepositSuccess } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 
-/** Real test-mode Stripe webhook: raw bytes + verified Stripe signature. */
+/** Stripe webhook (test or live): raw bytes + verified Stripe signature. */
 export async function POST(req: Request) {
   try {
     if(getPaymentMode()==="demo")
@@ -16,6 +16,14 @@ export async function POST(req: Request) {
       event=stripeClient().webhooks.constructEvent(raw,signature,process.env.STRIPE_WEBHOOK_SECRET!);
     } catch {
       return NextResponse.json({error:"Invalid Stripe signature"},{status:400});
+    }
+    if(event.type==="charge.refunded") {
+      const charge=event.data.object;
+      const intentId=typeof charge.payment_intent==="string"?charge.payment_intent:charge.payment_intent?.id;
+      // ponytail: partial refunds are acknowledged but not modeled; the bed stays reserved.
+      if(!intentId || !charge.refunded) return NextResponse.json({received:true});
+      await processDepositRefunded(event.id,intentId,charge.refunds?.data[0]?.id??null);
+      return NextResponse.json({received:true});
     }
     if(event.type!=="payment_intent.succeeded" && event.type!=="payment_intent.payment_failed")
       return NextResponse.json({received:true});

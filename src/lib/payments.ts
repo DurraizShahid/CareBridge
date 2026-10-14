@@ -207,6 +207,42 @@ export async function processDepositFailed(externalId: string, paymentId: string
   });
 }
 
+/** Full Stripe refund (dashboard or our capacity refund): release the bed and flag the referral. */
+export async function processDepositRefunded(externalId: string, intentId: string, refundId: string | null) {
+  return prisma.$transaction(async tx => {
+    const ref = await tx.payment.findUnique({ where: { stripePaymentIntentId: intentId }, select: { id: true } });
+    if (!ref) throw new ReferralError(409, "Payment intent mismatch");
+    await tx.$queryRawUnsafe('SELECT "id" FROM "Payment" WHERE "id" = $1 FOR UPDATE', ref.id);
+    const payment = await tx.payment.findUnique({
+      where: { id: ref.id }, include: { bedReservation: true, referral: true },
+    });
+    if (!payment || payment.isDemo) throw new ReferralError(409, "Payment intent mismatch");
+    const oldEvent = await tx.paymentWebhookEvent.findUnique({ where: { externalId } });
+    if (oldEvent && oldEvent.paymentId !== payment.id)
+      throw new ReferralError(409, "Conflicting webhook event ID");
+    if (oldEvent?.processed) return { status: "duplicate" };
+    if (!oldEvent) await tx.paymentWebhookEvent.create({
+      data: { externalId, paymentId: payment.id, kind: "refunded" },
+    });
+    if (payment.status === "paid" || payment.status === "refund_pending") {
+      if (payment.bedReservation) {
+        await tx.bedReservation.delete({ where: { id: payment.bedReservation.id } });
+        await recalculateFacilityOccupancy(tx, [payment.bedReservation.facilityId]);
+      }
+      await tx.payment.update({ where: { id: payment.id },
+        data: { status: "refunded", refundId: refundId ?? payment.refundId } });
+      // refund_pending already carries the capacity-lost flag. A converted
+      // placement is left for staff to review rather than cancelled automatically.
+      if (payment.status === "paid") await tx.referral.update({ where: { id: payment.referralId },
+        data: { depositIssue: payment.referral.status === "converted"
+          ? "DEPOSIT_REFUNDED_AFTER_CONVERSION" : "DEPOSIT_REFUNDED" } });
+    }
+    await tx.paymentWebhookEvent.update({ where: { externalId },
+      data: { processed: true, processedAt: new Date() } });
+    return { status: "refunded" };
+  });
+}
+
 export async function simulateDemoDeposit(paymentId: string) {
   const ctx = await referralContext();
   if (ctx.type !== "hospital") throw new ReferralError(403, "Hospital access required");
