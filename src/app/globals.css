@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
+@import "./carebridge-public.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -606,77 +608,3 @@ select option {
 }
 body { background: var(--background); color: var(--foreground); }
 .dashboard-gradient, .dashboard-canvas { background: var(--dash-bg); }
-.brand-float {
-  border-radius: 30px; background: var(--card);
-  box-shadow: 0 20px 60px rgba(16,43,78,.055), 0 3px 12px rgba(16,43,78,.025);
-}
-.brand-cta {
-  display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
-  border-radius: 999px; background: var(--brand-lime); color: #26390A;
-  font-weight: 650; transition: transform .2s ease, box-shadow .2s ease;
-}
-.brand-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(108,141,27,.16); }
-.brand-mesh {
-  background:
-    radial-gradient(ellipse at 82% 15%, rgba(110,168,242,.36), transparent 38%),
-    radial-gradient(ellipse at 20% 84%, rgba(220,235,255,.85), transparent 44%),
-    linear-gradient(135deg, #EEF4FC, #F7F7F5 75%);
-}
-.brand-dot-stat {
-  display: inline-block; font-weight: 800; font-variant-numeric: tabular-nums;
-  letter-spacing: -.065em; color: var(--brand-navy);
-  -webkit-mask-image: radial-gradient(circle,#000 1.5px,transparent 1.8px);
-  mask-image: radial-gradient(circle,#000 1.5px,transparent 1.8px);
-  -webkit-mask-size: 5px 5px; mask-size: 5px 5px;
-}
-.brand-auth-layout { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
-.brand-auth-layout input { border-radius: 14px !important; }
-.brand-auth-layout .brand-auth-panel { background: var(--brand-canvas) !important; }
-@media(max-width:850px) {
-  .brand-auth-layout { display: flex !important; flex-direction: column; }
-  .brand-auth-visual { min-height: 230px !important; }
-  .brand-auth-panel { min-height: 75vh; }
-}
-@media(prefers-reduced-motion:reduce) {
-  .brand-cta { transition: none; }
-  .brand-cta:hover { transform: none; }
-}
-.brand-auth-layout button[type="submit"] {
-  background: #D9F477 !important;
-  color: #26390A !important;
-  border-radius: 999px !important;
-  box-shadow: none !important;
-}
-.brand-auth-layout button[type="button"] { border-radius: 999px !important; }
-.carebridge-onboarding-tab { color: #DCEBFF !important; }
-.carebridge-onboarding-tab[data-active],
-.carebridge-onboarding-tab[aria-selected="true"] {
-  background: #C6F135 !important;
-  color: #0E0E10 !important;
-  box-shadow: 0 0 15px rgba(198,241,53,.2);
-}
-.carebridge-onboarding-submit {
-  background: #C6F135 !important;
-  color: #0E0E10 !important;
-}
-.carebridge-onboarding-submit:disabled { opacity: .9 !important; }
-/* Landing page always renders the designed light experience, even when the
-   dashboard theme is dark (the theme script toggles .dark on <html>). */
-.dark .landing-root {
-  --background: #F7F7F5; --foreground: #102B4E;
-  --card: #FFFFFF; --card-foreground: #102B4E;
-  --popover: #FFFFFF; --popover-foreground: #102B4E;
-  --secondary: #EEF4FC; --secondary-foreground: #102B4E;
-  --muted: #EEF4FC; --muted-foreground: #74859A;
-  --accent: #DCEBFF; --accent-foreground: #102B4E;
-  color-scheme: light;
-}
-/* Gentle breathing for decorative gradient orbs. */
-@keyframes brand-breathe {
-  0%, 100% { transform: scale(1); opacity: .85; }
-  50% { transform: scale(1.08); opacity: 1; }
-}
-.brand-breathe { animation: brand-breathe 7s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .brand-breathe { animation: none; }
-}

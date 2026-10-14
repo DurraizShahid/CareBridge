@@ -1,35 +1,13 @@
-"use client";
+import Link from "next/link";
+import { PublicHeader, ReferralPreview } from "@/components/public-brand";
 
-import { SmoothScroll } from "@/components/smooth-scroll";
-
-export default function OnboardingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <SmoothScroll>
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0a1628] p-4">
-        {/* Background gradient orbs */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#255DCE]/20 blur-[120px]" />
-          <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#C6F135]/20 blur-[120px]" />
-          <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6EA8F2]/10 blur-[150px]" />
-        </div>
-
-        {/* Subtle grid pattern */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 w-full">{children}</div>
-      </div>
-    </SmoothScroll>
-  );
+export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
+  return <div className="care-public care-onboarding">
+    <a className="care-skip" href="#setup">Skip to setup</a><PublicHeader simple />
+    <main className="care-onboarding-main">
+      <aside className="care-onboarding-aside"><h2>Good care<br />starts together.</h2><p>Connect your organization so your team can coordinate referrals, share updates, and keep every next step in view.</p><ReferralPreview /><p className="care-caption">Setting up for an existing team? Your administrator can share an invite code.</p></aside>
+      <section id="setup">{children}</section>
+    </main>
+    <footer className="care-auth-footer"><Link href="/">CareBridge Health</Link><a href="mailto:support@carebridge.health">Need a hand? Contact support</a></footer>
+  </div>;
 }

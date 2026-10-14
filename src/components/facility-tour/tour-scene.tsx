@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, Html, OrbitControls, RoundedBox } from "@react-three/drei";
-import { Color, DoubleSide, Vector3, type Mesh } from "three";
+import { Billboard, OrbitControls, RoundedBox } from "@react-three/drei";
+import { CanvasTexture, Color, DoubleSide, Vector3, type Mesh } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { TourConfig } from "@/lib/facility-tour";
 import { OVERVIEW, type PlacedStop, type Vec3 } from "./layout";
@@ -140,6 +140,24 @@ function Hotspot({
   onSelect: (index: number) => void;
 }) {
   const ring = useRef<Mesh>(null);
+  const labelTexture = useMemo(() => {
+    const label = `${index + 1}. ${active ? stop.label : stop.label.split(" ").slice(0, 2).join(" ")}`;
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d")!;
+    context.font = "26px sans-serif";
+    canvas.width = Math.ceil(context.measureText(label).width) + 32;
+    canvas.height = 56;
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.roundRect(0, 0, canvas.width, canvas.height, 20);
+    context.fill();
+    context.font = "26px sans-serif";
+    context.textBaseline = "middle";
+    context.fillStyle = accent;
+    context.fillText(label, 16, 28);
+    return new CanvasTexture(canvas);
+  }, [index, active, stop.label, accent]);
+  useEffect(() => () => labelTexture.dispose(), [labelTexture]);
   useFrame(({ clock }) => {
     ring.current?.scale.setScalar(1 + 0.3 * (0.5 + 0.5 * Math.sin(clock.elapsedTime * 2.2 + index)));
   });
@@ -169,23 +187,13 @@ function Hotspot({
           <meshBasicMaterial color={accent} transparent opacity={0.5} side={DoubleSide} />
         </mesh>
       </Billboard>
-      <Html center position={[0, 0.5, 0]} zIndexRange={[20, 0]}>
-        <button
-          type="button"
-          onClick={select}
-          aria-label={`Stop ${index + 1}: ${stop.label}`}
-          aria-pressed={active}
-          className="whitespace-nowrap rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
-        >
-          <span
-            className="mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[10px] text-white"
-            style={{ background: accent }}
-          >
-            {index + 1}
-          </span>
-          {active ? stop.label : stop.label.split(" ").slice(0, 2).join(" ")}
-        </button>
-      </Html>
+      {/* Canvas labels stay in the scene root and need no external font worker. Keyboard controls live in the stop list and floor plan. */}
+      <Billboard position={[0, 0.5, 0]}>
+        <mesh onClick={(e) => { e.stopPropagation(); select(); }}>
+          <planeGeometry args={[labelTexture.image.width / 56 * 0.28, 0.28]} />
+          <meshBasicMaterial map={labelTexture} transparent toneMapped={false} />
+        </mesh>
+      </Billboard>
     </group>
   );
 }

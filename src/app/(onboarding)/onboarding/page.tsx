@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Image from "next/image";
 import {
   Loader2,
   Building2,
@@ -15,9 +12,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Plus,
   Users,
-  Sparkles,
   Copy,
   CheckCircle2,
   AlertCircle,
@@ -28,6 +23,8 @@ type OrganizationType = "hospital" | "facility";
 export default function OnboardingPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [setupAction, setSetupAction] = useState("create");
   const [activeTab, setActiveTab] = useState<"type" | "action">("type");
   const [selectedType, setSelectedType] = useState<OrganizationType | null>(
     null
@@ -80,7 +77,7 @@ export default function OnboardingPage() {
 
   const handleCreateOrg = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSubmitting(true);
     setMessage(null);
 
     try {
@@ -108,18 +105,19 @@ export default function OnboardingPage() {
         text: err instanceof Error ? err.message : "Something went wrong",
         type: "error",
       });
-      setIsLoading(false);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleJoinOrg = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSubmitting(true);
     setMessage(null);
 
     try {
       const validateRes = await fetch(
-        `/api/invite-codes/validate?code=${inviteCode}`
+        `/api/invite-codes/validate?code=${encodeURIComponent(inviteCode)}`
       );
       const validateData = await validateRes.json();
       if (!validateRes.ok)
@@ -149,355 +147,36 @@ export default function OnboardingPage() {
         text: err instanceof Error ? err.message : "Something went wrong",
         type: "error",
       });
-      setIsLoading(false);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const copySlug = () => {
-    navigator.clipboard.writeText(orgSlug);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copySlug = async () => {
+    try {
+      await navigator.clipboard.writeText(orgSlug);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setMessage({ text: "Could not copy. Select and copy the short name instead.", type: "error" });
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-white/10 border-t-[#C6F135] animate-spin" />
-          <Sparkles className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-[#C6F135]" />
-        </div>
-        <p className="text-sm text-white/50">Setting things up...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-auto w-full max-w-[520px]">
-      {/* Logo */}
-      <div className="mb-8 flex justify-center">
-        <Image src="/brand/carebridge-logo-white.svg" alt="CareBridge" width={180} height={48} className="h-10 w-auto" />
-      </div>
-
-      {/* Step Indicator */}
-      <div className="mb-8">
-        <div className="flex items-center justify-center gap-3">
-          {[1, 2].map((s) => (
-            <div key={s} className="flex items-center gap-3">
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
-                  step >= s
-                    ? "bg-[#C6F135] text-[#0E0E10] shadow-[0_0_20px_rgba(198,241,53,0.16)]"
-                    : "bg-white/10 text-white/40"
-                }`}
-              >
-                {step > s ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <span>{s}</span>
-                )}
-              </div>
-              {s < 2 && (
-                <div
-                  className={`h-0.5 w-16 rounded-full transition-all duration-500 ${
-                    step > s ? "bg-[#C6F135]" : "bg-white/10"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 flex justify-center gap-20">
-          <span
-            className={`text-xs font-medium transition-colors ${
-              step >= 1 ? "text-white/80" : "text-white/30"
-            }`}
-          >
-            Organization
-          </span>
-          <span
-            className={`text-xs font-medium transition-colors ${
-              step >= 2 ? "text-white/80" : "text-white/30"
-            }`}
-          >
-            Setup
-          </span>
-        </div>
-      </div>
-
-      {/* Main Card */}
-      <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-        {/* Messages */}
-        {message && (
-          <Alert
-            variant={message.type === "error" ? "destructive" : "default"}
-            className="mb-6 border-0"
-          >
-            <div
-              className={`flex items-center gap-2 rounded-xl px-4 py-3 ${
-                message.type === "success"
-                  ? "bg-[#C6F135]/10 text-[#C6F135]"
-                  : "bg-red-500/10 text-red-400"
-              }`}
-            >
-              {message.type === "success" ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-              ) : (
-                <AlertCircle className="h-4 w-4 shrink-0" />
-              )}
-              <AlertDescription className="text-sm">
-                {message.text}
-              </AlertDescription>
-            </div>
-          </Alert>
-        )}
-
-        {/* Step 1: Type Selection */}
-        {activeTab === "type" && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-white">
-                Welcome to CareBridge
-              </h2>
-              <p className="mt-2 text-sm text-white/50">
-                Let&apos;s get your organization set up. First, tell us about
-                your workplace.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => handleTypeSelect("hospital")}
-                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#6EA8F2]/40 hover:bg-[#6EA8F2]/5 hover:shadow-[0_0_30px_rgba(110,168,242,0.1)]"
-              >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#255DCE]/15 transition-colors group-hover:bg-[#255DCE]/25">
-                  <Building2 className="h-7 w-7 text-[#6EA8F2]" />
-                </div>
-                <div className="text-center">
-                  <span className="text-sm font-semibold text-white">
-                    Hospital
-                  </span>
-                  <p className="mt-0.5 text-xs text-white/40">
-                    Acute care settings
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTypeSelect("facility")}
-                className="group relative flex h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] transition-all duration-300 hover:border-[#6EA8F2]/40 hover:bg-[#6EA8F2]/5 hover:shadow-[0_0_30px_rgba(110,168,242,0.1)]"
-              >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#255DCE]/15 transition-colors group-hover:bg-[#255DCE]/25">
-                  <Home className="h-7 w-7 text-[#6EA8F2]" />
-                </div>
-                <div className="text-center">
-                  <span className="text-sm font-semibold text-white">
-                    Facility
-                  </span>
-                  <p className="mt-0.5 text-xs text-white/40">
-                    Post-acute care
-                  </p>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Action Selection */}
-        {activeTab === "action" && selectedType && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <div>
-                <h2 className="text-lg font-bold text-white">
-                  {selectedType === "hospital"
-                    ? "Hospital"
-                    : "Facility"}{" "}
-                  Setup
-                </h2>
-                <p className="text-xs text-white/40">
-                  Create a new organization or join an existing one
-                </p>
-              </div>
-            </div>
-
-            <Tabs defaultValue="create">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-white/10 p-1">
-                <TabsTrigger
-                  value="create"
-                  className="carebridge-onboarding-tab flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New
-                </TabsTrigger>
-                <TabsTrigger
-                  value="join"
-                  className="carebridge-onboarding-tab flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
-                >
-                  <Users className="h-4 w-4" />
-                  Join Existing
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="create" className="mt-6">
-                <form onSubmit={handleCreateOrg} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="org-name"
-                      className="text-sm font-medium text-white/70"
-                    >
-                      Organization Name
-                    </Label>
-                    <Input
-                      id="org-name"
-                      value={orgName}
-                      onChange={(e) => {
-                        setOrgName(e.target.value);
-                        setOrgSlug(
-                          e.target.value
-                            .toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, "")
-                            .replace(/\s+/g, "-")
-                        );
-                      }}
-                      placeholder="e.g., Mercy General Hospital"
-                      className="h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="org-slug"
-                      className="text-sm font-medium text-white/70"
-                    >
-                      Short Name
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="org-slug"
-                        value={orgSlug}
-                        onChange={(e) =>
-                          setOrgSlug(
-                            e.target.value
-                              .toLowerCase()
-                              .replace(/[^a-z0-9-]/g, "")
-                          )
-                        }
-                        placeholder="e.g., mercy-general"
-                        className="h-12 rounded-xl border-white/10 bg-white/5 pr-10 text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
-                        required
-                      />
-                      {orgSlug && (
-                        <button
-                          type="button"
-                          onClick={copySlug}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
-                        >
-                          {copied ? (
-                            <Check className="h-4 w-4 text-[#C6F135]" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                    {orgSlug && (
-                      <p className="text-xs text-white/30">
-                        carebridge.health/{orgSlug}
-                      </p>
-                    )}
-                  </div>
-
-                  <ShimmerButton
-                    type="submit"
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="12px"
-                    background="#C6F135"
-                    className="carebridge-onboarding-submit h-12 w-full rounded-xl shadow-[0_4px_20px_rgba(198,241,53,0.18)]"
-                    disabled={isLoading || !orgName || !orgSlug}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        Create Organization
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </ShimmerButton>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="join" className="mt-6">
-                <form onSubmit={handleJoinOrg} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="invite-code"
-                      className="text-sm font-medium text-white/70"
-                    >
-                      Invite Code
-                    </Label>
-                    <Input
-                      id="invite-code"
-                      value={inviteCode}
-                      onChange={(e) =>
-                        setInviteCode(e.target.value.toUpperCase())
-                      }
-                      placeholder="Enter your invite code"
-                      className="h-12 rounded-xl border-white/10 bg-white/5 text-center font-mono text-lg tracking-widest text-white placeholder-white/30 focus:border-[#6EA8F2]/60 focus:ring-[#6EA8F2]/20"
-                      required
-                    />
-                    <p className="text-center text-xs text-white/30">
-                      Get this code from your organization admin
-                    </p>
-                  </div>
-
-                  <ShimmerButton
-                    type="submit"
-                    shimmerColor="#ffffff"
-                    shimmerSize="0.05em"
-                    shimmerDuration="3s"
-                    borderRadius="12px"
-                    background="#C6F135"
-                    className="carebridge-onboarding-submit h-12 w-full rounded-xl shadow-[0_4px_20px_rgba(198,241,53,0.18)]"
-                    disabled={isLoading || !inviteCode}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        Join Organization
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </ShimmerButton>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <p className="mt-6 text-center text-xs text-white/30">
-        Need help?{" "}
-        <a
-          href="mailto:support@carebridge.health"
-          className="text-[#6EA8F2] hover:text-[#DCEBFF]"
-        >
-          Contact support
-        </a>
-      </p>
-    </div>
-  );
+  return <div className="care-wizard">
+    <ol className="care-wizard-steps" aria-label="Setup progress"><li aria-current={step === 1 ? 'step' : undefined}><span>{step > 1 ? <Check size={14} aria-hidden="true" /> : '1'}</span> Your organization</li><li aria-current={step === 2 ? 'step' : undefined}><span>2</span> Your workspace</li></ol>
+    {isLoading ? <div className="care-loading" role="status"><Loader2 size={22} className="care-spinner" aria-hidden="true" /> Preparing your workspace…</div> : <>
+      {message && <p className={message.type === 'error' ? 'care-form-error' : 'care-email-summary'} role={message.type === 'error' ? 'alert' : 'status'}>{message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}{message.text}</p>}
+      {message?.type === 'success' ? <div className="care-success"><h1>{message.text.startsWith('Join') ? 'Your request is on its way.' : 'Welcome to your workspace.'}</h1><p>{message.text.startsWith('Join') ? 'Your organization administrator will review your request. You can return once it has been approved.' : 'Taking you to your dashboard…'}</p></div> : <>
+        {activeTab === 'type' && <><h1>Where do you work?</h1><p className="care-auth-intro">Choose your organization type. We&apos;ll shape your workspace around your team.</p><div className="care-org-options"><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('hospital')}><Building2 size={26} aria-hidden="true" /><span><strong>Hospital</strong><small>Plan discharges and coordinate placements</small></span><ArrowRight size={18} aria-hidden="true" /></button><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('facility')}><Home size={26} aria-hidden="true" /><span><strong>Care facility</strong><small>Receive referrals and manage availability</small></span><ArrowRight size={18} aria-hidden="true" /></button></div></>}
+        {activeTab === 'action' && selectedType && <><button type="button" onClick={handleBack} disabled={submitting} className="care-form-back"><ArrowLeft size={16} aria-hidden="true" /> Change organization type</button><h1 style={{ marginTop: 18 }}>Make room for your team.</h1><p className="care-auth-intro">{selectedType === 'hospital' ? 'Hospital' : 'Care facility'} workspace. Create a new organization or join your team.</p><Tabs value={setupAction} onValueChange={value => { if (!submitting && (value === "create" || value === "join")) setSetupAction(value); }} className="care-setup-tabs"><TabsList><TabsTrigger value="create" disabled={submitting}>Create an organization</TabsTrigger><TabsTrigger value="join" disabled={submitting}>Join your team</TabsTrigger></TabsList>
+          <TabsContent value="create" className="mt-6"><form onSubmit={handleCreateOrg} className="care-form" aria-busy={submitting}>
+            <div className="care-field"><Label htmlFor="org-name">Organization name</Label><Input id="org-name" name="organization" autoComplete="organization" value={orgName} onChange={e => { setOrgName(e.target.value); setOrgSlug(e.target.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-')); }} placeholder="e.g. Mercy General Hospital" required /></div>
+            <div className="care-field"><Label htmlFor="org-slug">Short name</Label><div className="care-password"><Input id="org-slug" name="slug" autoComplete="off" spellCheck={false} value={orgSlug} onChange={e => setOrgSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="e.g. mercy-general" required aria-describedby="slug-help" />{orgSlug && <button type="button" onClick={copySlug} aria-label={copied ? 'Short name copied' : 'Copy short name'}>{copied ? <Check size={17} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}</button>}</div><p id="slug-help" className="care-caption">A unique name to identify your organization. Letters, numbers, and hyphens.</p></div>
+            <button type="submit" className="care-button" disabled={submitting}>{submitting ? <Loader2 size={17} className="care-spinner" aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}{submitting ? 'Creating workspace…' : 'Create organization'}</button>
+          </form></TabsContent>
+          <TabsContent value="join" className="mt-6"><form onSubmit={handleJoinOrg} className="care-form" aria-busy={submitting}><div className="care-field"><Label htmlFor="invite-code">Invite code</Label><Input id="invite-code" name="invite-code" autoComplete="off" spellCheck={false} value={inviteCode} onChange={e => setInviteCode(e.target.value.toUpperCase())} placeholder="Enter your team’s code" required aria-describedby="invite-help" /><p className="care-caption" id="invite-help">Ask your organization administrator for an invite code. They&apos;ll review your request to join.</p></div><button type="submit" className="care-button" disabled={submitting}>{submitting ? <Loader2 size={17} className="care-spinner" aria-hidden="true" /> : <Users size={17} aria-hidden="true" />}{submitting ? 'Sending request…' : 'Request to join'}</button></form></TabsContent>
+        </Tabs></>}
+      </>}
+    </>}
+  </div>;
 }
