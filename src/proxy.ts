@@ -62,10 +62,24 @@ export default clerkMiddleware(
       return NextResponse.next();
     }
 
-    const authObj = await auth.protect();
+    const { userId, sessionClaims } = await auth();
+
+    if (!userId) {
+      if (isApiRoute(request)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set(
+        "redirect_url",
+        request.nextUrl.pathname + request.nextUrl.search,
+      );
+      return NextResponse.redirect(signInUrl);
+    }
+
     const { pathname } = request.nextUrl;
 
-    const role = resolveRole(getRoleFromClaims(authObj.sessionClaims as Record<string, unknown>));
+    const role = resolveRole(getRoleFromClaims(sessionClaims as Record<string, unknown>));
 
     if (pathname === "/dashboard" && HOSPITAL_ROLES.includes(role as any)) {
       return NextResponse.redirect(new URL("/dashboard/home", request.url));
