@@ -15,6 +15,7 @@ const isPublicRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/api/public(.*)",
   "/api/webhooks(.*)",
+  "/__clerk(.*)",
 ]);
 
 const isApiRoute = createRouteMatcher(["/api(.*)"]);
@@ -103,21 +104,34 @@ export default clerkMiddleware(
     contentSecurityPolicy: {
       directives: {
         "default-src": ["'self'"],
-        "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+        "script-src": [
+          "'self'",
+          "'unsafe-eval'",
+          "'unsafe-inline'",
+          "https://clerk.carebridge-plum.vercel.app",
+          "https://*.clerk.accounts.dev",
+        ],
         "style-src": ["'self'", "'unsafe-inline'"],
         "img-src": [
           "'self'",
           "data:",
           "blob:",
           "https://*.storage.railway.app",
+          "https://clerk.carebridge-plum.vercel.app",
+          "https://*.clerk.accounts.dev",
         ],
         "connect-src": [
           "'self'",
+          "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
           "wss://*.clerk.accounts.dev",
           "https://*.storage.railway.app",
         ],
-        "frame-src": ["'self'", "https://*.clerk.accounts.dev"],
+        "frame-src": [
+          "'self'",
+          "https://clerk.carebridge-plum.vercel.app",
+          "https://*.clerk.accounts.dev",
+        ],
         "font-src": ["'self'"],
         "object-src": ["'none'"],
         "base-uri": ["'self'"],

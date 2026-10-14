@@ -2,11 +2,11 @@ import type { NextConfig } from "next";
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.storage.railway.app https://images.unsplash.com",
-  "connect-src 'self' https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://*.storage.railway.app",
-  "frame-src 'self' https://*.clerk.accounts.dev",
+  "img-src 'self' data: blob: https://*.storage.railway.app https://images.unsplash.com https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev",
+  "connect-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://*.storage.railway.app",
+  "frame-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev",
   "font-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
