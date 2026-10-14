@@ -18,6 +18,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     const params = new URLSearchParams(window.location.search);
@@ -151,8 +152,6 @@ export default function SignInPage() {
     borderColor: '#a8a8a8',
     boxShadow: '0 0 0 3px rgba(0, 0, 0, 0.035)',
   };
-
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   return (
     <div className="brand-auth-layout" style={{

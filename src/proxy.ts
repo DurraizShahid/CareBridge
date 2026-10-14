@@ -101,6 +101,8 @@ export default clerkMiddleware(
     return response;
   },
   {
+    // Use Clerk's built-in /__clerk proxy; no custom upstream env var is required.
+    frontendApiProxy: { enabled: true },
     contentSecurityPolicy: {
       directives: {
         "default-src": ["'self'"],
