@@ -88,6 +88,81 @@ export async function seedDemoPolish(prisma: PrismaClient) {
   await prisma.facility.upsert({ where: { id: hospice.id }, create: hospice, update: hospice });
   await seedFacilityDemoPhotos(prisma, ["fac-006"]);
 
+  // Fictional Houston-area facilities with 3D virtual tour configs (see src/lib/facility-tour.ts).
+  const stop = (id: string, area: "lobby" | "corridor" | "room", label: string, description: string, highlights: string[]) =>
+    ({ id, area, label, description, highlights });
+  const tourFacilities = [
+    {
+      id: "fac-007", name: "Mercy General Transitional Care (Demo)", type: "skilled_nursing_facility" as const,
+      description: "Step-down skilled nursing unit for Mercy General patients who need a few more weeks of clinical support.",
+      street: "1400 Example Medical Pkwy", city: "Houston", zipCode: "77030",
+      careLevelsOffered: ["skilled_nursing" as const, "rehabilitation" as const],
+      specialties: ["Post-surgical recovery", "IV therapy", "Wound care", "Cardiac monitoring"],
+      capacity: 64, currentOccupancy: 51, rating: 4.7, reviewsCount: 38,
+      tourConfig: {
+        accentColor: "#2f6fd6", wallColor: "#f5f8fc", floorColor: "#e4eaf2", roomName: "Recovery Suite",
+        welcome: "A calm, clinical step-down unit linked to Mercy General's discharge team.",
+        stops: [
+          stop("arrival", "lobby", "Arrival & Admissions", "Families check in at a staffed admissions desk; discharge packets from Mercy General arrive here ahead of the patient.", ["Staffed 7am–9pm", "Wheelchair-accessible entry", "Family lounge"]),
+          stop("unit-hall", "corridor", "Skilled Nursing Hall", "Wide, rail-lined corridors with nurse call lights outside every door keep response times short.", ["Continuous handrails", "Nurse station mid-hall", "Quiet hours 9pm–7am"]),
+          stop("suite", "room", "Recovery Suite", "Private rooms with headwall oxygen and suction, an adjustable bed, and a recliner for overnight family stays.", ["Private room", "Headwall O₂ & suction", "Family recliner"]),
+          stop("window", "room", "Garden Window", "Every suite faces the courtyard for natural light during longer recoveries.", ["Courtyard view", "Blackout shades"]),
+        ],
+      },
+    },
+    {
+      id: "fac-008", name: "Bayou Oaks Senior Living (Demo)", type: "assisted_living" as const,
+      description: "Garden-style assisted living near the Heights with memory-support neighborhoods.",
+      street: "820 Fictional Oak Ln", city: "Houston", zipCode: "77008",
+      careLevelsOffered: ["assisted_living" as const, "memory_care" as const, "independent_living" as const],
+      specialties: ["Medication management", "Memory support", "Daily activities", "Pet-friendly"],
+      capacity: 48, currentOccupancy: 40, rating: 4.5, reviewsCount: 29,
+      tourConfig: {
+        accentColor: "#2a9d8f", wallColor: "#f7f6f1", floorColor: "#e8e4da", roomName: "Garden Studio",
+        welcome: "Warm, home-like spaces designed around daily routines and family visits.",
+        stops: [
+          stop("parlor", "lobby", "Front Parlor", "A living-room style welcome area where residents gather for morning coffee and visitors sign in.", ["Coffee bar", "Visitor sign-in", "Piano corner"]),
+          stop("neighborhood", "corridor", "Oak Neighborhood", "Each hallway is a small 'neighborhood' with color-coded doors to help residents find their way.", ["Wayfinding colors", "Memory boxes at doors"]),
+          stop("studio", "room", "Garden Studio", "Studios include a kitchenette nook, accessible bathroom, and space for a resident's own furniture.", ["Bring your own furniture", "Accessible bathroom", "Emergency pendant"]),
+        ],
+      },
+    },
+    {
+      id: "fac-009", name: "Magnolia Point Rehabilitation (Demo)", type: "rehabilitation_center" as const,
+      description: "Short-stay therapy center in Sugar Land focused on getting patients home after joint replacement and stroke.",
+      street: "55 Example Magnolia Dr", city: "Sugar Land", zipCode: "77479",
+      careLevelsOffered: ["rehabilitation" as const, "skilled_nursing" as const],
+      specialties: ["Joint replacement rehab", "Stroke recovery", "Physical therapy", "Speech therapy"],
+      capacity: 72, currentOccupancy: 58, rating: 4.6, reviewsCount: 47,
+      tourConfig: {
+        accentColor: "#c8734a", wallColor: "#fbf7f3", floorColor: "#ece3da", roomName: "Therapy Suite",
+        welcome: "Bright, energetic spaces built around getting patients home sooner.",
+        stops: [
+          stop("welcome", "lobby", "Welcome Atrium", "A sunlit atrium where new arrivals meet their therapy lead on day one.", ["Day-one therapy assessment", "Valet drop-off"]),
+          stop("gait", "lobby", "Lounge & Practice Seating", "Seating at varied heights doubles as sit-to-stand practice between sessions.", ["Varied seat heights", "Family coaching"]),
+          stop("track", "corridor", "Walking Track Hall", "The main hall is marked in 10-metre intervals so patients can track walking distance each day.", ["Distance markers", "Rest benches", "Handrails both sides"]),
+          stop("suite", "room", "Therapy Suite", "Rooms are set up like home — a real bed height and chair — so practice transfers carry over after discharge.", ["Home-height bed", "Transfer practice", "Private bath"]),
+        ],
+      },
+    },
+  ];
+  for (const [index, f] of tourFacilities.entries()) {
+    const { street, city, zipCode, ...rest } = f;
+    const data = {
+      ...rest,
+      address: { street, city, state: "TX", zipCode, county: city === "Houston" ? "Harris" : "Fort Bend" },
+      phone: `(713) 555-01${String(70 + index).padStart(2, "0")}`,
+      email: `tours${index + 1}@demo.carebridge.example`,
+      website: `https://carebridge.example/facilities/${f.id}`,
+      contacts: [{ name: "Demo Admissions Coordinator", role: "Admissions", phone: "(713) 555-0199", email: "admissions@demo.carebridge.example" }],
+      licensure: [`DEMO-TX-LICENSE-${f.id}`], accreditations: ["Demo profile — not verified"],
+      insuranceAccepted: ["Medicare", "Medicaid", "Private Pay"],
+      hasAvailability: true, waitlistDays: index, acceptsMedicare: true, acceptsMedicaid: true,
+      organizationId: "org-003",
+    };
+    await prisma.facility.upsert({ where: { id: f.id }, create: data, update: data });
+  }
+
   const oldPatients = [
     { id: "pat-001", firstName: "Avery", lastName: "Whitcomb", status: "ready_for_discharge" as const, careLevelRequired: "skilled_nursing" as const },
     { id: "pat-002", firstName: "Miles", lastName: "Ellery", status: "assessment_in_progress" as const, careLevelRequired: "rehabilitation" as const },
@@ -262,5 +337,5 @@ export async function seedDemoPolish(prisma: PrismaClient) {
       await prisma.payment.upsert({ where: { id: payment.id }, create: payment, update: payment });
     }
   }
-  console.log("  Demo polish: 2 hospital orgs + 1 facility org, 6 facilities, 10 patients, 8 placements (2 completed), 7 referrals, 3 test contracts, 2 demo payments.");
+  console.log("  Demo polish: 2 hospital orgs + 1 facility org, 9 facilities (3 with 3D tours), 10 patients, 8 placements (2 completed), 7 referrals, 3 test contracts, 2 demo payments.");
 }

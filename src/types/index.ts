@@ -1,5 +1,7 @@
 // ─── Core Domain Types for CareBridge Health ───
 
+import type { TourConfig } from "@/lib/facility-tour";
+
 // ── Value Objects ──
 
 export interface Address {
@@ -184,6 +186,7 @@ export interface Facility {
   acceptsMedicaid: boolean;
   organizationId: string;
   media?: FacilityMedia[];
+  tourConfig?: TourConfig;
   createdAt: string;
   updatedAt: string;
 }

@@ -37,6 +37,7 @@ import type {
 import { Prisma } from "@/generated/prisma/client";
 import { consumeInviteCodeUse } from "@/lib/invite-codes";
 import { prisma } from "@/lib/prisma";
+import { parseTourConfig } from "@/lib/facility-tour";
 
 // ── Helpers ──
 
@@ -1941,6 +1942,7 @@ export async function getFacility(
       createdAt: toISO(m.createdAt),
       updatedAt: toISO(m.updatedAt),
     })),
+    tourConfig: parseTourConfig(f.tourConfig) ?? undefined,
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };

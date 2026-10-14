@@ -15,6 +15,7 @@ import {
   Box,
   CheckCircle2,
   XCircle,
+  Rotate3d,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,12 @@ export default async function FacilityDetailPage({ params }: Props) {
         title={facility.name}
         description={facilityTypeLabels[facility.type] ?? facility.type}
       >
+        {facility.tourConfig && (
+          <Button render={<Link href={`/facilities/${id}/tour`} />}>
+            <Rotate3d className="mr-1.5 h-4 w-4" />
+            Take 3D tour
+          </Button>
+        )}
         {canEdit && (
           <Button variant="outline" render={<Link href={`/facilities/${id}/edit`} />}>
             <Pencil className="mr-1.5 h-4 w-4" />
