@@ -37,7 +37,7 @@ import type {
 import { Prisma } from "@/generated/prisma/client";
 import { consumeInviteCodeUse } from "@/lib/invite-codes";
 import { prisma } from "@/lib/prisma";
-import { parseTourConfig } from "@/lib/facility-tour";
+import { parseTourConfig, type TourConfig } from "@/lib/facility-tour";
 
 // ── Helpers ──
 
@@ -2216,6 +2216,7 @@ export async function updateFacility(
   if (data.waitlistDays !== undefined) updateData.waitlistDays = data.waitlistDays ?? null;
   if (data.acceptsMedicare !== undefined) updateData.acceptsMedicare = data.acceptsMedicare;
   if (data.acceptsMedicaid !== undefined) updateData.acceptsMedicaid = data.acceptsMedicaid;
+  if (data.tourConfig !== undefined) updateData.tourConfig = data.tourConfig as any;
 
   const f = await prisma.facility.update({
     where: { id },
@@ -2247,9 +2248,31 @@ export async function updateFacility(
     acceptsMedicaid: f.acceptsMedicaid,
     organizationId: f.organizationId,
     media: [],
+    tourConfig: parseTourConfig(f.tourConfig) ?? undefined,
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };
+}
+
+/**
+ * Update facility tour configuration, scoped to organization.
+ */
+export async function updateFacilityTourConfig(
+  id: string,
+  tourConfig: TourConfig,
+  organizationId: string,
+  role: string,
+): Promise<TourConfig | null> {
+  const where = isSuperadmin(role) ? { id } : { id, organizationId };
+  const existing = await prisma.facility.findFirst({ where });
+  if (!existing) return null;
+
+  const updated = await prisma.facility.update({
+    where: { id },
+    data: { tourConfig: tourConfig as any },
+  });
+
+  return parseTourConfig(updated.tourConfig);
 }
 
 /**

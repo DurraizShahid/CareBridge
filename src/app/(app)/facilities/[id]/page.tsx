@@ -127,6 +127,12 @@ export default async function FacilityDetailPage({ params }: Props) {
           </Button>
         )}
         {canEdit && (
+          <Button variant="outline" render={<Link href={`/facilities/${id}/tour/edit`} />}>
+            <Rotate3d className="mr-1.5 h-4 w-4" />
+            Edit tour
+          </Button>
+        )}
+        {canEdit && (
           <Button variant="outline" render={<Link href={`/facilities/${id}/edit`} />}>
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
