@@ -60,6 +60,7 @@
 .care-proof > p { font-family: "Nohemi", sans-serif; font-size: 19px; line-height: 1.4; }
 .care-proof > ul { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 0; padding: 0; list-style: none; font-size: 15px; font-weight: 500; line-height: 1.35; }
 .care-proof li svg { display: block; width: 100%; height: auto; margin-bottom: 14px; padding: 14px 10px 4px; background: var(--brand-mist); border-radius: 4px 24px 4px 4px; }
+.care-proof li img { display: block; width: 100%; height: auto; margin-bottom: 14px; border-radius: 4px 24px 4px 4px; }
 .care-process { padding-block: 85px 110px; }
 .care-section-intro { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 80px; margin-bottom: 54px; }
 .care-section-intro > p, .care-section-intro > div { padding-top: 10px; max-width: 440px; }
