@@ -20,6 +20,9 @@ export default async function DashboardPage() {
   const org = await getServerOrganization();
   const user = await currentUser();
   const organizationId = org?.organizationId ?? "";
+  if (!organizationId) {
+    redirect('/onboarding');
+  }
   const role = org?.role ?? "customer";
   const userName = user?.firstName
     ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)
