@@ -1,6 +1,7 @@
-import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authErrorResponse, requireAuthenticatedUser } from "@/lib/server-auth";
 import {
   getHighestRoleForOrganizationType,
   normalizeOrganizationType,
@@ -9,10 +10,9 @@ import {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Exemption: users creating an organization do not belong to one yet,
+    // so we only verify the Clerk session is valid rather than requiring an existing org membership.
+    const userId = await requireAuthenticatedUser();
 
     const { name, slug, type } = await req.json();
     const organizationType = normalizeOrganizationType(type);
@@ -73,7 +73,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, organization: org });
   } catch (error: unknown) {
-    console.error("Error creating organization:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return authErrorResponse(error);
   }
 }
