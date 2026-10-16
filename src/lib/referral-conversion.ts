@@ -91,6 +91,7 @@ export async function convertPaidReferral(referralId: string) {
       priority: "medium",
       matchedFacilities: [referral.facilityId],
       insurancePreAuthorized: false,
+      insuranceAuthStatus: "pending",
       notes: "Converted from accepted, deposit-paid referral.",
       organizationId: referral.sendingOrgId,
       approvalDate: new Date(),

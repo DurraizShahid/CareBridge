@@ -58,6 +58,14 @@ const CARE_LEVEL_LABELS: Record<string, string> = {
   "memory-care": "Memory Care",
 };
 
+const INSURANCE_AUTH_LABELS: Record<string, string> = {
+  pending: "Payer Clearance: Pending",
+  approved: "Payer Cleared",
+  denied: "Payer Denied",
+  "not-required": "Payer Clearance: Not Required",
+  not_required: "Payer Clearance: Not Required",
+};
+
 export default async function PlacementDetailPage({ params }: Props) {
   const { id } = await params;
   const org = await getServerOrganization();
@@ -86,6 +94,9 @@ export default async function PlacementDetailPage({ params }: Props) {
   const canEdit = roleHasPermission(org.role, "placements:update");
   const canDelete = roleHasPermission(org.role, "placements:delete");
 
+  const authStatus = placement.insuranceAuthStatus ?? (placement.insurancePreAuthorized ? "approved" : "pending");
+  const isPayerClearancePending = authStatus === "pending";
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -95,7 +106,21 @@ export default async function PlacementDetailPage({ params }: Props) {
               {patientName}
             </h1>
             <Badge variant={STATUS_VARIANTS[placement.status] ?? "secondary"}>
-              {STATUS_LABELS[placement.status] ?? placement.status}
+              {STATUS_LABELS[placement.status] ?? placement.status} (Admin)
+            </Badge>
+            <Badge
+              variant="outline"
+              className={
+                authStatus === "pending"
+                  ? "border-amber-500/50 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                  : authStatus === "approved"
+                  ? "border-emerald-500/50 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  : authStatus === "denied"
+                  ? "border-destructive/50 bg-destructive/10 text-destructive"
+                  : ""
+              }
+            >
+              {INSURANCE_AUTH_LABELS[authStatus] ?? "Insurance: " + authStatus}
             </Badge>
             <Badge variant={PRIORITY_VARIANTS[placement.priority] ?? "secondary"}>
               {placement.priority} priority
@@ -122,6 +147,15 @@ export default async function PlacementDetailPage({ params }: Props) {
       </div>
 
       <Separator />
+
+      {isPayerClearancePending && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
+          <p className="font-semibold">Payer Clearance Outstanding</p>
+          <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5">
+            Administrative placement is {STATUS_LABELS[placement.status] ?? placement.status}, but insurance payer clearance is still pending.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -166,11 +200,25 @@ export default async function PlacementDetailPage({ params }: Props) {
               {placement.priority}
             </div>
             <div>
-              <span className="font-medium">Insurance:</span>{" "}
-              {placement.insurancePreAuthorized ? (
-                <span className="text-green-600 dark:text-green-400">Pre-authorized</span>
+              <span className="font-medium">Placement Approval:</span>{" "}
+              <span>{STATUS_LABELS[placement.status] ?? placement.status} (Administrative)</span>
+            </div>
+            <div>
+              <span className="font-medium">Insurance Authorization:</span>{" "}
+              {authStatus === "approved" ? (
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                  Approved &middot; Payer cleared
+                </span>
+              ) : authStatus === "denied" ? (
+                <span className="font-medium text-destructive">
+                  Denied &middot; Payer authorization declined
+                </span>
+              ) : authStatus === "not-required" || authStatus === "not_required" ? (
+                <span className="text-muted-foreground">Not required</span>
               ) : (
-                <span className="text-muted-foreground">Not pre-authorized</span>
+                <span className="font-medium text-amber-600 dark:text-amber-400">
+                  Pending &middot; Payer clearance still outstanding
+                </span>
               )}
             </div>
             {placement.estimatedCost && (

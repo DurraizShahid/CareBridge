@@ -11,6 +11,7 @@ import type {
   FacilityType,
   Placement,
   PlacementStatus,
+  InsuranceAuthStatus,
   DashboardStats,
   DashboardWidgetData,
   FacilityDashboardStats,
@@ -70,6 +71,11 @@ function toPatientStatus(value: string): PatientStatus {
 
 function toPlacementStatus(value: string): PlacementStatus {
   return snakeToKebab(value) as PlacementStatus;
+}
+
+function toInsuranceAuthStatus(value?: string | null): InsuranceAuthStatus {
+  if (!value) return "pending";
+  return snakeToKebab(value) as InsuranceAuthStatus;
 }
 
 function toFacilityType(value: string): FacilityType {
@@ -776,6 +782,7 @@ export async function getPlacements(
     matchedFacilities: p.matchedFacilities,
     selectedFacilityId: p.selectedFacilityId ?? undefined,
     insurancePreAuthorized: p.insurancePreAuthorized,
+    insuranceAuthStatus: toInsuranceAuthStatus(p.insuranceAuthStatus),
     estimatedCost: p.estimatedCost ?? undefined,
     approvedBy: p.approvedBy ?? undefined,
     approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
@@ -871,6 +878,7 @@ export async function getPlacement(
     matchedFacilities: p.matchedFacilities,
     selectedFacilityId: p.selectedFacilityId ?? undefined,
     insurancePreAuthorized: p.insurancePreAuthorized,
+    insuranceAuthStatus: toInsuranceAuthStatus(p.insuranceAuthStatus),
     estimatedCost: p.estimatedCost ?? undefined,
     approvedBy: p.approvedBy ?? undefined,
     approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
@@ -907,6 +915,7 @@ export async function createPlacement(
         matchedFacilities: flow.matchedFacilities,
         selectedFacilityId: flow.selectedFacilityId,
         insurancePreAuthorized: data.insurancePreAuthorized,
+        insuranceAuthStatus: (data.insuranceAuthStatus ? kebabToSnake(data.insuranceAuthStatus) : (data.insurancePreAuthorized ? "approved" : "pending")) as any,
         estimatedCost: data.estimatedCost ?? null,
         approvedBy: data.approvedBy ?? null,
         approvalDate: data.approvalDate ? new Date(data.approvalDate) : null,
@@ -941,6 +950,7 @@ export async function createPlacement(
     matchedFacilities: p.matchedFacilities,
     selectedFacilityId: p.selectedFacilityId ?? undefined,
     insurancePreAuthorized: p.insurancePreAuthorized,
+    insuranceAuthStatus: toInsuranceAuthStatus(p.insuranceAuthStatus),
     estimatedCost: p.estimatedCost ?? undefined,
     approvedBy: p.approvedBy ?? undefined,
     approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,
@@ -983,6 +993,7 @@ export async function updatePlacement(
     if (data.assessmentNotes !== undefined) updateData.assessmentNotes = data.assessmentNotes ?? null;
     if (data.preferredLocation !== undefined) updateData.preferredLocation = flow.preferredLocation as any ?? null;
     if (data.insurancePreAuthorized !== undefined) updateData.insurancePreAuthorized = data.insurancePreAuthorized;
+    if (data.insuranceAuthStatus !== undefined) updateData.insuranceAuthStatus = kebabToSnake(data.insuranceAuthStatus) as any;
     if (data.estimatedCost !== undefined) updateData.estimatedCost = data.estimatedCost ?? null;
     if (data.approvedBy !== undefined) updateData.approvedBy = data.approvedBy ?? null;
     if (data.approvalDate !== undefined) updateData.approvalDate = data.approvalDate ? new Date(data.approvalDate) : null;
@@ -1022,6 +1033,7 @@ export async function updatePlacement(
     matchedFacilities: p.matchedFacilities,
     selectedFacilityId: p.selectedFacilityId ?? undefined,
     insurancePreAuthorized: p.insurancePreAuthorized,
+    insuranceAuthStatus: toInsuranceAuthStatus(p.insuranceAuthStatus),
     estimatedCost: p.estimatedCost ?? undefined,
     approvedBy: p.approvedBy ?? undefined,
     approvalDate: p.approvalDate ? toISO(p.approvalDate) : undefined,

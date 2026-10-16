@@ -92,6 +92,7 @@ describe("paid referral to placement: atomic reservation transfer", () => {
    data: expect.objectContaining({
     patientId: "patient-1", facilityId: "facility-1",
     status: "approved", organizationId: "hospital-1",
+    insuranceAuthStatus: "pending",
    }),
   }));
  });

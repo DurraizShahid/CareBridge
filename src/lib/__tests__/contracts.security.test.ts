@@ -21,7 +21,7 @@ vi.mock("@/lib/referrals", () => ({
 }));
 
 import { renderContract, documentSha256 } from "../esign/document";
-import { StandardEsignProvider } from "../esign/provider";
+import { StandardEsignProvider, getEsignProvider } from "../esign/provider";
 import { signContract, sendContract, getContract } from "../contracts";
 
 const snapshot = {
@@ -77,6 +77,21 @@ describe("contract rendering and e-sign state machine", () => {
     expect(evidence.documentHash).toBe(documentHash);
     expect(evidence.ipHash).toMatch(/^[0-9a-f]{64}$/);
     expect(evidence.ipHash).not.toContain("127.0.0.1");
+  });
+  it("supports provider abstraction for sessions, status checks, and executed documents", async () => {
+    const provider = getEsignProvider();
+    const session = await provider.createSigningSession({
+      contractId: "contract-1",
+      documentText,
+      expectedDocumentHash: documentHash,
+      parties: [{ party: "hospital", signerUserId: "u", signerOrgId: "hospital-org" }],
+    });
+    expect(session.sessionId).toContain("contract-1");
+    expect(session.status).toBe("pending");
+    const status = await provider.checkStatus(session.sessionId);
+    expect(status.status).toBe("completed");
+    const executed = await provider.retrieveExecutedDocument(session.sessionId);
+    expect(executed.sessionId).toBe(session.sessionId);
   });
   it("cannot sign twice for the same party", async () => {
     prismaMock.contract.findUnique.mockResolvedValue(mockContract([{party:"hospital"}]));

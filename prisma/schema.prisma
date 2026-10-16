@@ -27,6 +27,13 @@ enum InsuranceStatus {
   verified
 }
 
+enum InsuranceAuthStatus {
+  pending
+  approved
+  denied
+  not_required
+}
+
 enum CareLevel {
   independent_living
   assisted_living
@@ -353,7 +360,8 @@ model Placement {
   preferredLocation    Json?
   matchedFacilities    String[]
   selectedFacilityId   String?
-  insurancePreAuthorized Boolean      @default(false)
+  insurancePreAuthorized Boolean             @default(false)
+  insuranceAuthStatus    InsuranceAuthStatus @default(pending)
   estimatedCost        Float?
   approvedBy           String?
   approvalDate         DateTime?

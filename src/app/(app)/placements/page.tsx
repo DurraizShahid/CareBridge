@@ -182,6 +182,19 @@ export default async function PlacementsPage() {
                     <Badge variant="secondary" className={config.color}>
                       {config.label}
                     </Badge>
+                    {plc.insuranceAuthStatus === "pending" || (!plc.insuranceAuthStatus && !plc.insurancePreAuthorized) ? (
+                      <Badge variant="outline" className="border-amber-500/50 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                        Payer Clearance Pending
+                      </Badge>
+                    ) : plc.insuranceAuthStatus === "approved" || plc.insurancePreAuthorized ? (
+                      <Badge variant="outline" className="border-emerald-500/50 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        Payer Cleared
+                      </Badge>
+                    ) : plc.insuranceAuthStatus === "denied" ? (
+                      <Badge variant="destructive">
+                        Payer Denied
+                      </Badge>
+                    ) : null}
                     <Badge variant="secondary" className={
                       plc.priority === "high" || plc.priority === "emergency"
                         ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -208,9 +221,13 @@ export default async function PlacementsPage() {
                         {getFacilityName(plc.facilityId ?? plc.selectedFacilityId)}
                       </span>
                     </span>
-                    {plc.insurancePreAuthorized && (
+                    {plc.insuranceAuthStatus === "pending" || (!plc.insuranceAuthStatus && !plc.insurancePreAuthorized) ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">Payer clearance pending</span>
+                    ) : plc.insuranceAuthStatus === "approved" || plc.insurancePreAuthorized ? (
                       <span className="text-health">Insurance pre-authorized</span>
-                    )}
+                    ) : plc.insuranceAuthStatus === "denied" ? (
+                      <span className="text-destructive font-medium">Insurance denied</span>
+                    ) : null}
                   </div>
                 </div>
               </div>

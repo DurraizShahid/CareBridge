@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Placement, PlacementStatus, CareLevel, Patient, Facility, User } from "@/types";
+import type { Placement, PlacementStatus, CareLevel, Patient, Facility, User, InsuranceAuthStatus } from "@/types";
 
 interface PlacementFormData {
   patientId: string;
@@ -25,6 +25,7 @@ interface PlacementFormData {
   status: PlacementStatus;
   careLevel: CareLevel;
   priority: "low" | "medium" | "high" | "emergency";
+  insuranceAuthStatus: InsuranceAuthStatus;
   assessmentNotes: string;
   preferredLocationCity: string;
   preferredLocationState: string;
@@ -82,6 +83,7 @@ function emptyForm(): PlacementFormData {
     preferredLocationMaxDistance: 50,
     selectedFacilityId: "",
     insurancePreAuthorized: false,
+    insuranceAuthStatus: "pending",
     estimatedCost: "",
     startDate: "",
     completedDate: "",
@@ -97,6 +99,7 @@ function placementToFormData(p: Placement): PlacementFormData {
     status: p.status,
     careLevel: p.careLevel,
     priority: p.priority,
+    insuranceAuthStatus: p.insuranceAuthStatus ?? (p.insurancePreAuthorized ? "approved" : "pending"),
     assessmentNotes: p.assessmentNotes ?? "",
     preferredLocationCity: p.preferredLocation?.city ?? "",
     preferredLocationState: p.preferredLocation?.state ?? "",
@@ -319,15 +322,47 @@ export function PlacementForm({ initialData, placementId, patients, facilities, 
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="insurancePreAuthorized"
-              checked={form.insurancePreAuthorized}
-              onCheckedChange={(v) => update("insurancePreAuthorized", v === true)}
-            />
-            <Label htmlFor="insurancePreAuthorized" className="cursor-pointer">
-              Insurance Pre-Authorized
-            </Label>
+          <div className="grid gap-4 sm:grid-cols-2 items-center">
+            <div className="space-y-2">
+              <Label htmlFor="insuranceAuthStatus">Insurance Authorization (Payer Clearance)</Label>
+              <Select
+                value={form.insuranceAuthStatus}
+                onValueChange={(v) => {
+                  const status = v as InsuranceAuthStatus;
+                  update("insuranceAuthStatus", status);
+                  if (status === "approved") {
+                    update("insurancePreAuthorized", true);
+                  } else if (status === "pending" || status === "denied") {
+                    update("insurancePreAuthorized", false);
+                  }
+                }}
+              >
+                <SelectTrigger id="insuranceAuthStatus">
+                  <SelectValue placeholder="Select authorization status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending Payer Clearance</SelectItem>
+                  <SelectItem value="approved">Approved (Payer Cleared)</SelectItem>
+                  <SelectItem value="denied">Denied</SelectItem>
+                  <SelectItem value="not-required">Not Required</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2 pt-6">
+              <Checkbox
+                id="insurancePreAuthorized"
+                checked={form.insurancePreAuthorized}
+                onCheckedChange={(v) => {
+                  const checked = v === true;
+                  update("insurancePreAuthorized", checked);
+                  update("insuranceAuthStatus", checked ? "approved" : "pending");
+                }}
+              />
+              <Label htmlFor="insurancePreAuthorized" className="cursor-pointer">
+                Insurance Pre-Authorized
+              </Label>
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">

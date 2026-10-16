@@ -53,6 +53,7 @@ export type PlacementStatus =
 export type UserRole = "social-worker" | "discharge-planner" | "administrator" | "facility-coordinator" | "superadmin" | "customer";
 export type OrganizationType = "hospital" | "facility";
 export type JoinRequestStatus = "pending" | "approved" | "denied";
+export type InsuranceAuthStatus = "pending" | "approved" | "denied" | "not-required" | "not_required";
 
 // ── Entities ──
 
@@ -236,6 +237,7 @@ export interface Placement {
   matchedFacilities: string[]; // Facility IDs
   selectedFacilityId?: string;
   insurancePreAuthorized: boolean;
+  insuranceAuthStatus?: InsuranceAuthStatus;
   estimatedCost?: number;
   approvedBy?: string;
   approvalDate?: string;
