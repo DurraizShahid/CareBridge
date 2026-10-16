@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -597,22 +596,19 @@ export function PatientForm({ initialData, patientId, initialDocuments }: Props)
       )}
 
       <div className="flex items-center gap-3">
-        <ShimmerButton
+        <Button
           type="submit"
           disabled={saving}
-          shimmerColor="#ffffff"
-          shimmerSize="0.05em"
-          shimmerDuration="3s"
-          borderRadius="12px"
-          background="rgba(68, 190, 175, 1)"
+          className="rounded-full bg-[#245C52] px-6 py-2.5 text-xs md:text-sm font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] shadow-xs"
         >
           {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Patient"}
-        </ShimmerButton>
+        </Button>
         <Button
           type="button"
           variant="outline"
           onClick={() => router.push("/patients")}
           disabled={saving}
+          className="rounded-full border-[#DCE5DE] text-[#203E39] hover:bg-[#EDF2EC]"
         >
           Cancel
         </Button>

@@ -2,60 +2,15 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
-import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { getPlacements, getPatients, getFacilities } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import type { Placement, Patient, Facility } from "@/types";
+import { PlacementsDirectoryClient } from "./placements-directory-client";
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  assessment: {
-    label: "Assessment",
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  searching: {
-    label: "Searching",
-    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
-  },
-  matching: {
-    label: "Matching",
-    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
-  },
-  "pending-approval": {
-    label: "Pending Approval",
-    color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-  "pending_approval": {
-    label: "Pending Approval",
-    color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-  approved: {
-    label: "Approved",
-    color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  },
-  "in-progress": {
-    label: "In Progress",
-    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
-  },
-  "in_progress": {
-    label: "In Progress",
-    color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]",
-  },
-  completed: {
-    label: "Completed",
-    color: "bg-muted text-muted-foreground",
-  },
-  cancelled: {
-    label: "Cancelled",
-    color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  },
-};
-
-const priorityOrder = ["emergency", "high", "medium", "low"];
+export const dynamic = "force-dynamic";
 
 export default async function PlacementsPage() {
   const org = await getServerOrganization();
@@ -65,7 +20,10 @@ export default async function PlacementsPage() {
   const role = org.role;
   const userName = user?.firstName
     ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)
-    : (user?.username ?? "Admin");
+    : (user?.username ?? "Care Coordinator");
+
+  if (!roleHasPermission(role, "placements:read")) redirect("/dashboard");
+  const canCreate = roleHasPermission(role, "placements:create");
 
   let placements: Placement[] = [];
   let patients: Patient[] = [];
@@ -80,220 +38,40 @@ export default async function PlacementsPage() {
     patients = results[1];
     facilities = results[2];
   } catch {
-    // If data fetching fails, show empty state below
-  }
-
-  const sorted = [...placements].sort(
-    (a, b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority),
-  );
-  const isEmpty = sorted.length === 0;
-
-  const canCreate = roleHasPermission(role, "placements:create");
-
-  function getPatientName(patientId: string): string {
-    const patient = patients.find((p) => p.id === patientId);
-    return patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
-  }
-
-  function getFacilityName(facilityId?: string): string {
-    if (!facilityId) return "TBD";
-    const facility = facilities.find((f) => f.id === facilityId);
-    return facility?.name ?? "Unknown Facility";
-  }
-
-  function getPatientDiagnosis(patientId: string): string {
-    const patient = patients.find((p) => p.id === patientId);
-    return patient?.primaryDiagnosis ?? "";
+    // Graceful fallback
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8 pb-10">
       <PageHeader
-        title=""
-        description="Track and manage active patient placements."
+        title="Patient Placements"
+        description="Monitor active patient transitions, payer authorizations, care coordination, and bed admissions."
         userName={userName}
         welcomePrefix="Track"
         welcomeName="Placements"
-        breadcrumbs={[{ label: "Placements" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Placements" },
+        ]}
       >
         {canCreate && (
-          <Link href="/placements/new">
-            <ShimmerButton
-              shimmerColor="#ffffff"
-              shimmerSize="0.05em"
-              shimmerDuration="3s"
-              borderRadius="12px"
-              background="rgba(25, 24, 23, 1)"
-            >
-              <Plus className="h-4 w-4" />
-              New Placement
-            </ShimmerButton>
-          </Link>
+          <Button
+            size="sm"
+            className="rounded-full bg-[#245C52] px-4 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5 shadow-xs"
+            render={<Link href="/placements/new" />}
+          >
+            <Plus className="size-3.5" />
+            New Placement
+          </Button>
         )}
       </PageHeader>
 
-      {/* Placement cards */}
-      {isEmpty && (
-        <Card className="border-dashed bg-card/50">
-          <CardContent className="flex flex-col items-center justify-center px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-card-foreground">No placements yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create a new placement to start tracking patient transfers.
-            </p>
-            {canCreate && (
-              <Link href="/placements/new" className="mt-4">
-                <ShimmerButton
-                  shimmerColor="#ffffff"
-                  shimmerSize="0.05em"
-                  shimmerDuration="3s"
-                  borderRadius="12px"
-                  background="rgba(25, 24, 23, 1)"
-                >
-                  <Plus className="h-4 w-4" />
-                  New Placement
-                </ShimmerButton>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {!isEmpty && (
-      <div className="space-y-4">
-        {sorted.map((plc) => {
-          const config = statusConfig[plc.status] ?? {
-            label: plc.status,
-            color: "bg-muted text-muted-foreground",
-          };
-          return (
-            <Link
-              key={plc.id}
-              href={`/placements/${plc.id}`}
-              className="block"
-            >
-              <Card>
-              <CardContent className="p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-heading text-lg font-bold text-card-foreground">
-                      {getPatientName(plc.patientId)}
-                    </h3>
-                    <Badge variant="secondary" className={config.color}>
-                      {config.label}
-                    </Badge>
-                    {plc.insuranceAuthStatus === "pending" || (!plc.insuranceAuthStatus && !plc.insurancePreAuthorized) ? (
-                      <Badge variant="outline" className="border-amber-500/50 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                        Payer Clearance Pending
-                      </Badge>
-                    ) : plc.insuranceAuthStatus === "approved" || plc.insurancePreAuthorized ? (
-                      <Badge variant="outline" className="border-emerald-500/50 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                        Payer Cleared
-                      </Badge>
-                    ) : plc.insuranceAuthStatus === "denied" ? (
-                      <Badge variant="destructive">
-                        Payer Denied
-                      </Badge>
-                    ) : null}
-                    <Badge variant="secondary" className={
-                      plc.priority === "high" || plc.priority === "emergency"
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        : plc.priority === "medium"
-                        ? "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]"
-                        : "bg-muted text-muted-foreground"
-                    }>
-                      {plc.priority} priority
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {getPatientDiagnosis(plc.patientId)}
-                  </p>
-                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
-                    <span>
-                      Care level:{" "}
-                      <span className="font-medium text-foreground capitalize">
-                        {plc.careLevel.replace("-", " ").replace("_", " ")}
-                      </span>
-                    </span>
-                    <span>
-                      Facility:{" "}
-                      <span className="font-medium text-foreground">
-                        {getFacilityName(plc.facilityId ?? plc.selectedFacilityId)}
-                      </span>
-                    </span>
-                    {plc.insuranceAuthStatus === "pending" || (!plc.insuranceAuthStatus && !plc.insurancePreAuthorized) ? (
-                      <span className="text-amber-600 dark:text-amber-400 font-medium">Payer clearance pending</span>
-                    ) : plc.insuranceAuthStatus === "approved" || plc.insurancePreAuthorized ? (
-                      <span className="text-health">Insurance pre-authorized</span>
-                    ) : plc.insuranceAuthStatus === "denied" ? (
-                      <span className="text-destructive font-medium">Insurance denied</span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress dots for workflow */}
-              {plc.status !== "completed" && plc.status !== "cancelled" && (
-                <div className="mt-4 flex items-center gap-1.5">
-                  {["assessment", "searching", "pending-approval", "in-progress", "completed"].map(
-                    (step, idx) => {
-                      const statusOrder = ["assessment", "searching", "pending-approval", "in-progress", "completed"];
-                      const currentIdx = statusOrder.indexOf(plc.status);
-                      const stepIdx = statusOrder.indexOf(step);
-                      const isComplete = stepIdx <= currentIdx && plc.status !== "assessment";
-                      const isCurrent = step === plc.status;
-
-                      return (
-                        <div key={step} className="flex items-center gap-1.5">
-                          <div
-                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
-                              isComplete
-                                ? "bg-health text-white"
-                                : isCurrent
-                                ? "border-2 border-health text-health"
-                                : "border border-border text-muted-foreground"
-                            }`}
-                          >
-                            {idx + 1}
-                          </div>
-                          <span
-                            className={`text-[11px] ${
-                              isCurrent
-                                ? "font-medium text-health"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {statusConfig[step]?.label ?? step}
-                          </span>
-                          {idx < 4 && (
-                            <div
-                              className={`mx-1 h-px w-4 ${
-                                stepIdx < currentIdx
-                                  ? "bg-health"
-                                  : "bg-border"
-                              }`}
-                            />
-                          )}
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              )}
-
-              {/* Notes */}
-              {plc.notes && (
-                <p className="mt-3 text-xs italic text-muted-foreground">
-                  {plc.notes}
-                </p>
-              )}
-              </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
-      )}
+      <PlacementsDirectoryClient
+        placements={placements}
+        patients={patients}
+        facilities={facilities}
+        canCreate={canCreate}
+      />
     </div>
   );
 }

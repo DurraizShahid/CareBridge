@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { roleHasPermission } from "@/lib/permissions";
 import { getServerOrganization } from "@/lib/server-organization";
+import { PageHeader } from "@/components/ui/page-header";
 import { PatientForm } from "@/components/forms/patient-form";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewPatientPage() {
   const org = await getServerOrganization();
@@ -10,14 +13,19 @@ export default async function NewPatientPage() {
     redirect("/patients");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">New Patient</h1>
-        <p className="text-sm text-muted-foreground">
-          Register a new patient for placement.
-        </p>
+    <div className="space-y-8 pb-10">
+      <PageHeader
+        title="Register New Patient"
+        description="Record patient demographics, medical history, clinical requirements, and discharge timeline."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Patients", href: "/patients" },
+          { label: "New Patient" },
+        ]}
+      />
+      <div className="max-w-4xl">
+        <PatientForm />
       </div>
-      <PatientForm />
     </div>
   );
 }

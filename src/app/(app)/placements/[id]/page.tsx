@@ -1,50 +1,115 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import {
+  Building2,
+  User,
+  ShieldCheck,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Calendar,
+  DollarSign,
+  HeartPulse,
+  Pencil,
+  Rotate3d,
+  ArrowRight,
+} from "lucide-react";
 import { roleHasPermission } from "@/lib/permissions";
-import { getPlacement, getPatients, getFacilities, getUsers } from "@/lib/data-access";
+import {
+  getPlacement,
+  getPatients,
+  getFacilities,
+  getUsers,
+} from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { DeletePlacementDialog } from "./delete-dialog";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  assessment: "Assessment",
-  searching: "Searching",
-  matching: "Matching",
-  "pending-approval": "Pending Approval",
-  approved: "Approved",
-  "in-progress": "In Progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string; dotClass: string }
+> = {
+  assessment: {
+    label: "Assessment",
+    badgeClass: "bg-[#EBF2FF] text-[#1D4BB8] border-[#D0E0FF]",
+    dotClass: "bg-[#255DCE]",
+  },
+  searching: {
+    label: "Searching",
+    badgeClass: "bg-[#EBF2FF] text-[#1D4BB8] border-[#D0E0FF]",
+    dotClass: "bg-[#255DCE]",
+  },
+  matching: {
+    label: "Matching",
+    badgeClass: "bg-[#EBF2FF] text-[#1D4BB8] border-[#D0E0FF]",
+    dotClass: "bg-[#255DCE]",
+  },
+  "pending-approval": {
+    label: "Pending Approval",
+    badgeClass: "bg-[#FFF4E5] text-[#9A5B00] border-[#FFE2BF]",
+    dotClass: "bg-[#F59E0B]",
+  },
+  pending_approval: {
+    label: "Pending Approval",
+    badgeClass: "bg-[#FFF4E5] text-[#9A5B00] border-[#FFE2BF]",
+    dotClass: "bg-[#F59E0B]",
+  },
+  approved: {
+    label: "Approved",
+    badgeClass: "bg-[#EDF2EC] text-[#203E39] border-[#DCE5DE]",
+    dotClass: "bg-[#245C52]",
+  },
+  "in-progress": {
+    label: "In Progress",
+    badgeClass: "bg-[#EDF2EC] text-[#245C52] border-[#DCE5DE]",
+    dotClass: "bg-[#245C52]",
+  },
+  in_progress: {
+    label: "In Progress",
+    badgeClass: "bg-[#EDF2EC] text-[#245C52] border-[#DCE5DE]",
+    dotClass: "bg-[#245C52]",
+  },
+  completed: {
+    label: "Completed",
+    badgeClass: "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]",
+    dotClass: "bg-[#9CA3AF]",
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeClass: "bg-[#FAEEEB] text-[#A33632] border-[#F2D6D0]",
+    dotClass: "bg-[#DC2626]",
+  },
 };
 
-const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  assessment: "secondary",
-  searching: "secondary",
-  matching: "secondary",
-  "pending-approval": "outline",
-  approved: "default",
-  "in-progress": "default",
-  completed: "outline",
-  cancelled: "destructive",
-};
-
-const PRIORITY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  low: "outline",
-  medium: "secondary",
-  high: "default",
-  emergency: "destructive",
+const PRIORITY_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string }
+> = {
+  emergency: {
+    label: "Emergency Priority",
+    badgeClass: "bg-[#FAEEEB] text-[#A33632] border-[#F2D6D0]",
+  },
+  high: {
+    label: "High Priority",
+    badgeClass: "bg-[#FFF4E5] text-[#9A5B00] border-[#FFE2BF]",
+  },
+  medium: {
+    label: "Medium Priority",
+    badgeClass: "bg-[#FAFBF8] text-[#203E39] border-[#DCE5DE]",
+  },
+  low: {
+    label: "Low Priority",
+    badgeClass: "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]",
+  },
 };
 
 const CARE_LEVEL_LABELS: Record<string, string> = {
@@ -58,13 +123,13 @@ const CARE_LEVEL_LABELS: Record<string, string> = {
   "memory-care": "Memory Care",
 };
 
-const INSURANCE_AUTH_LABELS: Record<string, string> = {
-  pending: "Payer Clearance: Pending",
-  approved: "Payer Cleared",
-  denied: "Payer Denied",
-  "not-required": "Payer Clearance: Not Required",
-  not_required: "Payer Clearance: Not Required",
-};
+const workflowSteps = [
+  { key: "assessment", label: "Assessment" },
+  { key: "searching", label: "Searching" },
+  { key: "pending-approval", label: "Pending Approval" },
+  { key: "in-progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+];
 
 export default async function PlacementDetailPage({ params }: Props) {
   const { id } = await params;
@@ -81,60 +146,64 @@ export default async function PlacementDetailPage({ params }: Props) {
   ]);
 
   const patient = patients.find((p) => p.id === placement.patientId);
-  const patientName = patient ? `${patient.firstName} ${patient.lastName}` : "Unknown Patient";
-  const placementFacilityId = placement.facilityId ?? placement.selectedFacilityId;
+  const patientName = patient
+    ? `${patient.firstName} ${patient.lastName}`
+    : "Unknown Patient";
+  const placementFacilityId =
+    placement.facilityId ?? placement.selectedFacilityId;
   const facility = placementFacilityId
     ? facilities.find((f) => f.id === placementFacilityId)
     : null;
   const socialWorker = users.find((u) => u.id === placement.socialWorkerId);
   const socialWorkerName = socialWorker
     ? `${socialWorker.firstName} ${socialWorker.lastName}`
-    : "Unknown";
+    : "Unassigned";
 
   const canEdit = roleHasPermission(org.role, "placements:update");
   const canDelete = roleHasPermission(org.role, "placements:delete");
 
-  const authStatus = placement.insuranceAuthStatus ?? (placement.insurancePreAuthorized ? "approved" : "pending");
-  const isPayerClearancePending = authStatus === "pending";
+  const authStatus =
+    placement.insuranceAuthStatus ??
+    (placement.insurancePreAuthorized ? "approved" : "pending");
+
+  const statusInfo =
+    STATUS_CONFIG[placement.status] ??
+    STATUS_CONFIG[placement.status.replace(/_/g, "-")] ?? {
+      label: placement.status,
+      badgeClass: "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]",
+      dotClass: "bg-[#9CA3AF]",
+    };
+
+  const prioInfo =
+    PRIORITY_CONFIG[placement.priority] ?? {
+      label: `${placement.priority} priority`,
+      badgeClass: "bg-[#FAFBF8] text-[#53665E] border-[#DCE5DE]",
+    };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {patientName}
-            </h1>
-            <Badge variant={STATUS_VARIANTS[placement.status] ?? "secondary"}>
-              {STATUS_LABELS[placement.status] ?? placement.status} (Admin)
-            </Badge>
-            <Badge
-              variant="outline"
-              className={
-                authStatus === "pending"
-                  ? "border-amber-500/50 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
-                  : authStatus === "approved"
-                  ? "border-emerald-500/50 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-                  : authStatus === "denied"
-                  ? "border-destructive/50 bg-destructive/10 text-destructive"
-                  : ""
-              }
-            >
-              {INSURANCE_AUTH_LABELS[authStatus] ?? "Insurance: " + authStatus}
-            </Badge>
-            <Badge variant={PRIORITY_VARIANTS[placement.priority] ?? "secondary"}>
-              {placement.priority} priority
-            </Badge>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Placement &middot; {CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <div className="space-y-8 pb-10 max-w-5xl">
+      <PageHeader
+        title={`Placement: ${patientName}`}
+        description={`Placement Case #${placement.id.slice(
+          0,
+          8
+        )} &middot; ${CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}`}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Placements", href: "/placements" },
+          { label: patientName },
+        ]}
+      >
+        <div className="flex flex-wrap items-center gap-2.5">
           {canEdit && (
-            <Button variant="outline" render={<Link href={`/placements/${placement.id}/edit`} />}>
-              Edit
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-white px-4 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98] gap-1.5"
+              render={<Link href={`/placements/${placement.id}/edit`} />}
+            >
+              <Pencil className="size-3.5 text-[#53665E]" />
+              Edit Placement
             </Button>
           )}
           {canDelete && (
@@ -144,205 +213,263 @@ export default async function PlacementDetailPage({ params }: Props) {
             />
           )}
         </div>
+      </PageHeader>
+
+      {/* Telemetry & Badges Row */}
+      <div className="flex flex-wrap items-center gap-2.5 text-xs">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold border",
+            statusInfo.badgeClass
+          )}
+        >
+          <span className={cn("size-1.5 rounded-full", statusInfo.dotClass)} />
+          {statusInfo.label}
+        </span>
+        <span
+          className={cn(
+            "inline-flex items-center px-3 py-1 rounded-full font-semibold border",
+            prioInfo.badgeClass
+          )}
+        >
+          {prioInfo.label}
+        </span>
+        {authStatus === "approved" ? (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold bg-[#EDF2EC] text-[#245C52] border border-[#DCE5DE]">
+            <ShieldCheck className="size-3.5" />
+            Payer Authorized
+          </span>
+        ) : authStatus === "pending" ? (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold bg-[#FFF4E5] text-[#9A5B00] border border-[#FFE2BF]">
+            <Clock className="size-3.5" />
+            Payer Clearance Pending
+          </span>
+        ) : authStatus === "denied" ? (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold bg-[#FAEEEB] text-[#A33632] border-[#F2D6D0]">
+            <AlertCircle className="size-3.5" />
+            Payer Clearance Denied
+          </span>
+        ) : null}
       </div>
 
-      <Separator />
-
-      {isPayerClearancePending && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
-          <p className="font-semibold">Payer Clearance Outstanding</p>
-          <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5">
-            Administrative placement is {STATUS_LABELS[placement.status] ?? placement.status}, but insurance payer clearance is still pending.
+      {/* Payer Clearance Notice Banner */}
+      {authStatus === "pending" && (
+        <div className="rounded-2xl border border-[#FFE2BF] bg-[#FFF4E5]/80 p-5 text-xs text-[#9A5B00] space-y-1">
+          <p className="font-semibold text-sm flex items-center gap-1.5">
+            <Clock className="size-4" />
+            Payer Authorization In Review
+          </p>
+          <p className="leading-relaxed text-[#7A4900]">
+            The case is currently in {statusInfo.label} status, but formal payer insurance
+            pre-authorization remains pending confirmation. Coordinate with clinical discharge planning.
           </p>
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Assignment</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div>
-              <span className="font-medium">Patient:</span>{" "}
-              <Link href={`/patients/${placement.patientId}`} className="underline-offset-4 hover:underline">
-                {patientName}
-              </Link>
-            </div>
-            <div>
-              <span className="font-medium">Social Worker:</span>{" "}
-              {socialWorkerName}
-            </div>
-            <div>
-              <span className="font-medium">Facility:</span>{" "}
-              {facility ? (
-                <Link href={`/facilities/${facility.id}`} className="underline-offset-4 hover:underline">
-                  {facility.name}
-                </Link>
-              ) : (
-                "TBD"
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Workflow Progress Tracker Card */}
+      {placement.status !== "completed" && placement.status !== "cancelled" && (
+        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#53665E]">
+            Transition Workflow Milestones
+          </h2>
+          <div className="flex items-center justify-between gap-1 overflow-x-auto py-2">
+            {workflowSteps.map((step, idx) => {
+              const statusOrder = [
+                "assessment",
+                "searching",
+                "pending-approval",
+                "in-progress",
+                "completed",
+              ];
+              const normCurrent = placement.status.replace(/_/g, "-");
+              const currentIdx = statusOrder.indexOf(normCurrent);
+              const stepIdx = statusOrder.indexOf(step.key);
+              const isComplete =
+                stepIdx < currentIdx ||
+                (stepIdx === currentIdx && normCurrent === "completed");
+              const isCurrent = step.key === normCurrent;
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div>
-              <span className="font-medium">Care Level:</span>{" "}
-              {CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}
+              return (
+                <div key={step.key} className="flex items-center gap-2 shrink-0">
+                  <div
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-full text-xs font-bold transition-all",
+                      isComplete
+                        ? "bg-[#245C52] text-white"
+                        : isCurrent
+                        ? "border-2 border-[#245C52] bg-white text-[#245C52]"
+                        : "border border-[#DCE5DE] bg-[#FAFBF8] text-[#53665E]"
+                    )}
+                  >
+                    {isComplete ? "✓" : idx + 1}
+                  </div>
+                  <span
+                    className={cn(
+                      "text-xs",
+                      isCurrent
+                        ? "font-semibold text-[#245C52]"
+                        : isComplete
+                        ? "font-medium text-[#0D1B17]"
+                        : "text-[#53665E]"
+                    )}
+                  >
+                    {step.label}
+                  </span>
+                  {idx < workflowSteps.length - 1 && (
+                    <div
+                      className={cn(
+                        "mx-2 h-0.5 w-8 rounded-full transition-colors",
+                        stepIdx < currentIdx ? "bg-[#245C52]" : "bg-[#DCE5DE]"
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Main Details Grid */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Assignment & Facility */}
+        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#DCE5DE]/60 pb-3">
+            <Building2 className="size-4 text-[#245C52]" />
+            <h2 className="font-serif text-lg font-medium text-[#0D1B17]">
+              Care Setting Assignment
+            </h2>
+          </div>
+          <dl className="space-y-3.5 text-xs md:text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="font-semibold text-[#53665E]">Assigned Patient:</dt>
+              <dd>
+                <Link
+                  href={`/patients/${placement.patientId}`}
+                  className="font-medium text-[#255DCE] hover:underline"
+                >
+                  {patientName} &rarr;
+                </Link>
+              </dd>
             </div>
-            <div>
-              <span className="font-medium">Priority:</span>{" "}
-              {placement.priority}
+            <div className="flex items-start justify-between gap-3">
+              <dt className="font-semibold text-[#53665E]">Care Facility:</dt>
+              <dd>
+                {facility ? (
+                  <Link
+                    href={`/facilities/${facility.id}`}
+                    className="font-medium text-[#0D1B17] hover:text-[#245C52]"
+                  >
+                    {facility.name} &rarr;
+                  </Link>
+                ) : (
+                  <span className="text-[#53665E] italic">Pending Selection</span>
+                )}
+              </dd>
             </div>
-            <div>
-              <span className="font-medium">Placement Approval:</span>{" "}
-              <span>{STATUS_LABELS[placement.status] ?? placement.status} (Administrative)</span>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="font-semibold text-[#53665E]">Social Worker / Coordinator:</dt>
+              <dd className="font-medium text-[#0D1B17]">{socialWorkerName}</dd>
             </div>
-            <div>
-              <span className="font-medium">Insurance Authorization:</span>{" "}
-              {authStatus === "approved" ? (
-                <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                  Approved &middot; Payer cleared
-                </span>
-              ) : authStatus === "denied" ? (
-                <span className="font-medium text-destructive">
-                  Denied &middot; Payer authorization declined
-                </span>
-              ) : authStatus === "not-required" || authStatus === "not_required" ? (
-                <span className="text-muted-foreground">Not required</span>
-              ) : (
-                <span className="font-medium text-amber-600 dark:text-amber-400">
-                  Pending &middot; Payer clearance still outstanding
-                </span>
-              )}
+          </dl>
+          {facility?.tourConfig && (
+            <div className="pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full rounded-full border-[#D0E0FF] text-[#255DCE] hover:bg-[#EBF2FF] text-xs font-semibold gap-1.5"
+                render={<Link href={`/facilities/${facility.id}/tour`} />}
+              >
+                <Rotate3d className="size-3.5" />
+                Launch 3D Virtual Facility Tour
+              </Button>
             </div>
-            {placement.estimatedCost && (
-              <div>
-                <span className="font-medium">Estimated Cost:</span> $
-                {placement.estimatedCost.toLocaleString()}
+          )}
+        </div>
+
+        {/* Transition Details & Timeline */}
+        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#DCE5DE]/60 pb-3">
+            <Calendar className="size-4 text-[#245C52]" />
+            <h2 className="font-serif text-lg font-medium text-[#0D1B17]">
+              Care Level & Scheduling
+            </h2>
+          </div>
+          <dl className="space-y-3.5 text-xs md:text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="font-semibold text-[#53665E]">Required Care Level:</dt>
+              <dd className="font-medium text-[#0D1B17]">
+                {CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}
+              </dd>
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="font-semibold text-[#53665E]">Target Start Date:</dt>
+              <dd className="font-medium text-[#0D1B17]">
+                {placement.startDate
+                  ? new Date(placement.startDate).toLocaleDateString()
+                  : "Not set"}
+              </dd>
+            </div>
+            {placement.completedDate && (
+              <div className="flex items-start justify-between gap-3">
+                <dt className="font-semibold text-[#53665E]">Completion Date:</dt>
+                <dd className="font-medium text-[#0D1B17]">
+                  {new Date(placement.completedDate).toLocaleDateString()}
+                </dd>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {placement.preferredLocation && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferred Location</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            {placement.preferredLocation.city}, {placement.preferredLocation.state}
-            {" "}&middot; Within {placement.preferredLocation.maxDistanceMiles} miles
-          </CardContent>
-        </Card>
-      )}
-
-      {placement.assessmentNotes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Assessment Notes</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {placement.assessmentNotes}
-          </CardContent>
-        </Card>
-      )}
-
-      {placement.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {placement.notes}
-          </CardContent>
-        </Card>
-      )}
-
-      {placement.matchedFacilities.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Matched Facilities ({placement.matchedFacilities.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {placement.matchedFacilities.map((fid) => {
-                const f = facilities.find((fac) => fac.id === fid);
-                return (
-                  <div key={fid} className="rounded-lg border p-3 text-sm">
-                    {f ? (
-                      <Link href={`/facilities/${f.id}`} className="font-medium underline-offset-4 hover:underline">
-                        {f.name}
-                      </Link>
-                    ) : (
-                      <span className="text-muted-foreground">{fid}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {placement.cancellationReason && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Cancellation Reason</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {placement.cancellationReason}
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-4">
-        {(placement.startDate || placement.completedDate || placement.approvalDate) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 text-sm sm:grid-cols-3">
-                {placement.startDate && (
-                  <div>
-                    <span className="font-medium">Start Date:</span>{" "}
-                    {new Date(placement.startDate).toLocaleDateString()}
-                  </div>
-                )}
-                {placement.approvalDate && (
-                  <div>
-                    <span className="font-medium">Approved:</span>{" "}
-                    {new Date(placement.approvalDate).toLocaleDateString()}
-                  </div>
-                )}
-                {placement.completedDate && (
-                  <div>
-                    <span className="font-medium">Completed:</span>{" "}
-                    {new Date(placement.completedDate).toLocaleDateString()}
-                  </div>
-                )}
+            {placement.estimatedCost && (
+              <div className="flex items-start justify-between gap-3">
+                <dt className="font-semibold text-[#53665E]">Estimated Monthly Rate:</dt>
+                <dd className="font-medium text-[#0D1B17]">
+                  {placement.estimatedCost}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </dl>
+        </div>
       </div>
 
-      {placement.approvedBy && (
-        <p className="text-xs text-muted-foreground">
-          Approved by {placement.approvedBy}
-        </p>
+      {/* Clinical Assessment Notes */}
+      {(placement.assessmentNotes || placement.notes) && (
+        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#DCE5DE]/60 pb-3">
+            <HeartPulse className="size-4 text-[#245C52]" />
+            <h2 className="font-serif text-lg font-medium text-[#0D1B17]">
+              Clinical Assessment & Coordination Notes
+            </h2>
+          </div>
+          {placement.assessmentNotes && (
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-[#53665E]">
+                Assessment Summary
+              </span>
+              <p className="rounded-xl bg-[#FAFBF8] border border-[#DCE5DE] p-3.5 text-xs md:text-sm text-[#203E39] leading-relaxed">
+                {placement.assessmentNotes}
+              </p>
+            </div>
+          )}
+          {placement.notes && (
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-[#53665E]">
+                Administrative Directives
+              </span>
+              <p className="rounded-xl bg-[#EDF2EC]/40 border border-[#DCE5DE] p-3.5 text-xs text-[#203E39] leading-relaxed">
+                {placement.notes}
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
-      <div className="text-sm text-muted-foreground">
-        <p>Created: {new Date(placement.createdAt).toLocaleDateString()}</p>
-        <p>Last Updated: {new Date(placement.updatedAt).toLocaleDateString()}</p>
+      {/* Metadata footer */}
+      <div className="flex flex-wrap items-center justify-between text-xs text-[#53665E] px-2">
+        <span>Placement ID: {placement.id}</span>
+        {placement.updatedAt && (
+          <span>
+            Last updated: {new Date(placement.updatedAt).toLocaleDateString()}
+          </span>
+        )}
       </div>
     </div>
   );

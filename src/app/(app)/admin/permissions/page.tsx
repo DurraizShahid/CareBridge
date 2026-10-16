@@ -1,4 +1,4 @@
-import { Shield, Check, X } from "lucide-react";
+import { Shield, Check, X, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   PERMISSION_CATALOG,
@@ -10,25 +10,43 @@ import { cn } from "@/lib/utils";
 
 // ── Role display config ──
 
-const roleDisplayConfig: Record<string, { label: string; color: string }> = {
-  superadmin: { label: "Super Admin", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  administrator: { label: "Administrator", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
-  "social-worker": { label: "Social Worker", color: "bg-health/10 text-health dark:bg-health/20" },
-  "discharge-planner": { label: "Discharge Planner", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  "facility-coordinator": { label: "Facility Coordinator", color: "bg-blue-100 text-[#255DCE] dark:bg-[#255DCE]/20 dark:text-[#DCEBFF]" },
-  customer: { label: "Customer", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
+const roleDisplayConfig: Record<string, { label: string; badgeClass: string }> = {
+  superadmin: {
+    label: "Super Admin",
+    badgeClass: "bg-[#FAEEEB] text-[#A33632] border-[#F2D6D0]",
+  },
+  administrator: {
+    label: "Administrator",
+    badgeClass: "bg-[#F5F0FF] text-[#5B21B6] border-[#DDD6FE]",
+  },
+  "social-worker": {
+    label: "Social Worker",
+    badgeClass: "bg-[#EDF2EC] text-[#245C52] border-[#DCE5DE]",
+  },
+  "discharge-planner": {
+    label: "Discharge Planner",
+    badgeClass: "bg-[#EBF2FF] text-[#1D4BB8] border-[#D0E0FF]",
+  },
+  "facility-coordinator": {
+    label: "Facility Coordinator",
+    badgeClass: "bg-[#E8F8F0] text-[#14532D] border-[#C6F0D9]",
+  },
+  customer: {
+    label: "Customer",
+    badgeClass: "bg-[#FAFBF8] text-[#53665E] border-[#DCE5DE]",
+  },
 };
 
 // ── Resource display labels ──
 
 const resourceLabels: Record<string, string> = {
-  patients: "Patients",
-  placements: "Placements",
-  facilities: "Facilities",
-  users: "Users",
-  dashboard: "Dashboards",
-  settings: "Settings",
-  audit: "Audit",
+  patients: "Patients & Clinical Records",
+  placements: "Placements & Transition Cases",
+  facilities: "Facility Network & Capacity",
+  users: "Organization Users & Roles",
+  dashboard: "Analytics & Telemetry Dashboards",
+  settings: "Organization Settings",
+  audit: "Security & Audit Logs",
 };
 
 export default function PermissionsOverviewPage() {
@@ -36,109 +54,155 @@ export default function PermissionsOverviewPage() {
   const permissionsByResource = getPermissionsByResource();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-10">
       <PageHeader
         title="Roles & Permissions"
-        description="Overview of all roles and their assigned permissions across the platform."
+        description="Comprehensive role-based access control (RBAC) matrix and capability assignments across CareBridge."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Roles & Permissions" },
+        ]}
       >
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-          <Shield className="h-3.5 w-3.5 text-health" />
-          {roles.length} roles &middot; {PERMISSION_CATALOG.length} permissions
+        <div className="flex items-center gap-2 rounded-full border border-[#DCE5DE] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#203E39] shadow-xs">
+          <ShieldCheck className="size-4 text-[#245C52]" />
+          {roles.length} Roles &middot; {PERMISSION_CATALOG.length} Permissions
         </div>
       </PageHeader>
 
-      {/* Responsive permission matrix */}
-      <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card shadow-sm">
-        <table className="w-full min-w-[800px] text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="sticky left-0 z-10 bg-muted/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Permission
-              </th>
-              {roles.map((role) => {
-                const display = roleDisplayConfig[role] ?? { label: role, color: "" };
-                return (
-                  <th key={role} className="px-3 py-3 text-center">
-                    <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", display.color)}>
-                      {display.label}
-                    </span>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          {Object.entries(permissionsByResource).map(([resource, permissions]) => (
-            <tbody key={resource}>
-              {/* Resource group header */}
-              <tr className="border-b border-border bg-muted/20">
-                <td
-                  colSpan={roles.length + 1}
-                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                  {resourceLabels[resource] ?? resource}
-                </td>
+      {/* Permission Matrix */}
+      <div className="overflow-hidden rounded-2xl border border-[#DCE5DE] bg-white shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#DCE5DE] bg-[#FAFBF8] text-xs font-semibold text-[#53665E]">
+                <th className="sticky left-0 z-10 bg-[#FAFBF8] py-3.5 pl-6 pr-4">
+                  Permission Capability
+                </th>
+                {roles.map((role) => {
+                  const display = roleDisplayConfig[role] ?? {
+                    label: role,
+                    badgeClass: "bg-[#FAFBF8] text-[#53665E] border-[#DCE5DE]",
+                  };
+                  return (
+                    <th key={role} className="py-3.5 px-3 text-center">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold border",
+                          display.badgeClass
+                        )}
+                      >
+                        {display.label}
+                      </span>
+                    </th>
+                  );
+                })}
               </tr>
-              {/* Permission rows */}
-              {permissions.map((permission) => {
-                const info = PERMISSION_CATALOG.find((p) => p.key === permission);
-                return (
-                  <tr key={permission} className="border-b border-border last:border-0 hover:bg-muted/10">
-                    <td className="sticky left-0 z-10 bg-card px-4 py-2.5">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-card-foreground">
-                          {info?.label ?? permission}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {info?.description ?? permission}
-                        </span>
-                      </div>
+            </thead>
+            {Object.entries(permissionsByResource).map(
+              ([resource, permissions]) => (
+                <tbody key={resource} className="divide-y divide-[#DCE5DE]/60">
+                  {/* Resource Section Banner */}
+                  <tr className="bg-[#EDF2EC]/50 border-t border-b border-[#DCE5DE]">
+                    <td
+                      colSpan={roles.length + 1}
+                      className="py-2.5 pl-6 pr-4 text-xs font-semibold text-[#245C52] uppercase tracking-wider"
+                    >
+                      {resourceLabels[resource] ?? resource}
                     </td>
-                    {roles.map((role) => {
-                      const rolePerms = getRolePermissions(role);
-                      const hasPermission = rolePerms.includes(permission);
-                      return (
-                        <td key={`${role}-${permission}`} className="px-3 py-2.5 text-center">
-                          {hasPermission ? (
-                            <Check className="mx-auto h-4 w-4 text-health" />
-                          ) : (
-                            <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
-                          )}
-                        </td>
-                      );
-                    })}
                   </tr>
-                );
-              })}
-            </tbody>
-          ))}
-        </table>
+
+                  {/* Permission Rows */}
+                  {permissions.map((permission) => {
+                    const info = PERMISSION_CATALOG.find(
+                      (p) => p.key === permission
+                    );
+                    return (
+                      <tr
+                        key={permission}
+                        className="hover:bg-[#FAFBF8] transition-colors"
+                      >
+                        <td className="sticky left-0 z-10 bg-white group-hover:bg-[#FAFBF8] py-3 pl-6 pr-4">
+                          <div className="flex flex-col">
+                            <span className="text-xs md:text-sm font-medium text-[#0D1B17]">
+                              {info?.label ?? permission}
+                            </span>
+                            <span className="text-xs text-[#53665E]">
+                              {info?.description ?? permission}
+                            </span>
+                          </div>
+                        </td>
+                        {roles.map((role) => {
+                          const rolePerms = getRolePermissions(role);
+                          const hasPermission = rolePerms.includes(permission);
+                          return (
+                            <td
+                              key={`${role}-${permission}`}
+                              className="py-3 px-3 text-center"
+                            >
+                              {hasPermission ? (
+                                <div className="inline-flex size-6 items-center justify-center rounded-full bg-[#EDF2EC] text-[#245C52]">
+                                  <Check className="size-3.5" />
+                                </div>
+                              ) : (
+                                <div className="inline-flex size-6 items-center justify-center text-[#53665E]/30">
+                                  <X className="size-3.5" />
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              )
+            )}
+          </table>
+        </div>
       </div>
 
-      {/* Summary cards */}
+      {/* Role Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {roles.map((role) => {
-          const display = roleDisplayConfig[role] ?? { label: role, color: "" };
+          const display = roleDisplayConfig[role] ?? {
+            label: role,
+            badgeClass: "bg-[#FAFBF8] text-[#53665E] border-[#DCE5DE]",
+          };
           const perms = getRolePermissions(role);
+          const percent = Math.round(
+            (perms.length / PERMISSION_CATALOG.length) * 100
+          );
+
           return (
-            <div key={role} className="rounded-2xl border border-border/50 bg-card p-5 shadow-sm transition-all duration-200 hover:shadow-md">
+            <div
+              key={role}
+              className="rounded-2xl border border-[#DCE5DE] bg-white p-5 shadow-xs space-y-3"
+            >
               <div className="flex items-center justify-between">
-                <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", display.color)}>
+                <span
+                  className={cn(
+                    "inline-flex rounded-full px-3 py-1 text-xs font-semibold border",
+                    display.badgeClass
+                  )}
+                >
                   {display.label}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {perms.length} / {PERMISSION_CATALOG.length} permissions
+                <span className="text-xs font-semibold text-[#53665E]">
+                  {perms.length} / {PERMISSION_CATALOG.length} ({percent}%)
                 </span>
               </div>
-              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDF2EC]">
                 <div
-                  className="h-full rounded-full bg-health transition-all"
-                  style={{ width: `${(perms.length / PERMISSION_CATALOG.length) * 100}%` }}
+                  className="h-full rounded-full bg-[#245C52] transition-all duration-300"
+                  style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="text-xs text-[#53665E]">
                 {perms.length === PERMISSION_CATALOG.length
-                  ? "Full access — all permissions granted."
-                  : `${PERMISSION_CATALOG.length - perms.length} permissions restricted.`}
+                  ? "Full administrative access across all system resources."
+                  : `${
+                      PERMISSION_CATALOG.length - perms.length
+                    } restricted operations.`}
               </p>
             </div>
           );

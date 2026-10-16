@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,15 +54,24 @@ export function DeletePlacementDialog({ placementId, patientName }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="destructive">Delete</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#A33632] border-[#F2D6D0] hover:bg-[#FAEEEB] active:scale-[0.98] gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            Delete
+          </Button>
         }
       />
-      <DialogContent>
+      <DialogContent className="rounded-2xl border-[#DCE5DE]">
         <DialogHeader>
-          <DialogTitle>Delete Placement</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete the placement for {patientName}?
-            This action cannot be undone.
+          <DialogTitle className="font-serif text-xl font-medium text-[#0D1B17]">
+            Delete Placement Case
+          </DialogTitle>
+          <DialogDescription className="text-sm text-[#53665E]">
+            Are you sure you want to delete the placement case for {patientName}?
+            Associated workflow records will be permanently removed. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
 
@@ -71,21 +81,24 @@ export function DeletePlacementDialog({ placementId, patientName }: Props) {
           </Alert>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setOpen(false)}
             disabled={deleting}
+            className="rounded-full border-[#DCE5DE] text-[#203E39]"
           >
             Cancel
           </Button>
           <Button
             variant="destructive"
+            size="sm"
             onClick={handleDelete}
             disabled={deleting}
-            className="transition-all duration-200 hover:scale-105 active:scale-95"
+            className="rounded-full"
           >
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? "Deleting..." : "Permanently Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

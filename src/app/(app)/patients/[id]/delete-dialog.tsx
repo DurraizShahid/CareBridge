@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,16 +59,25 @@ export function DeletePatientDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="destructive">Delete</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#A33632] border-[#F2D6D0] hover:bg-[#FAEEEB] active:scale-[0.98] gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            Delete
+          </Button>
         }
       />
-      <DialogContent>
+      <DialogContent className="rounded-2xl border-[#DCE5DE]">
         <DialogHeader>
-          <DialogTitle>Delete Patient</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-serif text-xl font-medium text-[#0D1B17]">
+            Delete Patient Record
+          </DialogTitle>
+          <DialogDescription className="text-sm text-[#53665E]">
             {hasActivePlacements
               ? `${patientName} has active placements and cannot be deleted. Remove all placements first.`
-              : `Are you sure you want to delete ${patientName}? This action cannot be undone.`}
+              : `Are you sure you want to permanently delete ${patientName}? All associated clinical documentation and records will be deleted. This action cannot be undone.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -77,21 +87,24 @@ export function DeletePatientDialog({
           </Alert>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setOpen(false)}
             disabled={deleting}
+            className="rounded-full border-[#DCE5DE] text-[#203E39]"
           >
             Cancel
           </Button>
           <Button
             variant="destructive"
+            size="sm"
             onClick={handleDelete}
             disabled={deleting || hasActivePlacements}
-            className="transition-all duration-200 hover:scale-105 active:scale-95"
+            className="rounded-full"
           >
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? "Deleting..." : "Permanently Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

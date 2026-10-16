@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { roleHasPermission } from "@/lib/permissions";
 import { getServerOrganization } from "@/lib/server-organization";
 import { getPatients, getFacilities, getUsers } from "@/lib/data-access";
+import { PageHeader } from "@/components/ui/page-header";
 import { PlacementForm } from "@/components/forms/placement-form";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewPlacementPage() {
   const org = await getServerOrganization();
@@ -17,22 +20,30 @@ export default async function NewPlacementPage() {
   ]);
 
   const socialWorkers = users.filter(
-    (u) => u.role === "social-worker" || u.role === "discharge-planner" || u.role === "administrator",
+    (u) =>
+      u.role === "social-worker" ||
+      u.role === "discharge-planner" ||
+      u.role === "administrator"
   );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">New Placement</h1>
-        <p className="text-sm text-muted-foreground">
-          Initiate a new patient placement workflow.
-        </p>
-      </div>
-      <PlacementForm
-        patients={patients}
-        facilities={facilities}
-        socialWorkers={socialWorkers}
+    <div className="space-y-8 pb-10">
+      <PageHeader
+        title="Initiate Patient Placement"
+        description="Assign care facilities, establish payer pre-authorizations, and designate coordination contacts."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Placements", href: "/placements" },
+          { label: "New Placement" },
+        ]}
       />
+      <div className="max-w-4xl">
+        <PlacementForm
+          patients={patients}
+          facilities={facilities}
+          socialWorkers={socialWorkers}
+        />
+      </div>
     </div>
   );
 }

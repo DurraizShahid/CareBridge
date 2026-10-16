@@ -1,18 +1,34 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import {
+  CheckCircle2,
+  XCircle,
+  Star,
+  MapPin,
+  Building2,
+  ArrowRight,
+  Rotate3d,
+  Sparkles,
+  ShieldCheck,
+  Bed,
+} from "lucide-react";
 import { getPatient, getPatientFacilityMatches } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, XCircle, Star, MapPin, Building2 } from "lucide-react";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyMedia,
+} from "@/components/ui/empty";
 import type { FacilityMatchResult } from "@/types";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -40,27 +56,38 @@ const STATUS_LABELS: Record<string, string> = {
 function ScoreBadge({ score }: { score: number }) {
   const color =
     score >= 80
-      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+      ? "bg-[#EDF2EC] text-[#245C52] border-[#DCE5DE]"
       : score >= 60
-        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      ? "bg-[#FFF4E5] text-[#9A5B00] border-[#FFE2BF]"
+      : "bg-[#FAEEEB] text-[#A33632] border-[#F2D6D0]";
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${color}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${color}`}
+    >
+      <Sparkles className="size-3" />
       {score} pts
     </span>
   );
 }
 
-function MatchFactor({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
+function MatchFactor({
+  ok,
+  label,
+  detail,
+}: {
+  ok: boolean;
+  label: string;
+  detail: string;
+}) {
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-xs md:text-sm">
       {ok ? (
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+        <CheckCircle2 className="size-4 shrink-0 text-[#245C52]" />
       ) : (
-        <XCircle className="h-4 w-4 shrink-0 text-red-500" />
+        <XCircle className="size-4 shrink-0 text-[#A33632]" />
       )}
-      <span className="font-medium">{label}:</span>
-      <span className="text-muted-foreground">{detail}</span>
+      <span className="font-semibold text-[#203E39]">{label}:</span>
+      <span className="text-[#53665E]">{detail}</span>
     </div>
   );
 }
@@ -68,95 +95,153 @@ function MatchFactor({ ok, label, detail }: { ok: boolean; label: string; detail
 function ScoreRow({ label, value }: { label: string; value: number }) {
   if (value === 0) return null;
   const display = value > 0 ? `+${value}` : `${value}`;
-  const color = value > 0 ? "text-green-600" : "text-red-500";
+  const color = value > 0 ? "text-[#245C52]" : "text-[#A33632]";
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`font-mono font-medium ${color}`}>{display}</span>
+    <div className="flex items-center justify-between text-xs md:text-sm">
+      <span className="text-[#53665E]">{label}</span>
+      <span className={`font-mono font-semibold ${color}`}>{display}</span>
     </div>
   );
 }
 
-function FacilityMatchCard({ result }: { result: FacilityMatchResult }) {
+function FacilityMatchCard({
+  result,
+  patientId,
+}: {
+  result: FacilityMatchResult;
+  patientId: string;
+}) {
   const { facility, breakdown } = result;
-  const availableBeds = facility.capacity - facility.currentOccupancy;
+  const availableBeds = Math.max(0, facility.capacity - facility.currentOccupancy);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+    <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs transition-all hover:border-[#245C52]/40">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-3 border-b border-[#DCE5DE]/60">
         <div>
-          <CardTitle className="text-lg">
-            <Link href={`/facilities/${facility.id}`} className="underline-offset-4 hover:underline">
+          <h3 className="font-serif text-lg md:text-xl font-medium text-[#0D1B17]">
+            <Link
+              href={`/facilities/${facility.id}`}
+              className="hover:text-[#245C52] transition-colors"
+            >
               {facility.name}
             </Link>
-          </CardTitle>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant="outline" className="text-xs">
-              {facility.type.replace(/-/g, " ")}
-            </Badge>
-            <span className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+          </h3>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#53665E]">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#FAFBF8] border border-[#DCE5DE] font-medium text-[#203E39]">
+              {facility.type.replace(/[-_]/g, " ")}
+            </span>
+            <span className="flex items-center gap-1 font-semibold text-[#203E39]">
+              <Star className="size-3.5 fill-amber-400 text-amber-400" />
               {facility.rating} ({facility.reviewsCount})
             </span>
             <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
+              <MapPin className="size-3.5 text-[#53665E]" />
               {facility.address.city}, {facility.address.state}
             </span>
+            {facility.tourConfig && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-[#EBF2FF] text-[#255DCE] border border-[#D0E0FF]">
+                <Rotate3d className="size-3" />
+                3D Tour Ready
+              </span>
+            )}
           </div>
         </div>
-        <ScoreBadge score={breakdown.totalScore} />
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="self-start">
+          <ScoreBadge score={breakdown.totalScore} />
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {/* Match factors */}
+        <div className="rounded-xl bg-[#FAFBF8] p-4 border border-[#DCE5DE]/60 space-y-2">
           <MatchFactor
             ok={breakdown.careLevelMatch}
             label="Care Level"
-            detail={breakdown.careLevelMatch ? "Offers required care level" : "Does not offer required care level"}
+            detail={
+              breakdown.careLevelMatch
+                ? "Offers required care setting and clinical staffing"
+                : "Does not support required care level"
+            }
           />
           <MatchFactor
             ok={breakdown.insuranceAccepted}
-            label="Insurance"
-            detail={breakdown.insuranceAccepted ? "Accepts patient's insurance" : "Does not accept patient's insurance"}
+            label="Insurance & Payer"
+            detail={
+              breakdown.insuranceAccepted
+                ? "Payer network contracted and accepted"
+                : "Not currently in-network for patient's insurance"
+            }
           />
           <MatchFactor
             ok={breakdown.hasAvailability}
-            label="Availability"
-            detail={breakdown.hasAvailability ? `${availableBeds} bed${availableBeds === 1 ? "" : "s"} available of ${facility.capacity}` : "No current availability"}
+            label="Capacity & Bed Availability"
+            detail={
+              breakdown.hasAvailability
+                ? `${availableBeds} bed${availableBeds === 1 ? "" : "s"} open out of ${facility.capacity} total capacity`
+                : "No currently open beds (waitlist required)"
+            }
           />
         </div>
 
-        <Separator />
-
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Score Breakdown
+        {/* Score breakdown */}
+        <div className="space-y-1.5 px-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#53665E]">
+            Algorithmic Score Breakdown
           </p>
-          <ScoreRow label="Base" value={breakdown.baseScore} />
-          <ScoreRow label="Capacity bonus" value={breakdown.capacityScore} />
-          <ScoreRow label="Rating bonus" value={breakdown.ratingScore} />
-          <ScoreRow label="Waitlist penalty" value={-breakdown.waitlistPenalty} />
-          <ScoreRow label="Location bonus" value={breakdown.locationBonus} />
-          <Separator className="my-1" />
-          <div className="flex items-center justify-between text-sm font-semibold">
-            <span>Total</span>
-            <span className="font-mono">{breakdown.totalScore} pts</span>
+          <ScoreRow label="Baseline matching criteria" value={breakdown.baseScore} />
+          <ScoreRow label="Bed capacity availability bonus" value={breakdown.capacityScore} />
+          <ScoreRow label="Facility star rating bonus" value={breakdown.ratingScore} />
+          <ScoreRow label="Waitlist delay penalty" value={-breakdown.waitlistPenalty} />
+          <ScoreRow label="Geographic proximity bonus" value={breakdown.locationBonus} />
+          <div className="pt-1 border-t border-[#DCE5DE]/60 flex items-center justify-between text-xs md:text-sm font-semibold text-[#0D1B17]">
+            <span>Total Compatibility Score</span>
+            <span className="font-mono text-sm">{breakdown.totalScore} pts</span>
           </div>
         </div>
 
-        <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+        {/* Narrative explanation */}
+        <div className="rounded-xl bg-[#EDF2EC]/60 border border-[#DCE5DE] p-3.5 text-xs text-[#203E39] leading-relaxed">
+          <p className="font-semibold text-[#245C52] mb-1">Clinical Match Summary</p>
           {result.explanation}
         </div>
 
-        <div className="flex gap-2">
-          <Button size="sm" render={<Link href={`/placements/new?patientId=${facility.id}&facilityId=${facility.id}`} />}>
+        {/* Actions - FIXED patientId query param! */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-2">
+          <Button
+            size="sm"
+            className="rounded-full bg-[#245C52] px-4 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] shadow-xs"
+            render={
+              <Link
+                href={`/placements/new?patientId=${patientId}&facilityId=${facility.id}`}
+              />
+            }
+          >
             Create Placement
+            <ArrowRight className="size-3.5 ml-1.5" />
           </Button>
-          <Button size="sm" variant="outline" render={<Link href={`/facilities/${facility.id}`} />}>
-            View Details
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full bg-white px-4 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC]"
+            render={<Link href={`/facilities/${facility.id}`} />}
+          >
+            <Building2 className="size-3.5 mr-1.5 text-[#53665E]" />
+            View Facility Profile
           </Button>
+          {facility.tourConfig && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#255DCE] border-[#D0E0FF] hover:bg-[#EBF2FF]"
+              render={<Link href={`/facilities/${facility.id}/tour`} />}
+            >
+              <Rotate3d className="size-3.5 mr-1" />
+              Launch 3D Tour
+            </Button>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -168,78 +253,129 @@ export default async function PatientMatchingPage({ params }: Props) {
   const patient = await getPatient(id, org.organizationId, org.role);
   if (!patient) return notFound();
 
-  const matches = await getPatientFacilityMatches(id, org.organizationId, org.role);
+  const matches = await getPatientFacilityMatches(
+    id,
+    org.organizationId,
+    org.role
+  );
+
+  const patientName = `${patient.firstName} ${patient.lastName}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
+    <div className="space-y-8 pb-10">
+      <PageHeader
+        title="Patient-Facility Matching"
+        description={`Algorithmic facility recommendations, bed availability, and insurance compatibility for ${patientName}.`}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Patients", href: "/patients" },
+          { label: patientName, href: `/patients/${id}` },
+          { label: "Matching" },
+        ]}
+      />
+
+      {/* Patient Summary Header Card */}
+      <div className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-xs space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link
-              href={`/patients/${id}`}
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
-              &larr; Back to Patient
-            </Link>
+            <div className="flex size-11 items-center justify-center rounded-full bg-[#EDF2EC] font-serif text-base font-semibold text-[#245C52] border border-[#DCE5DE]">
+              {patient.firstName.charAt(0)}
+              {patient.lastName.charAt(0)}
+            </div>
+            <div>
+              <h2 className="font-serif text-xl font-medium text-[#0D1B17]">
+                {patientName}
+              </h2>
+              <p className="text-xs text-[#53665E]">
+                MRN: <span className="font-mono font-medium">{patient.mrn}</span> &middot; DOB:{" "}
+                {new Date(patient.dateOfBirth).toLocaleDateString()} ({patient.age} yrs,{" "}
+                <span className="capitalize">{patient.gender}</span>)
+              </p>
+            </div>
           </div>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">
-            Patient-Facility Matching
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            AI-powered facility matching for {patient.firstName} {patient.lastName}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]">
+              {STATUS_LABELS[patient.status] ?? patient.status}
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#FAFBF8] text-[#203E39] border border-[#DCE5DE]">
+              {CARE_LEVEL_LABELS[patient.careLevelRequired] ??
+                patient.careLevelRequired.replace(/[-_]/g, " ")}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-3 border-t border-[#DCE5DE]/60 text-xs">
+          <div>
+            <span className="font-semibold text-[#53665E] block mb-0.5">Primary Diagnosis</span>
+            <span className="font-medium text-[#0D1B17]">{patient.primaryDiagnosis}</span>
+          </div>
+          <div>
+            <span className="font-semibold text-[#53665E] block mb-0.5">Insurance Provider</span>
+            <span className="font-medium text-[#0D1B17]">
+              {patient.insurance && patient.insurance.length > 0
+                ? patient.insurance.map((ins) => ins.provider).join(", ")
+                : "None recorded"}
+            </span>
+          </div>
+          <div>
+            <span className="font-semibold text-[#53665E] block mb-0.5">Admission Date</span>
+            <span className="font-medium text-[#0D1B17]">
+              {new Date(patient.admissionDate).toLocaleDateString()}
+            </span>
+          </div>
+          <div>
+            <span className="font-semibold text-[#53665E] block mb-0.5">Target Discharge</span>
+            <span className="font-medium text-[#0D1B17]">
+              {patient.estimatedDischargeDate
+                ? new Date(patient.estimatedDischargeDate).toLocaleDateString()
+                : "Unscheduled"}
+            </span>
+          </div>
         </div>
       </div>
 
-      <Separator />
+      {/* Matched Facilities Results */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-2xl font-medium text-[#0D1B17]">
+            Matched Care Facilities ({matches.length})
+          </h2>
+          <span className="text-xs text-[#53665E]">
+            Ranked by total clinical compatibility
+          </span>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Patient Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-            <div>
-              <span className="font-medium">Name:</span>{" "}
-              {patient.firstName} {patient.lastName}
-            </div>
-            <div>
-              <span className="font-medium">Care Level:</span>{" "}
-              {CARE_LEVEL_LABELS[patient.careLevelRequired] ?? patient.careLevelRequired}
-            </div>
-            <div>
-              <span className="font-medium">Status:</span>{" "}
-              {STATUS_LABELS[patient.status] ?? patient.status}
-            </div>
-            <div>
-              <span className="font-medium">Diagnosis:</span>{" "}
-              {patient.primaryDiagnosis}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div>
-        <h2 className="mb-4 text-lg font-semibold">
-          Matched Facilities ({matches.length})
-        </h2>
         {matches.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
-              <Building2 className="h-10 w-10 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                No facilities matched this patient&apos;s requirements.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Ensure your organization has facilities that offer the required care level, accept
-                the patient&apos;s insurance, and have current availability.
-              </p>
-            </CardContent>
-          </Card>
+          <Empty className="border border-[#DCE5DE] bg-white py-16">
+            <EmptyMedia variant="icon">
+              <Building2 className="size-6 text-[#245C52]" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle className="text-xl font-serif text-[#0D1B17]">
+                No matching network facilities
+              </EmptyTitle>
+              <EmptyDescription className="text-sm text-[#53665E] max-w-md">
+                No facilities in your network currently match this patient&apos;s
+                care level, accept their insurance, or have open bed availability.
+              </EmptyDescription>
+            </EmptyHeader>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2 rounded-full border-[#DCE5DE] text-[#203E39] hover:bg-[#EDF2EC]"
+              render={<Link href={`/patients/${id}`} />}
+            >
+              Return to Patient Profile
+            </Button>
+          </Empty>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-5">
             {matches.map((result) => (
-              <FacilityMatchCard key={result.facility.id} result={result} />
+              <FacilityMatchCard
+                key={result.facility.id}
+                result={result}
+                patientId={id}
+              />
             ))}
           </div>
         )}
