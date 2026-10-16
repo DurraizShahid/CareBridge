@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   RiHomeLine,
+  RiChat3Line,
   RiGroupLine,
   RiClipboardLine,
   RiShieldCheckLine,
@@ -22,7 +23,8 @@ interface DockItem {
 }
 
 const dockItems: DockItem[] = [
-  { href: "/dashboard/home", label: "Home", icon: RiHomeLine },
+  { href: "/chat", label: "Assistant", icon: RiChat3Line },
+  { href: "/dashboard", label: "Dashboard", icon: RiHomeLine },
   { href: "/patients", label: "Patients", icon: RiGroupLine },
   { href: "/placements", label: "Placements", icon: RiClipboardLine },
   { href: "/referrals", label: "Referrals", icon: RiClipboardLine },
@@ -51,8 +53,7 @@ export function HospitalDock() {
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (pathname.startsWith(item.href + "/") && pathname !== "/dashboard") ||
-            (item.href === "/dashboard" && pathname === "/dashboard");
+            (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
 
           return (
             <Tooltip key={item.href}>

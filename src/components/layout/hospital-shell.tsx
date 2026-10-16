@@ -9,7 +9,7 @@ import { ChatSidebarProvider } from "@/hooks/use-chat-sidebar";
 import { usePathname } from "next/navigation";
 
 const FULL_WIDTH_ROUTES = ["/dashboard/home"];
-const CHAT_SIDEBAR_ROUTES = ["/dashboard/home"];
+const CHAT_SIDEBAR_ROUTES = ["/chat"];
 
 function HospitalShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

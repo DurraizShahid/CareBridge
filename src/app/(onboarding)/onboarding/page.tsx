@@ -57,7 +57,7 @@ export default function OnboardingPage() {
         if (!res.ok || res.redirected || !res.headers.get("content-type")?.includes("application/json")) return;
         const data = await res.json();
         if (data && data.organizationId) {
-          router.push("/dashboard");
+          router.push("/chat");
         }
       } catch (err) {
         if (!mounted) return;
@@ -119,7 +119,7 @@ export default function OnboardingPage() {
         text: "Organization created successfully!",
         type: "success",
       });
-      setTimeout(() => router.push("/dashboard"), 1200);
+      setTimeout(() => router.push("/chat"), 1200);
     } catch (err: unknown) {
       setMessage({
         text: err instanceof Error ? err.message : "Something went wrong",
@@ -186,7 +186,7 @@ export default function OnboardingPage() {
     <ol className="care-wizard-steps" aria-label="Setup progress"><li aria-current={step === 1 ? 'step' : undefined}><span>{step > 1 ? <Check size={14} aria-hidden="true" /> : '1'}</span> Your organization</li><li aria-current={step === 2 ? 'step' : undefined}><span>2</span> Your workspace</li></ol>
     {isLoading ? <div className="care-loading" role="status"><Loader2 size={22} className="care-spinner" aria-hidden="true" /> Preparing your workspace…</div> : statusError ? <div className="care-form"><p className="care-form-error" role="alert"><AlertCircle size={18} aria-hidden="true" />We couldn&apos;t load your account status. Check your connection and try again.</p><button type="button" className="care-button" onClick={retryStatusCheck}><RefreshCw size={17} aria-hidden="true" />Retry</button></div> : <>
       {message && <p className={message.type === 'error' ? 'care-form-error' : 'care-email-summary'} role={message.type === 'error' ? 'alert' : 'status'}>{message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}{message.text}</p>}
-      {message?.type === 'success' ? <div className="care-success"><h1>{message.text.startsWith('Join') ? 'Your request is on its way.' : 'Welcome to your workspace.'}</h1><p>{message.text.startsWith('Join') ? 'Your organization administrator will review your request. You can return once it has been approved.' : 'Taking you to your dashboard…'}</p></div> : <>
+      {message?.type === 'success' ? <div className="care-success"><h1>{message.text.startsWith('Join') ? 'Your request is on its way.' : 'Welcome to your workspace.'}</h1><p>{message.text.startsWith('Join') ? 'Your organization administrator will review your request. You can return once it has been approved.' : 'Taking you to your workspace…'}</p></div> : <>
         {activeTab === 'type' && <><h1>Where do you work?</h1><p className="care-auth-intro">Choose your organization type. We&apos;ll shape your workspace around your team.</p><div className="care-org-options"><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('hospital')}><Building2 size={26} aria-hidden="true" /><span><strong>Hospital</strong><small>Plan discharges and coordinate placements</small></span><ArrowRight size={18} aria-hidden="true" /></button><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('facility')}><Home size={26} aria-hidden="true" /><span><strong>Care facility</strong><small>Receive referrals and manage availability</small></span><ArrowRight size={18} aria-hidden="true" /></button></div></>}
         {activeTab === 'action' && selectedType && <><button type="button" onClick={handleBack} disabled={submitting} className="care-form-back"><ArrowLeft size={16} aria-hidden="true" /> Change organization type</button><h1 style={{ marginTop: 18 }}>Make room for your team.</h1><p className="care-auth-intro">{selectedType === 'hospital' ? 'Hospital' : 'Care facility'} workspace. Create a new organization or join your team.</p><Tabs value={setupAction} onValueChange={value => { if (!submitting && (value === "create" || value === "join")) setSetupAction(value); }} className="care-setup-tabs"><TabsList><TabsTrigger value="create" disabled={submitting}>Create an organization</TabsTrigger><TabsTrigger value="join" disabled={submitting}>Join your team</TabsTrigger></TabsList>
           <TabsContent value="create" className="mt-6"><form onSubmit={handleCreateOrg} className="care-form" aria-busy={submitting}>

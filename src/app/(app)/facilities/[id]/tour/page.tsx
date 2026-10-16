@@ -24,7 +24,7 @@ import {
   EmptyMedia,
 } from "@/components/ui/empty";
 import { FacilityTour } from "@/components/facility-tour/facility-tour";
-import { getFacility } from "@/lib/data-access";
+import { getFacility, getFacilityById } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -39,10 +39,13 @@ export default async function FacilityTourPage({ params }: Props) {
   const org = await getServerOrganization();
   if (!org) redirect("/onboarding");
 
-  const facility = await getFacility(id, org.organizationId, org.role);
+  // Hospital staff tour network facilities owned by other organizations (read-only).
+  const own = await getFacility(id, org.organizationId, org.role);
+  const facility = own ?? (org.organizationType === "hospital" ? await getFacilityById(id) : null);
   if (!facility) notFound();
 
-  const canEdit = roleHasPermission(org.role, "facilities:update");
+  const canEdit = !!own && roleHasPermission(org.role, "facilities:update");
+  const profileHref = own ? `/facilities/${id}` : `/dashboard/facility-network/${id}`;
 
   if (!facility.tourConfig) {
     return (
@@ -53,7 +56,7 @@ export default async function FacilityTourPage({ params }: Props) {
           breadcrumbs={[
             { label: "Dashboard", href: "/dashboard" },
             { label: "Facilities", href: "/facilities" },
-            { label: facility.name, href: `/facilities/${id}` },
+            { label: facility.name, href: profileHref },
             { label: "3D Tour" },
           ]}
         >
@@ -61,7 +64,7 @@ export default async function FacilityTourPage({ params }: Props) {
             variant="outline"
             size="sm"
             className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98] gap-1.5"
-            render={<Link href={`/facilities/${id}`} />}
+            render={<Link href={profileHref} />}
           >
             <ArrowLeft className="size-3.5" />
             Back to Facility
@@ -88,7 +91,7 @@ export default async function FacilityTourPage({ params }: Props) {
               variant="outline"
               size="sm"
               className="rounded-full border-[#DCE5DE] text-xs font-semibold text-[#203E39] hover:bg-[#FAFBF8]"
-              render={<Link href={`/facilities/${id}`} />}
+              render={<Link href={profileHref} />}
             >
               Return to Profile
             </Button>
@@ -119,7 +122,7 @@ export default async function FacilityTourPage({ params }: Props) {
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Facilities", href: "/facilities" },
-          { label: facility.name, href: `/facilities/${id}` },
+          { label: facility.name, href: profileHref },
           { label: "3D Tour" },
         ]}
       >
@@ -128,7 +131,7 @@ export default async function FacilityTourPage({ params }: Props) {
             variant="outline"
             size="sm"
             className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98] gap-1.5"
-            render={<Link href={`/facilities/${id}`} />}
+            render={<Link href={profileHref} />}
           >
             <ArrowLeft className="size-3.5" />
             Back to Facility

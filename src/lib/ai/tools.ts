@@ -4,6 +4,47 @@ export const AI_TOOLS: ChatCompletionTool[] = [
   {
     type: "function",
     function: {
+      name: "recommendFacilities",
+      description: "Recommend the best-matched facilities for a patient described in the conversation. Ranks network facilities with available beds by care level, insurance, capacity, rating, waitlist and location using CareBridge's matching score. Use this whenever the user describes a patient's needs (diagnosis, care needs, insurance, location) or asks where a patient should go. Pass patientId instead of careLevel when the patient is already on file.",
+      parameters: {
+        type: "object",
+        properties: {
+          patientId: {
+            type: "string",
+            description: "Optional ID of an existing patient; their care level and insurance are used",
+          },
+          careLevel: {
+            type: "string",
+            enum: [
+              "independent-living",
+              "assisted-living",
+              "skilled-nursing",
+              "long-term-care",
+              "rehabilitation",
+              "home-health",
+              "hospice",
+              "memory-care",
+            ],
+            description: "Care level the patient needs; infer it from the clinical description",
+          },
+          insurance: {
+            type: "string",
+            description: "Patient's payer, e.g. Medicare, Medicaid, Aetna",
+          },
+          city: { type: "string", description: "Preferred city" },
+          state: { type: "string", description: "Preferred state" },
+          specialties: {
+            type: "array",
+            items: { type: "string" },
+            description: "Required specialties (e.g. cardiac, stroke, orthopedic, wound-care, dialysis)",
+          },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "searchPatients",
       description: "Search for patients in your organization. Results can be filtered by name/MRN/diagnosis, status, or care level. Returns basic patient info including age, diagnosis, and placement status.",
       parameters: {

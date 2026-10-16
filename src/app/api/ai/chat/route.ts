@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getServerOrganization } from "@/lib/server-organization";
+import { prisma } from "@/lib/prisma";
 import { getOpenCodeClient, getOpenCodeModel } from "@/lib/ai/opencode";
 import { AI_TOOLS } from "@/lib/ai/tools";
 import { toolHandlers, type ToolHandlerContext } from "@/lib/ai/tool-handlers";
@@ -11,6 +12,11 @@ import { logAIEvent, logAIError } from "@/lib/ai/logger";
 import type { ChatCompletionMessageParam } from "openai/resources/index";
 
 const encoder = new TextEncoder();
+
+// Chat cards and the model only need to know a tour exists, not its geometry.
+function slimFacility({ media: _media, tourConfig, ...facility }: Facility) {
+  return { ...facility, hasTour: !!tourConfig };
+}
 
 function safeStringify(value: unknown): string {
   try {
@@ -146,7 +152,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No organization context" }, { status: 400 });
     }
 
-    const { messages: rawMessages } = await req.json();
+    const { messages: rawMessages, chatId: rawChatId } = await req.json();
     if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
       return NextResponse.json({ error: "Messages are required" }, { status: 400 });
     }
@@ -196,6 +202,14 @@ export async function POST(req: Request) {
       validMessages.push({ role: msg.role, content: msg.content });
     }
 
+    // The server, not the client, persists the reply, so stored assistant turns cannot be forged.
+    const chatId = typeof rawChatId === "string" && rawChatId
+      ? (await prisma.chat.findFirst({
+          where: { id: rawChatId, userId, organizationId: currentOrgId },
+          select: { id: true },
+        }))?.id ?? null
+      : null;
+
     const ctx: ToolHandlerContext = {
       organizationId: currentOrgId,
       role: org.role,
@@ -227,6 +241,7 @@ export async function POST(req: Request) {
         let keepAliveHandle: ReturnType<typeof setInterval> | undefined;
         let flushTimer: ReturnType<typeof setTimeout> | null = null;
         let textBuffer = "";
+        let replyText = "";
         const FLUSH_INTERVAL = 30;
 
         const flushTextBuffer = () => {
@@ -274,6 +289,7 @@ export async function POST(req: Request) {
 
               if (delta?.content) {
                 fullContent += delta.content;
+                replyText += delta.content;
                 textBuffer += delta.content;
                 if (!flushTimer) {
                   flushTimer = setTimeout(flushTextBuffer, FLUSH_INTERVAL);
@@ -344,7 +360,7 @@ export async function POST(req: Request) {
                 if (result.type === "facilities" && Array.isArray(result.data)) {
                   if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
                   flushTextBuffer();
-                  controller.enqueue(sseEvent("facilities", safeStringify(result.data as Facility[])));
+                  controller.enqueue(sseEvent("facilities", safeStringify(result.data.map(slimFacility))));
                 }
 
                 if (result.type === "placement-draft") {
@@ -355,7 +371,9 @@ export async function POST(req: Request) {
 
                 const responseData = result.type === "error"
                   ? { error: result.message }
-                  : result.data;
+                  : result.type === "facilities"
+                    ? result.data.map(slimFacility)
+                    : result.data;
 
                 toolResponse = typeof responseData === "string"
                   ? responseData
@@ -386,6 +404,12 @@ export async function POST(req: Request) {
             totalTokens: state.totalPromptTokens + state.totalCompletionTokens,
             toolCalls: state.totalToolCalls,
           });
+
+          const reply = replyText.replace(/<!--suggestions-->[\s\S]*$/, "").trim().slice(0, 10000);
+          if (chatId && reply) {
+            await prisma.chatMessage.create({ data: { chatId, role: "assistant", content: reply } })
+              .catch((e) => logAIError("chat.persist_error", e, { requestId, userId }));
+          }
 
           controller.enqueue(sseEvent("usage", JSON.stringify({
             promptTokens: state.totalPromptTokens,

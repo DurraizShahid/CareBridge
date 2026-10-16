@@ -1067,6 +1067,72 @@ export async function deletePlacement(
 }
 
 /**
+ * Discharge a placed patient in one transaction: close the active placement,
+ * mark the patient discharged, free the bed, and write a discharge activity
+ * event as the audit record. Scoped to the caller's organization.
+ */
+export async function dischargePatient(
+  patientId: string,
+  organizationId: string,
+  role: string,
+  userId: string,
+): Promise<{ patientId: string; placementId: string; facilityId: string | null }> {
+  return prisma.$transaction(async (tx) => {
+    const where = isSuperadmin(role) ? { id: patientId } : { id: patientId, organizationId };
+    const patient = await tx.patient.findFirst({
+      where,
+      select: { id: true, firstName: true, lastName: true, status: true, organizationId: true },
+    });
+    if (!patient) throw new DataAccessError(404, "Patient not found");
+    // Serialize concurrent discharges of the same patient.
+    await tx.$queryRaw`SELECT "id" FROM "Patient" WHERE "id" = ${patient.id} FOR UPDATE`;
+    const current = await tx.patient.findUnique({ where: { id: patient.id }, select: { status: true } });
+    if (current?.status === "discharged") throw new DataAccessError(409, "Patient is already discharged");
+
+    const placement = await tx.placement.findFirst({
+      where: {
+        patientId: patient.id,
+        organizationId: patient.organizationId,
+        facilityId: { not: null },
+        status: { in: ["approved", "in_progress", "completed"] },
+      },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, facilityId: true, status: true, completedDate: true },
+    });
+    if (!placement) {
+      throw new DataAccessError(409, "Patient has no confirmed placement to discharge into");
+    }
+
+    const now = new Date();
+    await tx.placement.update({
+      where: { id: placement.id },
+      data: { status: "completed", completedDate: placement.completedDate ?? now },
+    });
+    await tx.patient.update({ where: { id: patient.id }, data: { status: "discharged" } });
+    await recalculateFacilityOccupancy(tx, [placement.facilityId]);
+
+    const facility = placement.facilityId
+      ? await tx.facility.findUnique({ where: { id: placement.facilityId }, select: { name: true } })
+      : null;
+    const patientName = `${patient.firstName} ${patient.lastName}`;
+    await tx.activityEvent.create({
+      data: {
+        id: crypto.randomUUID(),
+        type: "discharge",
+        title: "Patient discharged",
+        description: `${patientName} discharged to ${facility?.name ?? "placement facility"}; placement ${placement.id} closed.`,
+        patientName,
+        patientId: patient.id,
+        userId,
+        organizationId: patient.organizationId,
+        timestamp: now,
+      },
+    });
+    return { patientId: patient.id, placementId: placement.id, facilityId: placement.facilityId };
+  });
+}
+
+/**
  * Return dashboard stats scoped to the given organization.
  * Computes fresh stats from scoped data so counts stay accurate.
  */
@@ -2052,9 +2118,47 @@ export async function searchFacilities(params: {
       createdAt: toISO(m.createdAt),
       updatedAt: toISO(m.updatedAt),
     })),
+    tourConfig: parseTourConfig(f.tourConfig) ?? undefined,
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   }));
+}
+
+/**
+ * Rank network facilities for a patient described in chat, using the same
+ * calculateFacilityScore rules as placement matching. Facilities that cannot
+ * take the patient (care level, capacity, insurance) are dropped.
+ */
+export async function recommendFacilities(needs: {
+  careLevel: CareLevel;
+  insurance?: string;
+  city?: string;
+  state?: string;
+  specialties?: string[];
+  limit?: number;
+}): Promise<Facility[]> {
+  const candidates = await searchFacilities({
+    careLevelsOffered: [needs.careLevel],
+    hasAvailability: true,
+    ...(needs.specialties?.length ? { specialties: needs.specialties } : {}),
+  });
+  const patient = {
+    careLevelRequired: needs.careLevel,
+    insurance: needs.insurance ? [{ type: needs.insurance }] : undefined,
+  };
+  return candidates
+    .map((f) => ({
+      facility: f,
+      score: calculateFacilityScore(
+        { ...f, careLevelsOffered: toPrismaCareLevels(f.careLevelsOffered), waitlistDays: f.waitlistDays ?? null },
+        patient,
+        { city: needs.city, state: needs.state },
+      ),
+    }))
+    .filter((r) => r.score >= 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.min(needs.limit ?? 5, 10))
+    .map((r) => r.facility);
 }
 
 /**
@@ -2108,6 +2212,7 @@ export async function getFacilityById(id: string): Promise<Facility | null> {
       createdAt: toISO(m.createdAt),
       updatedAt: toISO(m.updatedAt),
     })),
+    tourConfig: parseTourConfig(f.tourConfig) ?? undefined,
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   };

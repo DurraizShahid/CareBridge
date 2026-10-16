@@ -13,6 +13,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserButton } from "@clerk/nextjs";
+import { LayoutDashboard, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
@@ -30,7 +31,7 @@ const PAGE_TITLES: { match: string; title: string }[] = [
   { match: "/dashboard/documents", title: "Documentation" },
   { match: "/dashboard/users", title: "Users" },
   { match: "/dashboard/hospitals", title: "Hospitals" },
-  { match: "/dashboard/home", title: "AI Assistant" },
+  { match: "/chat", title: "Assistant" },
   { match: "/admin/permissions", title: "Permissions" },
   { match: "/patients", title: "Patients" },
   { match: "/facilities", title: "Facilities" },
@@ -151,7 +152,12 @@ export function DashboardHeader({
               ),
             },
           }}
-        />
+        >
+          <UserButton.MenuItems>
+            <UserButton.Link label="Dashboard" href="/dashboard" labelIcon={<LayoutDashboard className="size-4" />} />
+            <UserButton.Link label="Assistant" href="/chat" labelIcon={<MessageSquare className="size-4" />} />
+          </UserButton.MenuItems>
+        </UserButton>
       </div>
     </header>
   );

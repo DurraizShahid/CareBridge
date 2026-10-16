@@ -5,6 +5,7 @@ import {
   getFacility,
   getFacilityById,
   searchFacilities as searchAllFacilities,
+  recommendFacilities,
   getPlacements,
   getDashboardStats,
   getRecentActivity,
@@ -71,6 +72,11 @@ export type ToolResult =
   | { type: "facilities"; data: Facility[] }
   | { type: "placement-draft"; data: PlacementDraft }
   | { type: "error"; message: string };
+
+const VALID_CARE_LEVELS = [
+  "independent-living", "assisted-living", "skilled-nursing",
+  "long-term-care", "rehabilitation", "home-health", "hospice", "memory-care",
+];
 
 const SEARCHABLE_PATIENT_FIELDS = [
   "firstName",
@@ -172,6 +178,41 @@ export const toolHandlers: Record<
       return {
         type: "error",
         message: e instanceof Error ? e.message : "Failed to get patient",
+      };
+    }
+  },
+
+  recommendFacilities: async (args, ctx) => {
+    try {
+      let careLevel = typeof args.careLevel === "string" ? args.careLevel : "";
+      let insurance = typeof args.insurance === "string" ? args.insurance : undefined;
+      if (typeof args.patientId === "string" && args.patientId) {
+        const patient = await getPatient(args.patientId, ctx.organizationId, ctx.role);
+        if (!patient) return { type: "error", message: "Patient not found" };
+        careLevel = careLevel || patient.careLevelRequired;
+        if (!insurance && Array.isArray(patient.insurance)) {
+          const first = patient.insurance[0] as { type?: unknown; provider?: unknown } | undefined;
+          insurance = typeof first?.provider === "string" ? first.provider
+            : typeof first?.type === "string" ? first.type : undefined;
+        }
+      }
+      if (!VALID_CARE_LEVELS.includes(careLevel)) {
+        return { type: "error", message: "A care level is required to recommend facilities" };
+      }
+      const facilities = await recommendFacilities({
+        careLevel: careLevel as Facility["careLevelsOffered"][number],
+        insurance,
+        city: typeof args.city === "string" ? args.city : undefined,
+        state: typeof args.state === "string" ? args.state : undefined,
+        specialties: Array.isArray(args.specialties)
+          ? args.specialties.filter((x): x is string => typeof x === "string").slice(0, 10)
+          : undefined,
+      });
+      return { type: "facilities", data: facilities };
+    } catch (e) {
+      return {
+        type: "error",
+        message: e instanceof Error ? e.message : "Failed to recommend facilities",
       };
     }
   },
@@ -338,11 +379,7 @@ export const toolHandlers: Record<
       if (!facilityId) return { type: "error", message: "Facility ID is required" };
       if (!careLevel) return { type: "error", message: "Care level is required" };
 
-      const validCareLevels = [
-        "independent-living", "assisted-living", "skilled-nursing",
-        "long-term-care", "rehabilitation", "home-health", "hospice", "memory-care",
-      ];
-      if (!validCareLevels.includes(careLevel)) {
+      if (!VALID_CARE_LEVELS.includes(careLevel)) {
         return { type: "error", message: `Invalid care level: ${careLevel}` };
       }
 
