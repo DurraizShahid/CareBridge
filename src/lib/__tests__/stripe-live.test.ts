@@ -154,7 +154,9 @@ describe("Stripe live mode",()=>{
     expect((await webhook(refunded)).status).toBe(200);
     expect(db.bedReservation.delete).toHaveBeenCalledWith({where:{id:"bed_opaque"}});
     expect(recalc).toHaveBeenCalledWith(db,["facility_opaque"]);
-    expect(db.payment.update).toHaveBeenCalledWith(expect.objectContaining({data:{status:"refunded",refundId:"re_opaque"}}));
+    expect(db.payment.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: "refunded", refundId: "re_opaque", amountRefundedCents: 5000 }),
+    }));
     expect(db.referral.update).toHaveBeenCalledWith(expect.objectContaining({data:{depositIssue:"DEPOSIT_REFUNDED"}}));
     db.paymentWebhookEvent.findUnique.mockResolvedValue({externalId:"evt_refund",paymentId:"pay_opaque",processed:true});
     expect((await webhook(refunded)).status).toBe(200);

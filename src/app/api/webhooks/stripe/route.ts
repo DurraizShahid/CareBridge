@@ -20,9 +20,19 @@ export async function POST(req: Request) {
     if(event.type==="charge.refunded") {
       const charge=event.data.object;
       const intentId=typeof charge.payment_intent==="string"?charge.payment_intent:charge.payment_intent?.id;
-      // ponytail: partial refunds are acknowledged but not modeled; the bed stays reserved.
-      if(!intentId || !charge.refunded) return NextResponse.json({received:true});
-      await processDepositRefunded(event.id,intentId,charge.refunds?.data[0]?.id??null);
+      if(!intentId) return NextResponse.json({received:true});
+      const refundId=charge.refunds?.data?.[0]?.id??null;
+      const amountRefunded=typeof charge.amount_refunded==="number"?charge.amount_refunded:undefined;
+      await processDepositRefunded(event.id,intentId,refundId,amountRefunded);
+      return NextResponse.json({received:true});
+    }
+    if(event.type==="charge.refund.updated" || event.type==="refund.updated") {
+      const refund=event.data.object;
+      const intentId=typeof refund.payment_intent==="string"?refund.payment_intent:refund.payment_intent?.id;
+      if(!intentId) return NextResponse.json({received:true});
+      if(refund.status==="succeeded") {
+        await processDepositRefunded(event.id,intentId,refund.id,refund.amount);
+      }
       return NextResponse.json({received:true});
     }
     if(event.type!=="payment_intent.succeeded" && event.type!=="payment_intent.payment_failed")

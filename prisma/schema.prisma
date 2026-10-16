@@ -129,6 +129,7 @@ enum PaymentStatus {
   refund_pending
   refunded
   demo_refunded
+  partially_refunded
 }
 enum JoinRequestStatus {
   pending
@@ -619,12 +620,14 @@ model Payment {
   referralId            String
   contractId            String?
   amountCents           Int
+  amountRefundedCents   Int           @default(0)
   currency              String        @default("usd") @db.VarChar(3)
   stripePaymentIntentId String?       @unique
   status                PaymentStatus @default(pending)
   isDemo                Boolean       @default(false) @map("demo")
   refundId              String?
   failureReason         String?
+  attempts              Int           @default(1)
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 

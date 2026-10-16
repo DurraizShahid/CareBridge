@@ -4,8 +4,8 @@ import {Elements,PaymentElement,useElements,useStripe} from "@stripe/react-strip
 import {loadStripe} from "@stripe/stripe-js";
 import {CheckCircle2,ShieldCheck,RefreshCcw} from "lucide-react";
 
-type PaymentStatus="pending"|"paid"|"demo_paid"|"failed"|"refund_pending"|"refunded"|"demo_refunded";
-type PaymentRow={id:string;amountCents:number;currency:string;status:PaymentStatus;isDemo:boolean;failureReason:string|null};
+type PaymentStatus="pending"|"paid"|"demo_paid"|"failed"|"refund_pending"|"refunded"|"demo_refunded"|"partially_refunded";
+type PaymentRow={id:string;amountCents:number;amountRefundedCents?:number;currency:string;status:PaymentStatus;isDemo:boolean;failureReason:string|null};
 type Current={contract:{id:string;status:string;depositAmountCents:number;currency:string};
   payment:PaymentRow|null;mode:"demo"|"test"|"live";canPay:boolean};
 type Intent={paymentId:string;clientSecret:string;isDemo:boolean;amountMinor:number;currency:string;mode:string};
@@ -71,7 +71,7 @@ export function DepositCheckout({contractId}:{contractId:string}){
  const isDemo=current.mode==="demo";
  const status=current.payment?.status;
  const complete=status==="paid"||status==="demo_paid";
- const reversed=status==="refunded"||status==="demo_refunded"||status==="refund_pending";
+ const reversed=status==="refunded"||status==="demo_refunded"||status==="refund_pending"||status==="partially_refunded";
  return <section className="rounded-[28px] bg-white p-6 shadow-[0_20px_60px_rgba(16,43,78,0.055)] dark:bg-[#1D1D20]">
   <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-[#255DCE]"/><h2 className="text-lg font-semibold">Placement deposit</h2></div>
   {isDemo&&<div role="status" className="mt-4 rounded-2xl bg-[#FFF3D6] p-4 text-sm font-semibold leading-6 text-[#79541B]">
@@ -81,7 +81,7 @@ export function DepositCheckout({contractId}:{contractId:string}){
   <p className="mt-5 text-3xl font-semibold tabular-nums">{amount(current.contract.depositAmountCents,current.contract.currency)}</p>
   <p className="mt-2 text-xs leading-5 text-[#828282]">Deposit for the signed care-facility placement agreement. A bed is reserved only after payment succeeds and capacity is reconfirmed.</p>
   {complete&&<div className="mt-5 rounded-2xl bg-[#EDF9D9] p-4 text-sm font-semibold text-[#476514]"><CheckCircle2 size={17} className="mr-2 inline"/>Payment confirmed. Bed reserved.{isDemo?" (Demo only)":""}</div>}
-  {reversed&&<div role="alert" className="mt-5 rounded-2xl bg-[#FFF0E9] p-4 text-sm text-[#8A4C30]">Capacity is no longer available. {status==="refund_pending"?"Refund being processed.":"Deposit refunded."} Contact the referring hospital to select another facility.</div>}
+  {reversed&&<div role="alert" className="mt-5 rounded-2xl bg-[#FFF0E9] p-4 text-sm text-[#8A4C30]">Capacity is no longer available. {status==="refund_pending"?"Refund being processed.":status==="partially_refunded"?"Deposit partially refunded.":"Deposit refunded."} Contact the referring hospital to select another facility.</div>}
   {status==="failed"&&<p role="alert" className="mt-4 text-sm text-red-700">Payment failed. You can retry with a new intent.</p>}
   {status==="failed"&&current.canPay&&<button type="button" disabled={busy} onClick={()=>void start()} className="mt-4 w-full rounded-full bg-[#D9F477] px-6 py-3 text-sm font-semibold text-[#26390A] disabled:opacity-50">Retry deposit</button>}
   {error&&<p role="alert" className="mt-4 text-sm text-red-700">{error}</p>}

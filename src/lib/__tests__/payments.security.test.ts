@@ -88,8 +88,11 @@ describe("deposit safety / modes",()=>{
   it("allows a failed attempt to retry without changing the signed amount",async()=>{
     db.payment.findFirst.mockResolvedValue({...paymentFixture,status:"failed"});
     const result=await createDepositIntent("ref_opaque",5000,"usd");
-    expect(result.isDemo).toBe(true);
-    expect(db.payment.create).toHaveBeenCalledTimes(1);
+    expect(db.payment.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "pay_opaque" },
+      data: expect.objectContaining({ status: "pending" }),
+    }));
+    expect(db.payment.create).not.toHaveBeenCalled();
   });
   it("rejects a deposit differing from signed contract",async()=>{
     await expect(createDepositIntent("ref_opaque",9000,"usd"))
