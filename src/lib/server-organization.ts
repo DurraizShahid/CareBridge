@@ -2,7 +2,7 @@
 // Used in server components and Server Actions to get the current
 // user's organization context from the Clerk session.
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { resolveRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@/types";
@@ -17,6 +17,18 @@ function orgTypeFromRole(role: UserRole): OrgType {
   return "hospital"; // social-worker, discharge-planner, administrator, superadmin, customer
 }
 
+export class AuthorizationError extends Error {
+  status: number;
+  statusCode: number;
+
+  constructor(message = "Active organization membership required") {
+    super(message);
+    this.name = "AuthorizationError";
+    this.status = 403;
+    this.statusCode = 403;
+  }
+}
+
 export interface ServerOrganization {
   organizationId: string;
   organizationType: OrgType;
@@ -27,7 +39,10 @@ export interface ServerOrganization {
 
 /**
  * Resolve the organization context for the currently authenticated user.
- * Falls back to mock data in development.
+ *
+ * Fails closed: if the database cannot verify an active user record with
+ * an active organization membership, throws an AuthorizationError.
+ * Clerk identity proves authentication only.
  *
  * Should be called from server components and server actions.
  */
@@ -35,48 +50,31 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
   const sessionAuth = await auth();
   if (!sessionAuth.userId) return null;
 
-  const clerkUser = await currentUser();
-
-  // Try DB first, then Clerk metadata, then mock fallback
-  let organizationId = "";
-  let roleCandidate: unknown = "";
-
-  // Check DB
+  let dbUser;
   try {
-    const dbUser = await prisma.user.findUnique({
+    dbUser = await prisma.user.findUnique({
       where: { id: sessionAuth.userId },
+      include: { organization: true },
     });
-    if (dbUser) {
-      organizationId = dbUser.organizationId ?? "";
-      roleCandidate = dbUser.role;
-    }
-  } catch {
-    // DB may not be available
+  } catch (err) {
+    throw new AuthorizationError(
+      err instanceof Error ? err.message : "Database error verifying organization membership"
+    );
   }
 
-  // Fallback to Clerk metadata
-  if (!organizationId && clerkUser?.publicMetadata?.organizationId) {
-    organizationId = clerkUser.publicMetadata.organizationId as string;
+  if (!dbUser || !dbUser.organizationId || !dbUser.organization) {
+    throw new AuthorizationError("Active organization membership required");
   }
 
-  const role = resolveRole(roleCandidate, clerkUser?.publicMetadata?.role, null);
-
-  // Derive org type from role
-  let organizationType: OrgType = orgTypeFromRole(role);
-
-  // Override from Clerk metadata if available
-  if (clerkUser?.publicMetadata?.organizationType) {
-    const metaType = String(clerkUser.publicMetadata.organizationType).toLowerCase();
-    if (metaType === "hospital" || metaType === "facility") {
-      organizationType = metaType;
-    }
-  }
-
-  if (!organizationId) return null;
+  const role = resolveRole(dbUser.role);
+  const organizationType: OrgType =
+    dbUser.organization.type === "facility" || dbUser.organization.type === "hospital"
+      ? dbUser.organization.type
+      : orgTypeFromRole(role);
 
   return {
     userId: sessionAuth.userId,
-    organizationId,
+    organizationId: dbUser.organizationId,
     organizationType,
     role,
     isSuperadmin: role === "superadmin",

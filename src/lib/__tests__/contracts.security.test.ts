@@ -6,6 +6,7 @@ const { prismaMock, orgMock } = vi.hoisted(() => ({
     contract: { findFirst: vi.fn(), updateMany: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     contractSignature: { create: vi.fn() },
     $queryRawUnsafe: vi.fn(),
+    $queryRaw: vi.fn(),
     $transaction: vi.fn(),
   },
   orgMock: vi.fn(),
@@ -49,6 +50,7 @@ describe("contract rendering and e-sign state machine", () => {
     orgMock.mockResolvedValue({ type: "hospital", organizationId: "hospital-org", userId: "clerk-1" });
     prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock)=>Promise<unknown>) => fn(prismaMock));
     prismaMock.$queryRawUnsafe.mockResolvedValue([{ id: "contract-1" }]);
+    prismaMock.$queryRaw.mockResolvedValue([{ id: "contract-1" }]);
     prismaMock.contract.findFirst.mockResolvedValue(mockContract());
     prismaMock.contract.findUnique.mockResolvedValue(mockContract());
     prismaMock.contractSignature.create.mockResolvedValue({});

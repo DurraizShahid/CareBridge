@@ -146,22 +146,32 @@ export async function POST(req: NextRequest) {
       case "user.created": {
         const data = evt.data as ClerkUserData;
         const existingUser = await withRetry(() => prisma.user.findUnique({ where: { id: data.id } }));
-        const { email, role } = await withRetry(() => upsertUser(data, existingUser));
-        console.log({ event: "webhook_user_created", eventId, userId: data.id, email, role }, `user.created: ${email}`);
+        const { role } = await withRetry(() => upsertUser(data, existingUser));
+        console.log({ event: "webhook_user_created", eventId, userId: data.id, role }, `user.created: ${data.id}`);
         break;
       }
 
       case "user.updated": {
         const data = evt.data as ClerkUserData;
         const existingUser = await withRetry(() => prisma.user.findUnique({ where: { id: data.id } }));
-        const { email, role } = await withRetry(() => upsertUser(data, existingUser));
-        console.log({ event: "webhook_user_updated", eventId, userId: data.id, email, role }, `user.updated: ${email}`);
+        const { role } = await withRetry(() => upsertUser(data, existingUser));
+        console.log({ event: "webhook_user_updated", eventId, userId: data.id, role }, `user.updated: ${data.id}`);
         break;
       }
 
       case "user.deleted": {
         const data = evt.data as ClerkUserData;
-        await withRetry(() => prisma.user.delete({ where: { id: data.id } }));
+        const existingUser = await withRetry(() => prisma.user.findUnique({ where: { id: data.id } }));
+        if (existingUser) {
+          try {
+            await withRetry(() => prisma.user.delete({ where: { id: data.id } }));
+          } catch (err: unknown) {
+            const code = err && typeof err === "object" && "code" in err ? (err as { code: string }).code : "";
+            if (code !== "P2025") {
+              throw err;
+            }
+          }
+        }
         console.log({ event: "webhook_user_deleted", eventId, userId: data.id }, `user.deleted: ${data.id}`);
         break;
       }

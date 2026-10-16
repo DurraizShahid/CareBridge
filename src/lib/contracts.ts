@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { referralContext, ReferralError } from "@/lib/referrals";
 import { documentSha256, renderContract, type ContractSnapshot } from "@/lib/esign/document";
 import { getEsignProvider, type SigningParty } from "@/lib/esign/provider";
@@ -115,7 +116,7 @@ export async function signContract(id: string, typedName: unknown, ipAddress: st
   }
   return prisma.$transaction(async tx => {
     // Parameterized SQL row lock serializes both parties and repeat-click races.
-    await tx.$queryRawUnsafe('SELECT "id" FROM "Contract" WHERE "id" = $1 FOR UPDATE', id);
+    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Contract" WHERE "id" = ${id} FOR UPDATE`);
     const locked = await tx.contract.findUnique({
       where: { id }, include: { signatures: true },
     });

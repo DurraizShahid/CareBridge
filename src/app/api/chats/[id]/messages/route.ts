@@ -21,6 +21,18 @@ export async function POST(
     const { id } = await params;
     const body = await req.json();
 
+    if (!body || typeof body.content !== "string" || body.content.trim().length === 0) {
+      return NextResponse.json({ error: "Content must be a non-empty string" }, { status: 400 });
+    }
+
+    const MAX_MESSAGE_LENGTH = 10000;
+    if (body.content.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `Content exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters` },
+        { status: 400 }
+      );
+    }
+
     const chat = await prisma.chat.findFirst({
       where: {
         id,
@@ -36,7 +48,7 @@ export async function POST(
     const message = await prisma.chatMessage.create({
       data: {
         chatId: id,
-        role: body.role,
+        role: "user",
         content: body.content,
       },
     });
@@ -48,7 +60,7 @@ export async function POST(
     });
 
     // Auto-generate title from first user message
-    if (body.role === "user" && chat.title === "New Chat") {
+    if (chat.title === "New Chat") {
       const messageCount = await prisma.chatMessage.count({
         where: { chatId: id },
       });
