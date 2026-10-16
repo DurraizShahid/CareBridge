@@ -1,12 +1,14 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Rotate3d } from "lucide-react";
+import { ArrowLeft, Rotate3d, Building2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { getFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import { TourEditor } from "./tour-editor";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -25,27 +27,40 @@ export default async function FacilityTourEditPage({ params }: Props) {
   if (!facility) notFound();
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8 pb-12">
       <PageHeader
-        title={`Edit 3D tour — ${facility.name}`}
-        description="Configure stops, room navigation, descriptions, and accent colors for this facility."
+        title={`Edit 3D Tour — ${facility.name}`}
+        description="Configure architectural stops, room navigation, descriptions, amenity highlights, and accent colors for this facility."
         breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
           { label: "Facilities", href: "/facilities" },
           { label: facility.name, href: `/facilities/${id}` },
-          { label: "3D tour", href: `/facilities/${id}/tour` },
-          { label: "Edit tour" },
+          { label: "3D Tour", href: `/facilities/${id}/tour` },
+          { label: "Edit Tour" },
         ]}
       >
-        {facility.tourConfig && (
-          <Button variant="outline" render={<Link href={`/facilities/${id}/tour`} />}>
-            <Rotate3d className="mr-1.5 h-4 w-4" />
-            View tour
+        <div className="flex flex-wrap items-center gap-2">
+          {facility.tourConfig && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98] gap-1.5"
+              render={<Link href={`/facilities/${id}/tour`} />}
+            >
+              <Rotate3d className="size-3.5 text-[#245C52]" />
+              View 3D Tour
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full bg-white px-3.5 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98] gap-1.5"
+            render={<Link href={`/facilities/${id}`} />}
+          >
+            <ArrowLeft className="size-3.5" />
+            Back to Facility
           </Button>
-        )}
-        <Button variant="outline" render={<Link href={`/facilities/${id}`} />}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to facility
-        </Button>
+        </div>
       </PageHeader>
 
       <TourEditor
