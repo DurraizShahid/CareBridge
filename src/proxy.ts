@@ -1,11 +1,19 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { RateLimiter } from "@/lib/rate-limiter";
+import { InMemoryRateLimiter, PrismaRateLimiter } from "@/lib/rate-limiter";
 import { canRoleAccessRoute, resolveRole, HOSPITAL_ROLES } from "@/lib/permissions";
 
-const apiLimiter = new RateLimiter({ windowMs: 60_000, maxRequests: 60 });
-const authLimiter = new RateLimiter({ windowMs: 900_000, maxRequests: 20 });
+const apiLimiter = new InMemoryRateLimiter({
+  windowMs: 60_000,
+  maxRequests: 60,
+  keyPrefix: "api",
+});
+const authLimiter = new PrismaRateLimiter({
+  windowMs: 900_000,
+  maxRequests: 20,
+  keyPrefix: "auth",
+});
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -43,10 +51,12 @@ export default clerkMiddleware(
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
         request.headers.get("x-real-ip") ??
         "unknown";
-      const limiter = request.nextUrl.pathname.startsWith("/api/webhooks")
-        ? authLimiter
-        : apiLimiter;
-      const { allowed, retryAfter } = limiter.check(ip);
+      const isAuthSensitive =
+        request.nextUrl.pathname.startsWith("/api/webhooks") ||
+        request.nextUrl.pathname.startsWith("/api/invite-codes") ||
+        request.nextUrl.pathname.startsWith("/api/onboarding");
+      const limiter = isAuthSensitive ? authLimiter : apiLimiter;
+      const { allowed, retryAfter } = await limiter.check(ip);
 
       if (!allowed) {
         return NextResponse.json(
@@ -104,23 +114,27 @@ export default clerkMiddleware(
     // Use Clerk's built-in /__clerk proxy; no custom upstream env var is required.
     frontendApiProxy: { enabled: true },
     contentSecurityPolicy: {
+      strict: true,
       directives: {
         "default-src": ["'self'"],
         "script-src": [
           "'self'",
-          "'unsafe-eval'",
-          "'unsafe-inline'",
           "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
+          "https://accounts.google.com",
+          "https://apis.google.com",
         ],
+        // Clerk strictly requires 'unsafe-inline' for style-src because Clerk UI components inject dynamic inline CSS at runtime without nonces.
         "style-src": ["'self'", "'unsafe-inline'"],
         "img-src": [
           "'self'",
           "data:",
           "blob:",
           "https://*.storage.railway.app",
+          "https://images.unsplash.com",
           "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
+          "https://lh3.googleusercontent.com",
         ],
         "connect-src": [
           "'self'",
@@ -128,11 +142,13 @@ export default clerkMiddleware(
           "https://*.clerk.accounts.dev",
           "wss://*.clerk.accounts.dev",
           "https://*.storage.railway.app",
+          "https://accounts.google.com",
         ],
         "frame-src": [
           "'self'",
           "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
+          "https://accounts.google.com",
         ],
         "font-src": ["'self'"],
         "object-src": ["'none'"],

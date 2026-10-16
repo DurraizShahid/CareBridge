@@ -135,6 +135,28 @@ describe("contract rendering and e-sign state machine", () => {
     })).rejects.toMatchObject({ statusCode: 400 });
     expect(prismaMock.contract.updateMany).not.toHaveBeenCalled();
   });
+  it("CB-003: rejects freeform terms matching phone, DOB, address, email, or SSN patterns", async () => {
+    prismaMock.contract.findFirst.mockResolvedValue({
+      ...mockContract(), status: "draft",
+      referral: { ...mockContract().referral, patientName: "Jane Testpatient", patientMrn: "MRN-100" },
+    });
+    const phiTerms = [
+      "Contact family at (555) 123-4567 for transfer details.",
+      "Patient date of birth is 05/12/1980 for room assignment.",
+      "Send invoices to 123 Main St, Springfield facility.",
+      "Send clinical records to patient.care@hospital.org please.",
+      "Primary insured SSN 123-45-6789 on admission chart.",
+    ];
+    for (const terms of phiTerms) {
+      await expect(sendContract("contract-1", {
+        depositAmountCents: 5000, facilityTerms: terms,
+      })).rejects.toMatchObject({
+        statusCode: 400,
+        message: expect.stringMatching(/structured fields instead of free text/i),
+      });
+    }
+    expect(prismaMock.contract.updateMany).not.toHaveBeenCalled();
+  });
   it("requires server-side electronic-signature consent", async () => {
     await expect(signContract("contract-1","Alex Smith","127.0.0.1",false))
       .rejects.toMatchObject({statusCode:400});

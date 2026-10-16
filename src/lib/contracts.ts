@@ -53,6 +53,28 @@ export async function contractForReferral(referralId: string) {
   });
 }
 
+const PHI_PATTERNS: RegExp[] = [
+  // SSN style sequences (XXX-XX-XXXX, labeled SSN)
+  /\b\d{3}[-\s]\d{2}[-\s]\d{4}\b/,
+  /\b(?:ssn|social\s+security)[^a-z\n\r]*\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/i,
+  // Phone numbers (e.g. (555) 123-4567, 555-123-4567, +1-555-123-4567)
+  /(?:\+?1[-.\s]?)?(?:\(\d{3}\)|\b\d{3})[-.\s]?\d{3}[-.\s]?\d{4}\b/,
+  // Email addresses
+  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/,
+  // Dates of birth (MM/DD/YYYY, YYYY-MM-DD, Month DD, YYYY, explicit DOB)
+  /\b(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|[12]\d|3[01])[/-](?:19|20)\d{2}\b/,
+  /\b(?:19|20)\d{2}[/-](?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|[12]\d|3[01])\b/,
+  /\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+(?:19|20)\d{2}\b/i,
+  /\b(?:dob|date\s+of\s+birth|birth\s*date)\b[:\s]*[^\n,;]+/i,
+  // Street addresses (e.g. 123 Main St, 456 Elm Ave, P.O. Box 789)
+  /\b\d{1,5}\s+(?:[A-Za-z0-9#.]+\s+){1,4}(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|court|ct|way|terrace|ter|place|pl|circle|cir|highway|hwy|parkway|pkwy)\b/i,
+  /\b(?:p\.?\s*o\.?\s*box|post\s+office\s+box)\s+\d+\b/i,
+];
+
+export function containsPhiPattern(text: string): boolean {
+  return PHI_PATTERNS.some((pattern) => pattern.test(text));
+}
+
 export async function sendContract(id: string, payload: unknown) {
   const { ctx, contract } = await contractContext(id);
   if (ctx.type !== "hospital") throw new ReferralError(403, "Hospital access required");
@@ -68,10 +90,12 @@ export async function sendContract(id: string, payload: unknown) {
     throw new ReferralError(400, "Terms must contain 15 to 8000 characters");
   // Keep raw patient identifiers out of freeform contract terms.
   const lowerTerms = terms.toLocaleLowerCase();
-  const identifiers = [contract.referral.patientName.trim(), contract.referral.patientMrn.trim()]
+  const identifiers = [contract.referral.patientName?.trim() ?? "", contract.referral.patientMrn?.trim() ?? ""]
     .filter(value => value.length >= 3);
   if (identifiers.some(value => lowerTerms.includes(value.toLocaleLowerCase())))
     throw new ReferralError(400, "Do not include patient names or MRNs in contract terms");
+  if (containsPhiPattern(terms))
+    throw new ReferralError(400, "Contract terms contain potential protected health information (PHI). Please use structured fields instead of free text.");
   const snapshot: ContractSnapshot = {
     referralId: contract.referral.id,
     hospitalName: contract.referral.sendingOrganization.name,

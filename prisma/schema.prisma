@@ -687,3 +687,14 @@ model PaymentWebhookEvent {
   payment      Payment  @relation(fields: [paymentId], references: [id])
   @@index([paymentId, processed])
 }
+
+/// Ephemeral cache table for distributed rate limiting across serverless instances.
+model RateLimitEntry {
+  key       String   @id
+  count     Int      @default(1)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+}
