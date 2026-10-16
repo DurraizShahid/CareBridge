@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getServerOrganization } from "@/lib/server-organization";
+import { AuthorizationError, getServerOrganization } from "@/lib/server-organization";
 import { currentUser } from "@clerk/nextjs/server";
-import { HOSPITAL_ROLES } from "@/lib/permissions";
 import { getDashboardWidgetData } from "@/lib/data-access";
 import StatsGrid from "./_sections/stats-grid";
 import { AppointmentsCard } from "./_sections/appointments-card";
@@ -25,7 +24,12 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const org = await getServerOrganization();
+  // Fail closed: no verified membership means no dashboard, but send the
+  // user to onboarding instead of surfacing the AuthorizationError as a 500.
+  const org = await getServerOrganization().catch((err) => {
+    if (err instanceof AuthorizationError) redirect("/onboarding");
+    throw err;
+  });
   const user = await currentUser();
   const organizationId = org?.organizationId ?? "";
   if (!organizationId) {
@@ -35,11 +39,6 @@ export default async function DashboardPage() {
   const userName = user?.firstName
     ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)
     : (user?.username ?? "Admin");
-
-  // Hospital roles see the AI home page instead of the dashboard
-  if ((HOSPITAL_ROLES as string[]).includes(role)) {
-    redirect("/dashboard/home");
-  }
 
   const widgets = await getDashboardWidgetData(organizationId, role);
 

@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { InMemoryRateLimiter, PrismaRateLimiter } from "@/lib/rate-limiter";
-import { canRoleAccessRoute, resolveRole, HOSPITAL_ROLES } from "@/lib/permissions";
+import { canRoleAccessRoute, resolveRole } from "@/lib/permissions";
 
 const apiLimiter = new InMemoryRateLimiter({
   windowMs: 60_000,
@@ -91,10 +91,6 @@ export default clerkMiddleware(
     const { pathname } = request.nextUrl;
 
     const role = resolveRole(getRoleFromClaims(sessionClaims as Record<string, unknown>));
-
-    if (pathname === "/dashboard" && HOSPITAL_ROLES.includes(role as any)) {
-      return NextResponse.redirect(new URL("/dashboard/home", request.url));
-    }
 
     const { allowed, redirect } = canRoleAccessRoute(role, pathname);
     if (!allowed) {

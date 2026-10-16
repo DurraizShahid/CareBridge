@@ -25,7 +25,10 @@ export async function GET() {
 
     let dbUser = null;
     try {
-      dbUser = await prisma.user.findUnique({ where: { id: authObj.userId } });
+      dbUser = await prisma.user.findUnique({
+        where: { id: authObj.userId },
+        include: { organization: true },
+      });
     } catch {
       // DB may not be available
     }
@@ -35,7 +38,12 @@ export async function GET() {
     return NextResponse.json({
       id: authObj.userId,
       role,
-      organizationId: dbUser?.organizationId ?? null,
+      // Must match getServerOrganization's membership check, otherwise onboarding
+      // and /dashboard bounce a user with an inactive org between each other.
+      organizationId:
+        dbUser?.organization?.isActive && !dbUser.organization.deletedAt
+          ? dbUser.organizationId
+          : null,
       firstName: dbUser?.firstName ?? clerkUser?.firstName ?? "",
       lastName: dbUser?.lastName ?? clerkUser?.lastName ?? "",
       email: dbUser?.email ?? clerkUser?.emailAddresses?.[0]?.emailAddress ?? "",

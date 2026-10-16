@@ -149,3 +149,10 @@ describe("CB-018: server-organization tenant isolation & fail-closed resolution"
     await expect(getServerOrganization()).rejects.toMatchObject({ status: 403, statusCode: 403 });
   });
 });
+
+describe("authErrorResponse", () => {
+  it("maps AuthorizationError to 403 instead of 500", async () => {
+    const { authErrorResponse } = await import("../server-auth");
+    expect(authErrorResponse(new AuthorizationError()).status).toBe(403);
+  });
+});

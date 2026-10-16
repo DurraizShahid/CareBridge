@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getServerOrganization } from "@/lib/server-organization";
+import { AuthorizationError, getServerOrganization } from "@/lib/server-organization";
 import {
   roleHasAnyPermission,
   roleHasPermission,
@@ -49,7 +49,8 @@ export async function requireOrgPermission(
 }
 
 export function authErrorResponse(error: unknown) {
-  if (error instanceof HttpAuthError) {
+  // AuthorizationError is the fail-closed "no verified membership" case: 403, not 500.
+  if (error instanceof HttpAuthError || error instanceof AuthorizationError) {
     return NextResponse.json(
       { error: error.message },
       { status: error.status },
