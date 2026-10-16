@@ -213,7 +213,7 @@ function isConfirmedPlacementStatus(status: PlacementStatus): boolean {
   return CONFIRMED_PLACEMENT_STATUSES.has(status);
 }
 
-function calculateFacilityScore(
+export function calculateFacilityScore(
   facility: {
     id: string;
     capacity: number;
@@ -227,17 +227,17 @@ function calculateFacilityScore(
     acceptsMedicaid: boolean;
     address: unknown;
   },
-  patient: { careLevelRequired: string; insurance: unknown },
-  preferredLocation: Placement["preferredLocation"] | undefined,
+  patient: { careLevelRequired: string; insurance?: unknown },
+  preferredLocation?: { city?: string; state?: string } | undefined,
 ): number {
   const careLevel = kebabToSnake(toCareLevel(patient.careLevelRequired));
-  if (!facility.careLevelsOffered.includes(careLevel)) return -1;
+  if (!(facility.careLevelsOffered ?? []).includes(careLevel)) return -1;
   if (!facility.hasAvailability || facility.currentOccupancy >= facility.capacity) return -1;
   if (!facilityAcceptsPatientInsurance(facility, patient.insurance)) return -1;
 
   let score = 50;
   score += Math.max(facility.capacity - facility.currentOccupancy, 0);
-  score += Math.round(facility.rating * 5);
+  score += Math.round((facility.rating ?? 0) * 5);
   score -= facility.waitlistDays ?? 0;
 
   const address = parseJsonObject(facility.address);

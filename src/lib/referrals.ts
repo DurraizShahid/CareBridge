@@ -2,6 +2,7 @@ import { renderContract, documentSha256 } from "@/lib/esign/document";
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getServerOrganization } from "@/lib/server-organization";
+import { calculateFacilityScore } from "@/lib/data-access";
 import type { CareLevel, ReferralStatus } from "@/generated/prisma/client";
 
 export class ReferralError extends Error {
@@ -72,38 +73,171 @@ export function ensureCareMatch(facility: {
     services.every(s => specialties.has(s.toLowerCase()));
 }
 
-export async function listReferralCandidates(careLevel: CareLevel, services: string[]) {
+export interface ReferralCandidatesOptions {
+  take?: number;
+  cursor?: string;
+  patient?: { careLevelRequired?: string; insurance?: unknown };
+  preferredLocation?: { city?: string; state?: string };
+}
+
+export async function listReferralCandidates(
+  careLevel: CareLevel,
+  services: string[],
+  options?: ReferralCandidatesOptions | number,
+  cursorParam?: string,
+) {
   const context = await referralContext();
   if (context.type !== "hospital") throw new ReferralError(403, "Hospital access required");
   if (!careLevels.includes(careLevel)) throw new ReferralError(400, "Invalid care level");
+
+  const opts: ReferralCandidatesOptions =
+    typeof options === "number"
+      ? { take: options, cursor: cursorParam }
+      : (options ?? {});
+  const take = opts.take !== undefined ? Math.max(1, opts.take) : undefined;
+  const cursor = opts.cursor;
+
   const facilities = await prisma.facility.findMany({
-    where: { organization: { type: "facility" }, hasAvailability: true,
+    where: {
+      organization: { type: "facility" },
+      hasAvailability: true,
       currentOccupancy: { lt: prisma.facility.fields.capacity },
-      careLevelsOffered: { has: careLevel } },
-    select: { id: true, name: true, capacity: true, currentOccupancy: true,
-      hasAvailability: true, careLevelsOffered: true, specialties: true },
-    orderBy: { name: "asc" }, take: 200,
+      careLevelsOffered: { has: careLevel },
+      ...(services.length > 0 ? { specialties: { hasEvery: services } } : {}),
+    },
+    select: {
+      id: true,
+      name: true,
+      capacity: true,
+      currentOccupancy: true,
+      hasAvailability: true,
+      careLevelsOffered: true,
+      specialties: true,
+      waitlistDays: true,
+      rating: true,
+      insuranceAccepted: true,
+      acceptsMedicare: true,
+      acceptsMedicaid: true,
+      address: true,
+    },
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    ...(take !== undefined ? { take } : {}),
   });
-  return facilities.filter(f => ensureCareMatch(f, careLevel, services))
-    .sort((a,b) => (b.capacity - b.currentOccupancy) - (a.capacity - a.currentOccupancy))
-    .map(f => ({ id: f.id, name: f.name, availableBeds: f.capacity - f.currentOccupancy,
-      specialties: f.specialties }));
+
+  const patient = {
+    careLevelRequired: opts.patient?.careLevelRequired ?? careLevel,
+    insurance: opts.patient?.insurance ?? [],
+  };
+  const preferredLocation = opts.preferredLocation;
+
+  return facilities
+    .filter(f => ensureCareMatch(f, careLevel, services))
+    .sort((a, b) => {
+      const scoreA = calculateFacilityScore(a, patient, preferredLocation);
+      const scoreB = calculateFacilityScore(b, patient, preferredLocation);
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      const bedsA = a.capacity - a.currentOccupancy;
+      const bedsB = b.capacity - b.currentOccupancy;
+      if (bedsB !== bedsA) return bedsB - bedsA;
+      const nameCmp = a.name.localeCompare(b.name);
+      if (nameCmp !== 0) return nameCmp;
+      return a.id.localeCompare(b.id);
+    })
+    .map(f => ({
+      id: f.id,
+      name: f.name,
+      availableBeds: f.capacity - f.currentOccupancy,
+      specialties: f.specialties,
+      score: calculateFacilityScore(f, patient, preferredLocation),
+    }));
 }
 
-export async function listReferrals() {
+export interface ListReferralsOptions {
+  take?: number;
+  cursor?: string;
+  status?: ReferralStatus;
+  startDate?: Date | string;
+  endDate?: Date | string;
+  from?: Date | string;
+  to?: Date | string;
+  patient?: string;
+  patientMrn?: string;
+  patientName?: string;
+  facility?: string;
+  facilityId?: string;
+}
+
+export async function listReferrals(options?: ListReferralsOptions) {
   const ctx = await referralContext();
+  const take = options?.take !== undefined ? Math.max(1, options.take) : 100;
+  const cursor = options?.cursor;
+
+  const where: Record<string, unknown> = ctx.type === "hospital"
+    ? {
+        sendingOrgId: ctx.organizationId,
+        ...(options?.status ? { status: options.status } : {}),
+      }
+    : {
+        facility: { organizationId: ctx.organizationId },
+        status: options?.status && options.status !== "draft" ? options.status : { not: "draft" as const },
+      };
+
+  const from = options?.startDate ?? options?.from;
+  const to = options?.endDate ?? options?.to;
+  if (from || to) {
+    const createdFilter: { gte?: Date; lte?: Date } = {};
+    if (from) {
+      const d = new Date(from);
+      if (!Number.isNaN(d.valueOf())) createdFilter.gte = d;
+    }
+    if (to) {
+      const d = new Date(to);
+      if (!Number.isNaN(d.valueOf())) createdFilter.lte = d;
+    }
+    if (Object.keys(createdFilter).length > 0) {
+      where.createdAt = createdFilter;
+    }
+  }
+
+  if (options?.patient) {
+    where.OR = [
+      { patientName: { contains: options.patient, mode: "insensitive" } },
+      { patientMrn: { contains: options.patient, mode: "insensitive" } },
+    ];
+  } else {
+    if (options?.patientName) {
+      where.patientName = { contains: options.patientName, mode: "insensitive" };
+    }
+    if (options?.patientMrn) {
+      where.patientMrn = options.patientMrn;
+    }
+  }
+
+  const facilityFilter = options?.facilityId ?? options?.facility;
+  if (facilityFilter) {
+    where.facilityId = facilityFilter;
+  }
+
   return prisma.referral.findMany({
-    where: ctx.type === "hospital"
-      ? { sendingOrgId: ctx.organizationId }
-      : { facility: { organizationId: ctx.organizationId }, status: { not: "draft" } },
+    where,
     select: {
-      id: true, patientName: true, patientDateOfBirth: true, patientMrn: true,
-      careLevel: true, requiredServices: true, status: true, createdAt: true,
-      sentAt: true, respondedAt: true,
+      id: true,
+      patientName: true,
+      patientDateOfBirth: true,
+      patientMrn: true,
+      careLevel: true,
+      requiredServices: true,
+      status: true,
+      createdAt: true,
+      sentAt: true,
+      respondedAt: true,
       facility: { select: { id: true, name: true } },
       sendingOrganization: { select: { name: true } },
     },
-    orderBy: { createdAt: "desc" }, take: 100,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
 }
 

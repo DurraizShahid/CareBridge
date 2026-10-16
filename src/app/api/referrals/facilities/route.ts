@@ -9,8 +9,14 @@ export async function GET(req: Request) {
     const services = url.searchParams.getAll("service").map(s => s.trim()).filter(Boolean);
     if (services.length > 20 || services.some(s => s.length > 100))
       return NextResponse.json({ error: "Invalid services" }, { status: 400 });
+    const takeParam = url.searchParams.get("take");
+    const cursor = url.searchParams.get("cursor") ?? undefined;
+    const take = takeParam ? Number.parseInt(takeParam, 10) : undefined;
     return NextResponse.json(
-      await listReferralCandidates(level as typeof careLevels[number], services),
+      await listReferralCandidates(level as typeof careLevels[number], services, {
+        take: take && !Number.isNaN(take) ? take : undefined,
+        cursor,
+      }),
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) { const err = referralFailure(e); return NextResponse.json({ error: err.error }, { status: err.status }); }

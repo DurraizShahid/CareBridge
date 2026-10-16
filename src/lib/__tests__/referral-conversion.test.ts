@@ -49,7 +49,10 @@ describe("paid referral to placement: atomic reservation transfer", () => {
   org.mockResolvedValue({ type: "facility", organizationId: "facility-org", userId: "staff" });
   db.$transaction.mockImplementation(async (fn: (tx: typeof db) => Promise<unknown>) => fn(db));
   db.$queryRawUnsafe.mockImplementation(async (statement: string) => {
-   operationOrder.push(statement.includes('"Referral"') ? "lock-referral" : "lock-facility");
+   operationOrder.push(
+    statement.includes('"Referral"') ? "lock-referral" :
+    statement.includes('"Patient"') ? "lock-patient" : "lock-facility"
+   );
    return [{ id: "id" }];
   });
   db.referral.findFirst.mockResolvedValue(accepted);
@@ -81,7 +84,7 @@ describe("paid referral to placement: atomic reservation transfer", () => {
   expect(db.placement.create).toHaveBeenCalledTimes(1);
   expect(db.referral.update).toHaveBeenCalledTimes(1);
   expect(operationOrder).toEqual([
-   "lock-referral", "lock-facility", "release", "recalc",
+   "lock-referral", "lock-patient", "lock-facility", "release", "recalc",
    "assert-capacity", "create-placement", "convert-referral", "recalc",
   ]);
   expect(assertCapacity).toHaveBeenCalledWith(db, "facility-1", null, "approved");
@@ -124,9 +127,16 @@ describe("paid referral to placement: atomic reservation transfer", () => {
   expect(db.placement.create).not.toHaveBeenCalled();
   expect(db.referral.update).not.toHaveBeenCalled();
  });
- it("rejects a second active placement for the patient/facility", async () => {
+ it("rejects a second active placement for the patient across any facility (CB-019)", async () => {
   db.placement.findFirst.mockResolvedValue({ id: "other-active-placement" });
-  await expect(convertPaidReferral("ref-1")).rejects.toMatchObject({statusCode:409});
+  await expect(convertPaidReferral("ref-1")).rejects.toMatchObject({
+   statusCode: 409,
+   message: "Patient already has an active placement",
+  });
+  expect(db.placement.findFirst).toHaveBeenCalledWith({
+   where: { patientId: "patient-1", status: { in: ["approved", "in_progress"] } },
+   select: { id: true },
+  });
   expect(db.bedReservation.deleteMany).not.toHaveBeenCalled();
  });
  it("accepts a real paid status in addition to demo_paid", async () => {

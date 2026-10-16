@@ -54,15 +54,18 @@ export async function convertPaidReferral(referralId: string) {
     });
     if (!socialWorker) throw new ReferralError(409, "Patient needs an assigned hospital social worker");
 
+    // CB-019: Lock patient record to serialize concurrent conversions for the same patient across all facilities.
+    await tx.$queryRawUnsafe('SELECT "id" FROM "Patient" WHERE "id" = $1 FOR UPDATE', patient.id);
+
     // Same facility lock used by the Phase-1 admission/capacity path.
     await tx.$queryRawUnsafe('SELECT "id" FROM "Facility" WHERE "id" = $1 FOR UPDATE', referral.facilityId);
     const existingPlacement = await tx.placement.findFirst({
-      where: { patientId: patient.id, facilityId: referral.facilityId,
+      where: { patientId: patient.id,
         status: { in: ["approved", "in_progress"] } },
       select: { id: true },
     });
     if (existingPlacement)
-      throw new ReferralError(409, "Patient already has an active placement at this facility");
+      throw new ReferralError(409, "Patient already has an active placement");
 
     const placementId = randomUUID();
     // Removing the reservation and creating the placement is atomic: rollback

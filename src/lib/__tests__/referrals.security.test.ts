@@ -15,7 +15,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/server-organization", () => ({ getServerOrganization: orgMock }));
 
-import { createReferral, getReferral, listReferrals, parseReferralBody,
+import { createReferral, getReferral, listReferrals, listReferralCandidates, parseReferralBody,
   referralContext, transitionReferral, ensureCareMatch } from "../referrals";
 
 const valid = {
@@ -121,6 +121,88 @@ describe("money-loop referrals: authorization and transitions", () => {
     await expect(getReferral("another-org-ref")).rejects.toMatchObject({ statusCode: 404 });
     expect(prismaMock.referral.findFirst).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: "another-org-ref", sendingOrgId: "hospital-1" },
+    }));
+  });
+
+  it("CB-002: pushes specialty filtering into database query with cursor pagination and deterministic order", async () => {
+    prismaMock.facility.findMany.mockResolvedValue([]);
+    await listReferralCandidates("skilled_nursing", ["Wound Care", "IV therapy"], {
+      take: 25,
+      cursor: "fac-10",
+    });
+    expect(prismaMock.facility.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        organization: { type: "facility" },
+        hasAvailability: true,
+        careLevelsOffered: { has: "skilled_nursing" },
+        specialties: { hasEvery: ["Wound Care", "IV therapy"] },
+      }),
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: 25,
+      cursor: { id: "fac-10" },
+      skip: 1,
+    }));
+  });
+
+  it("CB-022: ranks referral candidates by normalized matching score instead of available beds alone", async () => {
+    // Facility A has fewer empty beds (2 beds) but a high rating (5.0) and 0 waitlist.
+    // Facility B has more empty beds (10 beds) but a low rating (1.0) and 5-day waitlist.
+    const facA = {
+      id: "fac-a", name: "High Quality Suites", capacity: 10, currentOccupancy: 8,
+      hasAvailability: true, careLevelsOffered: ["skilled_nursing"], specialties: ["Wound Care"],
+      rating: 5.0, waitlistDays: 0, insuranceAccepted: [], acceptsMedicare: true, acceptsMedicaid: false,
+      address: {},
+    };
+    const facB = {
+      id: "fac-b", name: "Empty Budget Home", capacity: 20, currentOccupancy: 10,
+      hasAvailability: true, careLevelsOffered: ["skilled_nursing"], specialties: ["Wound Care"],
+      rating: 1.0, waitlistDays: 5, insuranceAccepted: [], acceptsMedicare: true, acceptsMedicaid: false,
+      address: {},
+    };
+    prismaMock.facility.findMany.mockResolvedValue([facB, facA]);
+
+    const candidates = await listReferralCandidates("skilled_nursing", ["Wound Care"]);
+
+    // Score A = 50 + 2 + 25 - 0 = 77
+    // Score B = 50 + 10 + 5 - 5 = 60
+    // Facility A must be ranked first despite having fewer available beds!
+    expect(candidates).toHaveLength(2);
+    expect(candidates[0].id).toBe("fac-a");
+    expect(candidates[0].score).toBe(77);
+    expect(candidates[1].id).toBe("fac-b");
+    expect(candidates[1].score).toBe(60);
+  });
+
+  it("CB-021: listReferrals supports cursor pagination and optional filters (status, date range, patient, facility)", async () => {
+    prismaMock.referral.findMany.mockResolvedValue([]);
+    await listReferrals({
+      status: "sent",
+      startDate: "2026-01-01",
+      endDate: "2026-01-31",
+      patient: "Smith",
+      facilityId: "fac-1",
+      take: 20,
+      cursor: "ref-100",
+    });
+
+    expect(prismaMock.referral.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        sendingOrgId: "hospital-1",
+        status: "sent",
+        facilityId: "fac-1",
+        createdAt: {
+          gte: new Date("2026-01-01"),
+          lte: new Date("2026-01-31"),
+        },
+        OR: [
+          { patientName: { contains: "Smith", mode: "insensitive" } },
+          { patientMrn: { contains: "Smith", mode: "insensitive" } },
+        ],
+      }),
+      take: 20,
+      cursor: { id: "ref-100" },
+      skip: 1,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }));
   });
 });
