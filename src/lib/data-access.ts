@@ -3304,6 +3304,8 @@ export async function getOrganizationById(organizationId: string): Promise<Organ
     name: org.name,
     slug: org.slug,
     type: snakeToKebab(org.type) as OrganizationType,
+    isActive: org.isActive,
+    deletedAt: org.deletedAt ? toISO(org.deletedAt) : undefined,
   };
 }
 
@@ -3325,6 +3327,8 @@ export async function createOrganization(
     name: prismaOrg.name,
     slug: prismaOrg.slug,
     type: snakeToKebab(prismaOrg.type) as OrganizationType,
+    isActive: prismaOrg.isActive,
+    deletedAt: prismaOrg.deletedAt ? toISO(prismaOrg.deletedAt) : undefined,
   };
 }
 
@@ -3395,6 +3399,9 @@ export async function validateInviteCode(code: string) {
 
   if (!inviteCode) return { valid: false, reason: "Invalid invite code" };
   if (!inviteCode.isActive) return { valid: false, reason: "Invite code is inactive" };
+  if (inviteCode.organization && (inviteCode.organization.isActive === false || Boolean(inviteCode.organization.deletedAt))) {
+    return { valid: false, reason: "Organization is inactive" };
+  }
   if (inviteCode.expiresAt && new Date() > inviteCode.expiresAt) {
     return { valid: false, reason: "Invite code has expired" };
   }

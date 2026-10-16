@@ -111,4 +111,41 @@ describe("CB-018: server-organization tenant isolation & fail-closed resolution"
     expect(result?.isSuperadmin).toBe(true);
     expect(result?.role).toBe("superadmin");
   });
+
+  it("CB-017: throws AuthorizationError when user organization is deactivated (isActive: false)", async () => {
+    authMock.mockResolvedValue({ userId: "user-deactivated" });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "user-deactivated",
+      organizationId: "org-inactive",
+      role: "social_worker",
+      organization: {
+        id: "org-inactive",
+        name: "Closed Hospital",
+        type: "hospital",
+        isActive: false,
+      },
+    });
+
+    await expect(getServerOrganization()).rejects.toThrow(AuthorizationError);
+    await expect(getServerOrganization()).rejects.toMatchObject({ status: 403, statusCode: 403 });
+  });
+
+  it("CB-017: throws AuthorizationError when user organization is soft-deleted (deletedAt is set)", async () => {
+    authMock.mockResolvedValue({ userId: "user-deleted" });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "user-deleted",
+      organizationId: "org-deleted",
+      role: "social_worker",
+      organization: {
+        id: "org-deleted",
+        name: "Deleted Hospital",
+        type: "hospital",
+        isActive: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    await expect(getServerOrganization()).rejects.toThrow(AuthorizationError);
+    await expect(getServerOrganization()).rejects.toMatchObject({ status: 403, statusCode: 403 });
+  });
 });

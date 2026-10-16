@@ -192,12 +192,28 @@ export async function POST(req: NextRequest) {
 
       case "organization.deleted": {
         const data = evt.data as { id: string };
-        await withRetry(() =>
-          prisma.$transaction([
-            prisma.user.updateMany({ where: { organizationId: data.id }, data: { organizationId: null } }),
-            prisma.organization.delete({ where: { id: data.id } }),
-          ]),
-        );
+        const existingOrg = await withRetry(() => prisma.organization.findUnique({ where: { id: data.id } }));
+        if (existingOrg) {
+          try {
+            await withRetry(() =>
+              prisma.$transaction([
+                prisma.user.updateMany({ where: { organizationId: data.id }, data: { organizationId: null } }),
+                prisma.organization.update({
+                  where: { id: data.id },
+                  data: {
+                    isActive: false,
+                    deletedAt: new Date(),
+                  },
+                }),
+              ]),
+            );
+          } catch (err: unknown) {
+            const code = err && typeof err === "object" && "code" in err ? (err as { code: string }).code : "";
+            if (code !== "P2025") {
+              throw err;
+            }
+          }
+        }
         console.log({ event: "webhook_org_deleted", eventId, orgId: data.id }, `org.deleted: ${data.id}`);
         break;
       }

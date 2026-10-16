@@ -61,6 +61,8 @@ export interface Organization {
   name: string;
   slug: string;
   type: OrganizationType;
+  isActive?: boolean;
+  deletedAt?: string;
 }
 
 export interface InviteCode {

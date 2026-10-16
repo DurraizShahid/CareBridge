@@ -44,9 +44,16 @@ export async function POST(req: Request) {
 
     const inviteCode = await prisma.inviteCode.findUnique({
       where: { id: inviteCodeId },
+      include: { organization: true },
     });
 
-    if (!inviteCode || inviteCode.organizationId !== organizationId || inviteCodeUnavailable(inviteCode)) {
+    if (
+      !inviteCode ||
+      inviteCode.organizationId !== organizationId ||
+      inviteCodeUnavailable(inviteCode) ||
+      inviteCode.organization.isActive === false ||
+      Boolean(inviteCode.organization.deletedAt)
+    ) {
       return NextResponse.json({ error: 'Invite code is invalid or expired' }, { status: 400 });
     }
 

@@ -7,9 +7,12 @@ const { verifyWebhookMock, prismaMock } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       upsert: vi.fn(),
       delete: vi.fn(),
+      updateMany: vi.fn(),
     },
     organization: {
+      findUnique: vi.fn(),
       upsert: vi.fn(),
+      update: vi.fn(),
       delete: vi.fn(),
     },
     $transaction: vi.fn(),
@@ -27,7 +30,7 @@ vi.mock("@/lib/prisma", () => ({
 import { POST } from "../route";
 import { NextRequest } from "next/server";
 
-describe("CB-015 & CB-016: Clerk webhook hardening", () => {
+describe("CB-015, CB-016 & CB-017: Clerk webhook hardening & org deactivation", () => {
   let logSpy: any;
 
   beforeEach(() => {
@@ -136,6 +139,77 @@ describe("CB-015 & CB-016: Clerk webhook hardening", () => {
     prismaMock.user.findUnique.mockResolvedValue({ id: "user_racing" });
     const p2025Error = Object.assign(new Error("Record not found"), { code: "P2025" });
     prismaMock.user.delete.mockRejectedValue(p2025Error);
+
+    const req = new NextRequest("http://localhost/api/webhooks", { method: "POST" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+  });
+
+  it("CB-017: organization.deleted deactivates org and detaches users without deleting dependent records", async () => {
+    verifyWebhookMock.mockResolvedValue({
+      type: "organization.deleted",
+      data: { id: "org_test123" },
+    });
+    prismaMock.organization.findUnique.mockResolvedValue({ id: "org_test123", name: "Closing Hospital" });
+    prismaMock.user.updateMany.mockResolvedValue({ count: 5 });
+    prismaMock.organization.update.mockResolvedValue({ id: "org_test123", isActive: false });
+    prismaMock.$transaction.mockImplementation(async (fns: any[]) => Promise.all(fns));
+
+    const req = new NextRequest("http://localhost/api/webhooks", { method: "POST" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    // Verified: organization is NOT hard deleted
+    expect(prismaMock.organization.delete).not.toHaveBeenCalled();
+
+    // Verified: users detached and organization deactivated with isActive: false and deletedAt timestamp
+    expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: "org_test123" },
+      data: { organizationId: null },
+    });
+    expect(prismaMock.organization.update).toHaveBeenCalledWith({
+      where: { id: "org_test123" },
+      data: {
+        isActive: false,
+        deletedAt: expect.any(Date),
+      },
+    });
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "webhook_org_deleted", orgId: "org_test123" }),
+      "org.deleted: org_test123"
+    );
+  });
+
+  it("CB-017: organization.deleted is idempotent when org does not exist in DB", async () => {
+    verifyWebhookMock.mockResolvedValue({
+      type: "organization.deleted",
+      data: { id: "org_missing" },
+    });
+    prismaMock.organization.findUnique.mockResolvedValue(null);
+
+    const req = new NextRequest("http://localhost/api/webhooks", { method: "POST" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.organization.findUnique).toHaveBeenCalledWith({ where: { id: "org_missing" } });
+    expect(prismaMock.organization.update).not.toHaveBeenCalled();
+    expect(prismaMock.organization.delete).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "webhook_org_deleted", orgId: "org_missing" }),
+      "org.deleted: org_missing"
+    );
+  });
+
+  it("CB-017: organization.deleted handles P2025 during concurrent deactivation as success", async () => {
+    verifyWebhookMock.mockResolvedValue({
+      type: "organization.deleted",
+      data: { id: "org_racing" },
+    });
+    prismaMock.organization.findUnique.mockResolvedValue({ id: "org_racing" });
+    const p2025Error = Object.assign(new Error("Record not found"), { code: "P2025" });
+    prismaMock.$transaction.mockRejectedValue(p2025Error);
 
     const req = new NextRequest("http://localhost/api/webhooks", { method: "POST" });
     const res = await POST(req);

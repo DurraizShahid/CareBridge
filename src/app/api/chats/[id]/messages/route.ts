@@ -33,48 +33,61 @@ export async function POST(
       );
     }
 
-    const chat = await prisma.chat.findFirst({
-      where: {
-        id,
-        userId,
-        organizationId: org.organizationId,
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      const chat = await tx.chat.findFirst({
+        where: {
+          id,
+          userId,
+          organizationId: org.organizationId,
+        },
+      });
+
+      if (!chat) {
+        return null;
+      }
+
+      const message = await tx.chatMessage.create({
+        data: {
+          chatId: id,
+          role: "user",
+          content: body.content,
+        },
+      });
+
+      // Auto-generate title from first user message
+      if (chat.title === "New Chat") {
+        const messageCount = await tx.chatMessage.count({
+          where: { chatId: id },
+        });
+
+        if (messageCount === 1) {
+          const title = body.content.slice(0, 80) + (body.content.length > 80 ? "..." : "");
+          // Concurrency safe: only update title if title is still "New Chat"
+          const updated = await tx.chat.updateMany({
+            where: { id, title: "New Chat" },
+            data: { title, updatedAt: new Date() },
+          });
+
+          if (updated.count > 0) {
+            return message;
+          }
+        }
+      }
+
+      // Update chat's updatedAt timestamp
+      await tx.chat.update({
+        where: { id },
+        data: { updatedAt: new Date() },
+      });
+
+      return message;
     });
 
-    if (!chat) {
+    if (!result) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
 
-    const message = await prisma.chatMessage.create({
-      data: {
-        chatId: id,
-        role: "user",
-        content: body.content,
-      },
-    });
-
-    // Update chat's updatedAt timestamp
-    await prisma.chat.update({
-      where: { id },
-      data: { updatedAt: new Date() },
-    });
-
-    // Auto-generate title from first user message
-    if (chat.title === "New Chat") {
-      const messageCount = await prisma.chatMessage.count({
-        where: { chatId: id },
-      });
-
-      if (messageCount === 1) {
-        const title = body.content.slice(0, 80) + (body.content.length > 80 ? "..." : "");
-        await prisma.chat.update({
-          where: { id },
-          data: { title },
-        });
-      }
-    }
-
-    return NextResponse.json(message, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error: unknown) {
     console.error("Error creating message:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

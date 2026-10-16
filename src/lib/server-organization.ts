@@ -62,7 +62,13 @@ export async function getServerOrganization(): Promise<ServerOrganization | null
     );
   }
 
-  if (!dbUser || !dbUser.organizationId || !dbUser.organization) {
+  if (
+    !dbUser ||
+    !dbUser.organizationId ||
+    !dbUser.organization ||
+    dbUser.organization.isActive === false ||
+    Boolean(dbUser.organization.deletedAt)
+  ) {
     throw new AuthorizationError("Active organization membership required");
   }
 

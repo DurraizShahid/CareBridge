@@ -23,6 +23,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ valid: false, reason: 'Invite code is inactive' });
     }
 
+    if (inviteCode.organization && (inviteCode.organization.isActive === false || Boolean(inviteCode.organization.deletedAt))) {
+      return NextResponse.json({ valid: false, reason: 'Organization is inactive' });
+    }
+
     if (inviteCode.expiresAt && new Date() > inviteCode.expiresAt) {
       return NextResponse.json({ valid: false, reason: 'Invite code has expired' });
     }
