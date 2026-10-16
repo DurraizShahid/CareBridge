@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerOrganization } from "@/lib/server-organization";
+import { searchFacilities } from "@/lib/data-access";
 import { FacilityNetworkClient } from "./facility-network-client";
 
 export const dynamic = "force-dynamic";
@@ -35,5 +36,20 @@ export default async function FacilityNetworkPage() {
     }
   }
 
-  return <FacilityNetworkClient defaultLocation={defaultLocation} role={org.role} />;
+  const initialFacilities = await searchFacilities({
+    location: defaultLocation || undefined,
+  });
+
+  const userName = signedInUser.firstName
+    ? signedInUser.firstName.charAt(0).toUpperCase() + signedInUser.firstName.slice(1)
+    : (signedInUser.username ?? "Staff");
+
+  return (
+    <FacilityNetworkClient
+      defaultLocation={defaultLocation}
+      role={org.role}
+      userName={userName}
+      initialFacilities={initialFacilities}
+    />
+  );
 }

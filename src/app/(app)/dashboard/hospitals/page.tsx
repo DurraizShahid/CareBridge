@@ -31,10 +31,15 @@ export default async function HospitalsPage() {
   }
 
   const hospitals = await getHospitals(organizationId, signedInRole);
+  const userName = signedInUser.firstName
+    ? signedInUser.firstName.charAt(0).toUpperCase() + signedInUser.firstName.slice(1)
+    : (signedInUser.username ?? "Admin");
 
   return (
     <HospitalsTable
       hospitals={hospitals}
+      userName={userName}
+      role={signedInRole}
     />
   );
 }
