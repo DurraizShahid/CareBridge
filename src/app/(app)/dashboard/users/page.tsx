@@ -2,6 +2,13 @@ import type { User as ClerkUser } from "@clerk/backend";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import {
+  Users as UsersIcon,
+  UserCheck,
+  Shield,
+  Clock,
+  ShieldCheck,
+} from "lucide-react";
+import {
   getAllowedRoles,
   normalizeRole,
   resolveRole,
@@ -11,12 +18,13 @@ import {
 import { prisma } from "@/lib/prisma";
 import type { UserModel as DatabaseUser } from "@/generated/prisma/models/User";
 import { getServerOrganization } from "@/lib/server-organization";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersTable } from "./users-table";
-// Import invite codes tab component with proper casing to match actual file name
 import { InviteCodesTab } from "./invite-codes-tab";
 import { JoinRequestsTab } from "./join-requests-tab";
 import type { DashboardUser } from "./types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -217,32 +225,133 @@ export default async function UsersPage() {
       })
     : [];
 
+  const totalUsers = clerkUsers.totalCount ?? clerkUsers.data.length;
+  const activeUsers = users.filter((u) => u.accountStatus === "active").length;
+  const activeInvites = inviteCodes.filter((c) => c.isActive).length;
+  const pendingRequests = joinRequests.filter((r) => r.status === "pending").length;
+
+  const userName = signedInUser.firstName
+    ? signedInUser.firstName.charAt(0).toUpperCase() + signedInUser.firstName.slice(1)
+    : (signedInUser.username ?? "Admin");
+
   return (
-    <Tabs defaultValue="users" className="w-full">
-      <TabsList>
-        <TabsTrigger value="users">Users</TabsTrigger>
-        <TabsTrigger value="invite-codes">Invite Codes</TabsTrigger>
-        <TabsTrigger value="join-requests">Join Requests</TabsTrigger>
-      </TabsList>
-      <TabsContent value="users">
-        <UsersTable
-          totalCount={clerkUsers.totalCount ?? clerkUsers.data.length}
-          users={users}
-          allowedRoles={allowedRoles}
-          canManage={canManage}
-          canCreate={canCreate}
+    <div className="flex flex-col gap-8 pb-10">
+      {/* ── 1. Page Header ── */}
+      <PageHeader
+        title="Users & Access"
+        description="Manage organization staff, role-based access control, invitation credentials, and join requests."
+        userName={userName}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Users & Access" },
+        ]}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]">
+            <ShieldCheck className="size-3.5 text-[#245C52]" />
+            Clerk + Database Sync
+          </div>
+          {isSuperadmin && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#255DCE]/10 text-[#255DCE] border border-[#255DCE]/20">
+              System-Wide Directory
+            </span>
+          )}
+        </div>
+      </PageHeader>
+
+      {/* ── 2. Directory Health Stat Cards ── */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Total Members"
+          value={totalUsers}
+          icon={UsersIcon}
+          variant="health"
         />
-      </TabsContent>
-      <TabsContent value="invite-codes">
-        <InviteCodesTab
-          inviteCodes={inviteCodes}
-          allowedRoles={allowedRoles}
-          canCreate={canCreate}
+        <StatCard
+          title="Active Profiles"
+          value={activeUsers}
+          icon={UserCheck}
+          variant="info"
         />
-      </TabsContent>
-      <TabsContent value="join-requests">
-        <JoinRequestsTab joinRequests={joinRequests} canCreate={canCreate} />
-      </TabsContent>
-    </Tabs>
+        <StatCard
+          title="Active Invites"
+          value={activeInvites}
+          icon={Shield}
+          variant="default"
+        />
+        <StatCard
+          title="Pending Requests"
+          value={pendingRequests}
+          icon={Clock}
+          variant="orange"
+          trend={
+            pendingRequests > 0
+              ? { value: `${pendingRequests} need review`, positive: false }
+              : { value: "All cleared", positive: true }
+          }
+        />
+      </div>
+
+      {/* ── 3. Tabs Navigation & Content ── */}
+      <Tabs defaultValue="users" className="w-full flex flex-col gap-6">
+        <div className="flex items-center justify-between border-b border-[#DCE5DE] pb-3">
+          <TabsList className="bg-[#EDF2EC] border border-[#DCE5DE] p-1 rounded-full h-auto flex flex-wrap gap-1">
+            <TabsTrigger
+              value="users"
+              className="rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all data-active:bg-white data-active:text-[#0D1B17] data-active:shadow-xs text-[#53665E]"
+            >
+              Directory Members
+              <span className="ml-1.5 rounded-full bg-[#DCE8DA] px-2 py-0.5 text-[11px] font-semibold text-[#203E39]">
+                {users.length}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="invite-codes"
+              className="rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all data-active:bg-white data-active:text-[#0D1B17] data-active:shadow-xs text-[#53665E]"
+            >
+              Invite Codes
+              <span className="ml-1.5 rounded-full bg-[#DCE8DA] px-2 py-0.5 text-[11px] font-semibold text-[#203E39]">
+                {inviteCodes.length}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="join-requests"
+              className="rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all data-active:bg-white data-active:text-[#0D1B17] data-active:shadow-xs text-[#53665E]"
+            >
+              Join Requests
+              <span
+                className={`ml-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                  pendingRequests > 0
+                    ? "bg-[#C05621] text-white"
+                    : "bg-[#DCE8DA] text-[#203E39]"
+                }`}
+              >
+                {pendingRequests}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="users" className="mt-0">
+          <UsersTable
+            totalCount={clerkUsers.totalCount ?? clerkUsers.data.length}
+            users={users}
+            allowedRoles={allowedRoles}
+            canManage={canManage}
+            canCreate={canCreate}
+          />
+        </TabsContent>
+        <TabsContent value="invite-codes" className="mt-0">
+          <InviteCodesTab
+            inviteCodes={inviteCodes}
+            allowedRoles={allowedRoles}
+            canCreate={canCreate}
+          />
+        </TabsContent>
+        <TabsContent value="join-requests" className="mt-0">
+          <JoinRequestsTab joinRequests={joinRequests} canCreate={canCreate} />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

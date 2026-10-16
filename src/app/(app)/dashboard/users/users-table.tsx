@@ -44,6 +44,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -103,12 +110,12 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
-  "social-worker": "bg-health/10 text-health",
-  "discharge-planner": "bg-health/10 text-health",
-  administrator: "bg-primary/10 text-primary",
-  "facility-coordinator": "bg-warmth/10 text-warmth",
-  superadmin: "bg-destructive/10 text-destructive",
-  customer: "bg-muted text-muted-foreground",
+  "social-worker": "bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]",
+  "discharge-planner": "bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]",
+  administrator: "bg-[#255DCE]/10 text-[#255DCE] border border-[#255DCE]/20",
+  "facility-coordinator": "bg-[#DCE8DA] text-[#203E39] border border-[#C7D3CA]",
+  superadmin: "bg-[#0D1B17] text-white border border-[#0D1B17]",
+  customer: "bg-muted text-muted-foreground border border-border",
 };
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -184,20 +191,29 @@ function EmptyState({
   onAdd: () => void;
 }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-16">
-        <Users className="mb-3 h-12 w-12 text-muted-foreground/40" />
-        <p className="text-sm font-medium text-foreground">No Clerk users found</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          New accounts will appear here after they are created in Clerk.
-        </p>
+    <Card className="rounded-2xl border border-[#DCE5DE] bg-white p-6 shadow-sm">
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <Users className="size-8 text-[#53665E]/50" />
+          </EmptyMedia>
+          <EmptyTitle className="font-serif text-lg font-medium text-[#0D1B17]">
+            No organization members found
+          </EmptyTitle>
+          <EmptyDescription className="text-sm text-[#53665E]">
+            No user profiles match your filter criteria or have been provisioned yet.
+          </EmptyDescription>
+        </EmptyHeader>
         {canCreate && (
-          <Button className="mt-4" onClick={onAdd}>
-            <Plus data-icon="inline-start" />
-            Add User
+          <Button
+            className="mt-2 bg-[#245C52] text-white hover:bg-[#19473F] rounded-full px-5 text-xs font-semibold"
+            onClick={onAdd}
+          >
+            <Plus className="size-4 mr-1.5" />
+            Add First User
           </Button>
         )}
-      </CardContent>
+      </Empty>
     </Card>
   );
 }
@@ -406,12 +422,18 @@ export function UsersTable({
             <Badge
               variant="secondary"
               className={cn(
-                "capitalize",
+                "capitalize text-xs font-medium px-2.5 py-0.5 rounded-full",
                 status === "active"
-                  ? "bg-health/10 text-health"
-                  : "bg-destructive/10 text-destructive",
+                  ? "bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]"
+                  : "bg-[#FAEEEB] text-[#A33632] border border-[#A33632]/20",
               )}
             >
+              <span
+                className={cn(
+                  "mr-1.5 size-1.5 rounded-full",
+                  status === "active" ? "bg-[#245C52]" : "bg-[#A33632]",
+                )}
+              />
               {status}
             </Badge>
           );
@@ -426,18 +448,18 @@ export function UsersTable({
             <Badge
               variant="secondary"
               className={cn(
-                "gap-1",
+                "gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full",
                 status === "linked"
-                  ? "bg-health/10 text-health"
-                  : "bg-warmth/10 text-warmth",
+                  ? "bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]"
+                  : "bg-[#FAEEEB] text-[#A33632] border border-[#A33632]/20",
               )}
             >
               {status === "linked" ? (
-                <CheckCircle2 className="h-3 w-3" />
+                <CheckCircle2 className="h-3 w-3 text-[#245C52]" />
               ) : (
-                <Database className="h-3 w-3" />
+                <Database className="h-3 w-3 text-[#A33632]" />
               )}
-              {status === "linked" ? "DB linked" : "DB missing"}
+              {status === "linked" ? "Synced" : "Missing"}
             </Badge>
           );
         },
@@ -593,19 +615,9 @@ export function UsersTable({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Users"
-        description="Manage Clerk identities with their database profiles."
-      >
-        <Badge variant="outline" className="gap-2 text-muted-foreground">
-          <Shield data-icon="inline-start" className="text-health" />
-          Clerk + Database
-        </Badge>
-      </PageHeader>
-
-      <div className="flex flex-col gap-3 md:flex-row md:items-center bg-card/70 backdrop-blur-xl rounded-xl border-border/60 shadow-sm p-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center bg-white rounded-2xl border border-[#DCE5DE] shadow-xs p-4">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#53665E]" />
           <Input
             type="text"
             placeholder="Search users by name, email, role, department, or phone..."
@@ -614,7 +626,7 @@ export function UsersTable({
               setGlobalFilter(event.target.value);
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
-            className="h-10 pl-9 transition-all duration-200 focus-visible:ring-2"
+            className="h-10 pl-9 border-[#DCE5DE] focus-visible:ring-2 focus-visible:ring-[#245C52]"
           />
         </div>
         <Select
@@ -626,7 +638,7 @@ export function UsersTable({
             setPagination((prev) => ({ ...prev, pageIndex: 0 }));
           }}
         >
-          <SelectTrigger className="h-10 w-full md:w-56 transition-all duration-200">
+          <SelectTrigger className="h-10 w-full md:w-56 border-[#DCE5DE]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
@@ -641,7 +653,7 @@ export function UsersTable({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="outline" className="h-10" />
+              <Button variant="outline" className="h-10 border-[#DCE5DE] text-[#203E39]" />
             }
           >
             <Settings2 data-icon="inline-start" />
@@ -665,7 +677,7 @@ export function UsersTable({
           </DropdownMenuContent>
         </DropdownMenu>
         {canCreate && (
-          <Button onClick={openCreateDialog}>
+          <Button onClick={openCreateDialog} className="h-10 rounded-full bg-[#245C52] text-white hover:bg-[#19473F] px-4 font-semibold text-xs shadow-xs">
             <Plus data-icon="inline-start" />
             Add User
           </Button>
@@ -694,10 +706,10 @@ export function UsersTable({
         <EmptyState canCreate={canCreate} onAdd={openCreateDialog} />
       ) : (
         <>
-          <Card className="overflow-hidden py-0 shadow-sm">
+          <Card className="overflow-hidden py-0 shadow-xs rounded-2xl border border-[#DCE5DE] bg-white">
             <ScrollArea className="w-full">
               <Table className="min-w-[1180px]">
-                <TableHeader>
+                <TableHeader className="bg-[#FAFBF8] border-b border-[#DCE5DE]">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
