@@ -2,7 +2,8 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { InMemoryRateLimiter, PrismaRateLimiter } from "@/lib/rate-limiter";
-import { canRoleAccessRoute, resolveRole } from "@/lib/permissions";
+import { canRoleAccessRoute, resolveRole, ROUTE_ACCESS } from "@/lib/permissions";
+import { prisma } from "@/lib/prisma";
 
 const apiLimiter = new InMemoryRateLimiter({
   windowMs: 60_000,
@@ -91,7 +92,28 @@ export default clerkMiddleware(
 
     const { pathname } = request.nextUrl;
 
-    const role = resolveRole(getRoleFromClaims(sessionClaims as Record<string, unknown>));
+    // Clerk omits publicMetadata from the session token by default, so fall back to the DB.
+    let claimedRole: string | null = getRoleFromClaims(sessionClaims as Record<string, unknown>);
+    if (!claimedRole) {
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { role: true },
+        });
+        claimedRole = dbUser?.role ?? null;
+      } catch {
+        // Fail closed: role unknown, so deny any route with an access restriction.
+        const access = ROUTE_ACCESS[pathname];
+        if (access) {
+          if (isApiRoute(request)) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+          }
+          return NextResponse.redirect(new URL(access.redirect ?? "/", request.url));
+        }
+      }
+    }
+
+    const role = resolveRole(claimedRole);
 
     const { allowed, redirect } = canRoleAccessRoute(role, pathname);
     if (!allowed) {
