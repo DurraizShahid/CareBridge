@@ -119,7 +119,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
     try {
-      await signIn.sso({ strategy: 'oauth_google', redirectUrl: '/onboarding', redirectCallbackUrl: '/sign-in' });
+      await signIn.sso({ strategy: 'oauth_google', redirectUrl: '/onboarding', redirectCallbackUrl: '/sso-callback' });
     } catch (err: unknown) {
       setErrorMessage(isClerkAPIResponseError(err) ? err.errors[0]?.message ?? 'Please try signing in again.' : 'Please try signing in again.');
     }

@@ -40,7 +40,7 @@ export default function SignUpPage() {
       await signUp.sso({
         strategy: 'oauth_google',
         redirectUrl: '/onboarding',
-        redirectCallbackUrl: '/sign-up',
+        redirectCallbackUrl: '/sso-callback',
       });
     } catch (err: unknown) {
       if (isClerkAPIResponseError(err)) {
