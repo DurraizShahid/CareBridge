@@ -16,6 +16,7 @@ import {
   Copy,
   CheckCircle2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 type OrganizationType = "hospital" | "facility";
@@ -23,6 +24,8 @@ type OrganizationType = "hospital" | "facility";
 export default function OnboardingPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [statusError, setStatusError] = useState(false);
+  const [statusAttempt, setStatusAttempt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [setupAction, setSetupAction] = useState("create");
   const [activeTab, setActiveTab] = useState<"type" | "action">("type");
@@ -44,9 +47,12 @@ export default function OnboardingPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+    const timeout = setTimeout(() => controller.abort(), 10_000);
     const checkUserStatus = async () => {
       try {
-        const res = await fetch("/api/me");
+        const res = await fetch("/api/me", { signal: controller.signal });
         // Clerk redirects signed-out requests to HTML sign-in pages; do not parse them as JSON.
         if (!res.ok || res.redirected || !res.headers.get("content-type")?.includes("application/json")) return;
         const data = await res.json();
@@ -54,14 +60,28 @@ export default function OnboardingPage() {
           router.push("/dashboard");
         }
       } catch (err) {
+        if (cancelled) return;
         console.error("Failed to check user status:", err);
+        setStatusError(true);
       } finally {
-        setIsLoading(false);
+        clearTimeout(timeout);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     checkUserStatus();
-  }, [router]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [router, statusAttempt]);
+
+  const retryStatusCheck = () => {
+    setStatusError(false);
+    setIsLoading(true);
+    setStatusAttempt(n => n + 1);
+  };
 
   const handleTypeSelect = (type: OrganizationType) => {
     setSelectedType(type);
@@ -164,7 +184,7 @@ export default function OnboardingPage() {
 
   return <div className="care-wizard">
     <ol className="care-wizard-steps" aria-label="Setup progress"><li aria-current={step === 1 ? 'step' : undefined}><span>{step > 1 ? <Check size={14} aria-hidden="true" /> : '1'}</span> Your organization</li><li aria-current={step === 2 ? 'step' : undefined}><span>2</span> Your workspace</li></ol>
-    {isLoading ? <div className="care-loading" role="status"><Loader2 size={22} className="care-spinner" aria-hidden="true" /> Preparing your workspace…</div> : <>
+    {isLoading ? <div className="care-loading" role="status"><Loader2 size={22} className="care-spinner" aria-hidden="true" /> Preparing your workspace…</div> : statusError ? <div className="care-form"><p className="care-form-error" role="alert"><AlertCircle size={18} aria-hidden="true" />We couldn&apos;t load your account status. Check your connection and try again.</p><button type="button" className="care-button" onClick={retryStatusCheck}><RefreshCw size={17} aria-hidden="true" />Retry</button></div> : <>
       {message && <p className={message.type === 'error' ? 'care-form-error' : 'care-email-summary'} role={message.type === 'error' ? 'alert' : 'status'}>{message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}{message.text}</p>}
       {message?.type === 'success' ? <div className="care-success"><h1>{message.text.startsWith('Join') ? 'Your request is on its way.' : 'Welcome to your workspace.'}</h1><p>{message.text.startsWith('Join') ? 'Your organization administrator will review your request. You can return once it has been approved.' : 'Taking you to your dashboard…'}</p></div> : <>
         {activeTab === 'type' && <><h1>Where do you work?</h1><p className="care-auth-intro">Choose your organization type. We&apos;ll shape your workspace around your team.</p><div className="care-org-options"><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('hospital')}><Building2 size={26} aria-hidden="true" /><span><strong>Hospital</strong><small>Plan discharges and coordinate placements</small></span><ArrowRight size={18} aria-hidden="true" /></button><button type="button" className="care-org-choice" onClick={() => handleTypeSelect('facility')}><Home size={26} aria-hidden="true" /><span><strong>Care facility</strong><small>Receive referrals and manage availability</small></span><ArrowRight size={18} aria-hidden="true" /></button></div></>}
