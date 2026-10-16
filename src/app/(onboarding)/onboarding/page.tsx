@@ -47,8 +47,8 @@ export default function OnboardingPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     const controller = new AbortController();
-    let cancelled = false;
     const timeout = setTimeout(() => controller.abort(), 10_000);
     const checkUserStatus = async () => {
       try {
@@ -60,18 +60,18 @@ export default function OnboardingPage() {
           router.push("/dashboard");
         }
       } catch (err) {
-        if (cancelled) return;
+        if (!mounted) return;
         console.error("Failed to check user status:", err);
         setStatusError(true);
       } finally {
         clearTimeout(timeout);
-        if (!cancelled) setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
     checkUserStatus();
     return () => {
-      cancelled = true;
+      mounted = false;
       clearTimeout(timeout);
       controller.abort();
     };
