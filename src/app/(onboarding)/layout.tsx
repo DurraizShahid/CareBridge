@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { PublicHeader, ReferralPreview } from "@/components/public-brand";
 
+// CSP strict-dynamic needs a per-request nonce; static prerender has none, so scripts get blocked.
+export const dynamic = "force-dynamic";
+
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return <div className="care-public care-onboarding">
     <a className="care-skip" href="#setup">Skip to setup</a><PublicHeader simple />
