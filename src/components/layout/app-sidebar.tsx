@@ -68,8 +68,8 @@ function NavButton({
       className={cn(
         "group relative flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors duration-200",
         isActive
-          ? "bg-[#EEF4FC] text-[#255DCE] shadow-none hover:bg-[#DCEBFF] hover:text-[#255DCE] dark:bg-[#1C3050]"
-          : "bg-transparent text-sidebar-foreground/75 hover:bg-[#EEF4FC] hover:text-[#255DCE] dark:hover:bg-[#1C3050]",
+          ? "bg-sidebar-accent text-primary shadow-none hover:bg-sidebar-accent/80 font-medium"
+          : "bg-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-primary",
         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
         "group-data-[collapsible=icon]:size-10!"
       )}

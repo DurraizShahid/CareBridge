@@ -62,7 +62,7 @@ export function DashboardHeader({
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-10 flex h-[76px] shrink-0 items-center gap-3 bg-[#F7F7F5]/95 px-4 backdrop-blur-xl dark:bg-[#0E0E10]/95 md:px-8">
+    <header className="sticky top-0 z-10 flex h-[70px] shrink-0 items-center gap-3 bg-background/90 border-b border-border/50 px-4 backdrop-blur-xl md:px-8">
       {/* Left: controls + page title */}
       <div className="flex min-w-0 items-center gap-1.5">
         {onToggleChatSidebar && (
@@ -103,24 +103,24 @@ export function DashboardHeader({
         <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
 
         <div className="min-w-0">
-          <p className="truncate text-lg font-semibold tracking-tight text-brand-navy dark:text-white">
+          <p className="truncate font-serif text-lg font-medium tracking-tight text-foreground">
             {pageTitle}
           </p>
         </div>
       </div>
 
-      <p className="mx-auto hidden text-xs font-medium tracking-wide text-[#8093A8] lg:block">Care coordination workspace</p>
+      <p className="mx-auto hidden text-xs font-medium tracking-wide text-muted-foreground lg:block">Care coordination workspace</p>
       {/* Right: actions */}
-      <div className="ml-auto flex items-center gap-0.5">
+      <div className="ml-auto flex items-center gap-1">
         {showNewChat && onNewChat && (
           <Button
             variant="secondary"
             size="sm"
             onClick={onNewChat}
-            className="mr-1 h-8 gap-1.5 rounded-full px-3 text-xs"
+            className="mr-1 h-8 gap-1.5 rounded-full px-3 text-xs bg-secondary text-secondary-foreground hover:bg-accent"
             aria-label="Start a new chat"
           >
-            <RiChatNewLine className="size-3.5" />
+            <RiChatNewLine className="size-3.5 text-primary" />
             New Chat
           </Button>
         )}
@@ -128,7 +128,7 @@ export function DashboardHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="size-10 rounded-full bg-white text-[#255DCE] shadow-sm hover:bg-[#EEF4FC] dark:bg-[#1A1C22] dark:text-[#DCEBFF]"
+          className="size-9 rounded-full bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={toggleTheme}
           aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >

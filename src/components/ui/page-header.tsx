@@ -43,21 +43,21 @@ export function PageHeader({ title, description, userName, breadcrumbs, children
       )}
 
       {/* Welcome & Title */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {(userName || welcomePrefix) && (
-          <h1 className="text-2xl sm:text-[40px] font-semibold tracking-tight text-foreground leading-none">
-            <span className="font-thin">{welcomePrefix ?? "Welcome,"}</span> <span className="font-normal">{welcomeName ?? userName}.</span>
+          <h1 className="font-serif text-3xl sm:text-[42px] font-normal tracking-tight text-foreground leading-[1.1]">
+            <span className="font-normal opacity-90">{welcomePrefix ?? "Welcome,"}</span> <span className="font-medium">{welcomeName ?? userName}.</span>
           </h1>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            {title && (
+              <h2 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-foreground">
                 {title}
               </h2>
-            </div>
+            )}
             {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground max-w-2xl">{description}</p>
             )}
           </div>
           {children && <div className="flex shrink-0 items-center gap-3">{children}</div>}

@@ -25,9 +25,9 @@ const iconStyles: Record<string, string> = {
 };
 
 const trendStyles = {
-  positive: "text-[var(--stat-health)] bg-[var(--stat-health-bg)]",
-  negative: "text-destructive bg-destructive/10",
-  neutral: "text-[#63788F] bg-[#EEF4FC] dark:text-[#DCEBFF] dark:bg-[#26364E]",
+  positive: "text-[#245C52] bg-[#EDF2EC] dark:text-[#3D8B7D] dark:bg-[#182E28]",
+  negative: "text-[#A33632] bg-[#FAEEEB] dark:text-[#F87171] dark:bg-[#2A1715]",
+  neutral: "text-muted-foreground bg-secondary",
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = "default" }: StatCardProps) {
