@@ -3,6 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { seedFacilityDemoPhotos } from "../scripts/facility-demo-photos";
 import { seedDemoPolish } from "./seed-demo-polish";
+import { seedAmple } from "./seed-ample";
 
 // ── Adapter ──
 const connectionString = process.env.DATABASE_URL!;
@@ -1533,6 +1534,7 @@ async function main() {
   console.log("    ✔ 30 document access log records seeded");
 
   await seedDemoPolish(prisma);
+  await seedAmple(prisma);
   console.log("\n✅ Seed completed successfully!");
 }
 
