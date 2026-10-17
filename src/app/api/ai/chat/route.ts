@@ -3,19 +3,21 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getServerOrganization } from "@/lib/server-organization";
 import { prisma } from "@/lib/prisma";
-import { getOpenCodeClient, getOpenCodeModel } from "@/lib/ai/opencode";
-import { AI_TOOLS } from "@/lib/ai/tools";
-import { toolHandlers, type ToolHandlerContext } from "@/lib/ai/tool-handlers";
-import { SYSTEM_PROMPT } from "@/lib/ai/prompt";
 import type { Facility } from "@/types";
 import { logAIEvent, logAIError } from "@/lib/ai/logger";
-import type { ChatCompletionMessageParam } from "openai/resources/index";
+import {
+  parsePatientInput,
+  rankFacilities,
+  generateResponse,
+  buildConversationState,
+  type RankedFacility,
+} from "@/lib/ai/dumb-ai";
 
 const encoder = new TextEncoder();
 
-// Chat cards and the model only need to know a tour exists, not its geometry.
-function slimFacility({ media: _media, tourConfig, ...facility }: Facility) {
-  return { ...facility, hasTour: !!tourConfig };
+// Chat cards and the client only need to know a tour exists, not its geometry.
+function slimFacility({ media: _media, tourConfig, ...facility }: Facility & { hasTour?: boolean }) {
+  return { ...facility, hasTour: true };
 }
 
 function safeStringify(value: unknown): string {
@@ -71,13 +73,6 @@ function releaseStreamSlot(userId: string): void {
   const current = activeStreams.get(userId) ?? 0;
   if (current <= 1) activeStreams.delete(userId);
   else activeStreams.set(userId, current - 1);
-}
-
-function withTimeout<T>(fn: () => Promise<T>, ms: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("Tool handler timed out")), ms);
-    fn().then(resolve, reject).finally(() => clearTimeout(timer));
-  });
 }
 
 const JAILBREAK_PATTERNS = [
@@ -210,12 +205,6 @@ export async function POST(req: Request) {
         }))?.id ?? null
       : null;
 
-    const ctx: ToolHandlerContext = {
-      organizationId: currentOrgId,
-      role: org.role,
-      userId,
-    };
-
     const MAX_HISTORY = 20;
     const trimmedMessages = validMessages.length > MAX_HISTORY
       ? validMessages.slice(-MAX_HISTORY)
@@ -231,178 +220,76 @@ export async function POST(req: Request) {
 
     logAIEvent("chat.request", {
       level: "info", requestId, userId, organizationId: currentOrgId,
-      model: getOpenCodeModel(), messageCount: trimmedMessages.length,
+      model: "rule-based-recommendation-engine", messageCount: trimmedMessages.length,
     });
-
-    const state = { totalPromptTokens: 0, totalCompletionTokens: 0, totalToolCalls: 0 };
 
     const stream = new ReadableStream({
       async start(controller) {
         let keepAliveHandle: ReturnType<typeof setInterval> | undefined;
-        let flushTimer: ReturnType<typeof setTimeout> | null = null;
-        let textBuffer = "";
-        let replyText = "";
-        const FLUSH_INTERVAL = 30;
-
-        const flushTextBuffer = () => {
-          if (textBuffer) {
-            try {
-              controller.enqueue(sseEvent("text", JSON.stringify(textBuffer)));
-              textBuffer = "";
-            } catch {}
-          }
-          flushTimer = null;
-        };
 
         try {
           keepAliveHandle = startKeepAlive(controller);
 
-          const messages: ChatCompletionMessageParam[] = [
-            { role: "system", content: SYSTEM_PROMPT },
-            ...trimmedMessages.map((msg) => ({ role: msg.role, content: msg.content })),
-          ];
+          // Build conversation state and parse current user input
+          const lastUserMessage = trimmedMessages.filter((m) => m.role === "user").pop();
+          const lastText = lastUserMessage?.content ?? "";
+          const parsed = parsePatientInput(lastText);
+          const conversationState = buildConversationState(trimmedMessages);
 
-          let maxRounds = 5;
-          const toolCallsAccumulator = new Map<number, { id: string; name: string; args: string }>();
+          const activeCareLevel = parsed.careLevel ?? conversationState.careLevel;
+          const activeLocation = parsed.location ?? conversationState.location;
+          const activeInsurance = parsed.insurance ?? conversationState.insurance;
+          const activeAge = parsed.age ?? conversationState.age;
+          const activeConditions = parsed.conditions?.length
+            ? parsed.conditions
+            : conversationState.conditions;
 
-          while (maxRounds > 0) {
-            maxRounds--;
-            const round = 5 - maxRounds;
-
-            logAIEvent("chat.round_start", {
-              level: "debug", requestId, round, messageCount: messages.length,
+          let rankedFacilities: RankedFacility[] = [];
+          if (activeCareLevel) {
+            rankedFacilities = await rankFacilities({
+              careLevel: activeCareLevel,
+              location: activeLocation,
+              insurance: activeInsurance,
+              age: activeAge,
+              conditions: activeConditions,
+              raw: lastText,
             });
+          }
 
-            toolCallsAccumulator.clear();
-            let fullContent = "";
+          const replyText = generateResponse(parsed, rankedFacilities, conversationState);
 
-            const result = await getOpenCodeClient().chat.completions.create({
-              model: getOpenCodeModel(),
-              messages,
-              tools: AI_TOOLS,
-              stream: true,
-              stream_options: { include_usage: true },
-            });
+          // If enough info exists and facilities were matched, emit structured facilities event
+          if (activeCareLevel && activeLocation && rankedFacilities.length > 0) {
+            const topFacilities = rankedFacilities.slice(0, 3);
+            controller.enqueue(sseEvent("facilities", safeStringify(topFacilities.map(slimFacility))));
+          }
 
-            for await (const chunk of result) {
-              const delta = chunk.choices[0]?.delta;
+          // Stream the natural response text with a smooth cadence
+          const words = replyText.split(" ");
+          const chunks: string[] = [];
+          for (let i = 0; i < words.length; i += 3) {
+            const slice = words.slice(i, i + 3).join(" ");
+            chunks.push(i === 0 ? slice : " " + slice);
+          }
 
-              if (delta?.content) {
-                fullContent += delta.content;
-                replyText += delta.content;
-                textBuffer += delta.content;
-                if (!flushTimer) {
-                  flushTimer = setTimeout(flushTextBuffer, FLUSH_INTERVAL);
-                }
-              }
-
-              if (delta?.tool_calls) {
-                for (const tc of delta.tool_calls) {
-                  const idx = tc.index ?? 0;
-                  let acc = toolCallsAccumulator.get(idx);
-                  if (!acc) {
-                    acc = { id: tc.id ?? "", name: "", args: "" };
-                    toolCallsAccumulator.set(idx, acc);
-                  }
-                  if (tc.id) acc.id = tc.id;
-                  if (tc.function?.name) acc.name += tc.function.name;
-                  if (tc.function?.arguments) acc.args += tc.function.arguments;
-                }
-              }
-
-              if (chunk.usage) {
-                state.totalPromptTokens = chunk.usage.prompt_tokens ?? 0;
-                state.totalCompletionTokens = chunk.usage.completion_tokens ?? 0;
-              }
-            }
-
-            if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
-            flushTextBuffer();
-
-            const functionCalls = [...toolCallsAccumulator.values()].filter((fc) => fc.name.length > 0);
-            if (functionCalls.length === 0) break;
-
-            messages.push({
-              role: "assistant",
-              content: fullContent || null,
-              tool_calls: functionCalls.map((fc) => ({
-                id: fc.id,
-                type: "function" as const,
-                function: { name: fc.name, arguments: fc.args || "{}" },
-              })),
-            });
-
-            const cappedCalls = functionCalls.slice(0, 5);
-
-            for (const fc of cappedCalls) {
-              state.totalToolCalls++;
-              const handler = toolHandlers[fc.name];
-
-              let toolResponse: string;
-
-              if (!handler) {
-                logAIError("unknown_tool", new Error(`Unknown tool: ${fc.name}`), { requestId, toolName: fc.name });
-                toolResponse = safeStringify({ error: `Unknown tool: ${fc.name}` });
-              } else {
-                let result;
-                try {
-                  let parsedArgs: Record<string, unknown> = {};
-                  try {
-                    parsedArgs = fc.args ? JSON.parse(fc.args) : {};
-                  } catch {
-                    parsedArgs = {};
-                  }
-                  result = await withTimeout(() => handler(parsedArgs, ctx), 15_000);
-                } catch (e) {
-                  result = { type: "error" as const, message: e instanceof Error ? e.message : "Tool handler failed" };
-                }
-
-                if (result.type === "facilities" && Array.isArray(result.data)) {
-                  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
-                  flushTextBuffer();
-                  controller.enqueue(sseEvent("facilities", safeStringify(result.data.map(slimFacility))));
-                }
-
-                if (result.type === "placement-draft") {
-                  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
-                  flushTextBuffer();
-                  controller.enqueue(sseEvent("placement-draft", safeStringify(result.data)));
-                }
-
-                const responseData = result.type === "error"
-                  ? { error: result.message }
-                  : result.type === "facilities"
-                    ? result.data.map(slimFacility)
-                    : result.data;
-
-                toolResponse = typeof responseData === "string"
-                  ? responseData
-                  : safeStringify(responseData);
-              }
-
-              logAIEvent("tool_call", {
-                level: "info", toolName: fc.name, requestId, duration: Date.now() - startTime, round,
-              });
-
-              messages.push({
-                role: "tool",
-                tool_call_id: fc.id,
-                content: toolResponse,
-              });
+          const streamDelay = process.env.NODE_ENV === "test" ? 0 : 20;
+          for (const chunk of chunks) {
+            if (req.signal.aborted) break;
+            controller.enqueue(sseEvent("text", JSON.stringify(chunk)));
+            if (streamDelay > 0) {
+              await new Promise((resolve) => setTimeout(resolve, streamDelay));
             }
           }
 
           if (keepAliveHandle) clearInterval(keepAliveHandle);
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
-          flushTextBuffer();
 
           logAIEvent("chat.complete", {
             level: "info", requestId, userId, organizationId: currentOrgId,
             duration: Date.now() - startTime,
-            promptTokens: state.totalPromptTokens,
-            completionTokens: state.totalCompletionTokens,
-            totalTokens: state.totalPromptTokens + state.totalCompletionTokens,
-            toolCalls: state.totalToolCalls,
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+            toolCalls: rankedFacilities.length > 0 ? 1 : 0,
           });
 
           const reply = replyText.replace(/<!--suggestions-->[\s\S]*$/, "").trim().slice(0, 10000);
@@ -412,36 +299,21 @@ export async function POST(req: Request) {
           }
 
           controller.enqueue(sseEvent("usage", JSON.stringify({
-            promptTokens: state.totalPromptTokens,
-            completionTokens: state.totalCompletionTokens,
-            totalTokens: state.totalPromptTokens + state.totalCompletionTokens,
-            toolCalls: state.totalToolCalls,
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+            toolCalls: rankedFacilities.length > 0 ? 1 : 0,
           })));
           controller.enqueue(sseEvent("done", ""));
           controller.close();
         } catch (err) {
           if (keepAliveHandle) clearInterval(keepAliveHandle);
-          if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
-          flushTextBuffer();
           logAIError("chat.stream_error", err, {
             requestId, userId, organizationId: currentOrgId, duration: Date.now() - startTime,
           });
-          const errMsg = err instanceof Error ? err.message : String(err);
-          const errStatus = (err as { status?: number })?.status;
-          const isTimeout = err instanceof Error && (
-            err.name === "TimeoutError" || errMsg.includes("timeout") || errMsg.includes("abort")
-          );
-          const isRateLimited = errStatus === 429 || errMsg.includes("429");
-          const isAuthError = errStatus === 401 || errMsg.includes("401") || errMsg.includes("API key") || errMsg.includes("OPENCODE_API_KEY") || errMsg.includes("invalid_api_key");
           const errorPayload = JSON.stringify({
-            code: isTimeout ? "timeout" : isRateLimited ? "rate_limit" : isAuthError ? "auth_error" : "internal_error",
-            message: isTimeout
-              ? "The request timed out. Please try again with a shorter message."
-              : isRateLimited
-                ? "We're experiencing high demand. Please wait a moment and try again."
-                : isAuthError
-                  ? "AI service configuration error. Please contact support."
-                  : "An error occurred while processing your request. Please try again.",
+            code: "internal_error",
+            message: "An error occurred while matching facilities. Please try again.",
           });
           try {
             controller.enqueue(sseEvent("error", errorPayload));
