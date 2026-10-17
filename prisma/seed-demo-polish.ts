@@ -48,14 +48,95 @@ export async function seedDemoPolish(prisma: PrismaClient) {
     await prisma.user.upsert({ where: { id: staff.id }, create: data, update: data });
   }
 
+  // Fictional facilities with 3D virtual tour configs (see src/lib/facility-tour.ts).
+  const stop = (id: string, area: "lobby" | "corridor" | "room", label: string, description: string, highlights: string[]) =>
+    ({ id, area, label, description, highlights });
+
   // Seeded ratings are fictional illustrative figures, not provider reviews or claims.
   const facilities = [
-    { id: "fac-001", name: "Willow Harbor Rehabilitation (Demo)", description: "Short-stay recovery suites with daily PT, OT, and stroke rehabilitation.", capacity: 84, currentOccupancy: 70, rating: 4.6, reviewsCount: 76, hasAvailability: true, waitlistDays: 0, careLevelsOffered: ["rehabilitation", "skilled_nursing"] as const, specialties: ["Post-acute rehabilitation", "Stroke recovery", "Physical therapy", "Occupational therapy"] },
-    { id: "fac-002", name: "Juniper Grove Assisted Living (Demo)", description: "A smaller assisted living community with medication support and daily activities.", capacity: 52, currentOccupancy: 47, rating: 4.4, reviewsCount: 43, hasAvailability: true, waitlistDays: 2, careLevelsOffered: ["assisted_living", "independent_living", "memory_care"] as const, specialties: ["Daily living assistance", "Medication support", "Memory care", "Family visiting"] },
-    { id: "fac-003", name: "Cedar Bay Skilled Nursing (Demo)", description: "24-hour nursing, IV support, wound care, and longer-term clinical stays.", capacity: 108, currentOccupancy: 106, rating: 4.1, reviewsCount: 118, hasAvailability: true, waitlistDays: 5, careLevelsOffered: ["skilled_nursing", "long_term_care", "rehabilitation"] as const, specialties: ["Wound care", "24-hour nursing", "IV therapy", "Post-surgical monitoring"] },
-    { id: "fac-004", name: "Harbor Light Home Health (Demo)", description: "Home-based nursing, oxygen support, and coordinated rehabilitative visits.", capacity: 36, currentOccupancy: 23, rating: 4.7, reviewsCount: 31, hasAvailability: true, waitlistDays: 0, careLevelsOffered: ["home_health", "hospice"] as const, specialties: ["In-home nursing", "Oxygen management", "Physical therapy", "Palliative support"] },
-    { id: "fac-005", name: "Maple Rise Memory Care (Demo)", description: "Secure memory-care cottages with dementia-informed daily routines.", capacity: 42, currentOccupancy: 41, rating: 4.8, reviewsCount: 54, hasAvailability: true, waitlistDays: 7, careLevelsOffered: ["memory_care", "assisted_living", "long_term_care"] as const, specialties: ["Dementia care", "Secure memory unit", "Behavioral support", "24-hour supervision"] },
-  ] as const;
+    {
+      id: "fac-001", name: "Willow Harbor Rehabilitation (Demo)",
+      description: "Short-stay recovery suites with daily PT, OT, and stroke rehabilitation.",
+      capacity: 84, currentOccupancy: 70, rating: 4.6, reviewsCount: 76, hasAvailability: true, waitlistDays: 0,
+      careLevelsOffered: ["rehabilitation", "skilled_nursing"] as const,
+      specialties: ["Post-acute rehabilitation", "Stroke recovery", "Physical therapy", "Occupational therapy"],
+      tourConfig: {
+        accentColor: "#1d70b8", wallColor: "#f3f7fb", floorColor: "#e2e8f0", roomName: "Rehabilitation Suite",
+        welcome: "State-of-the-art physical and occupational therapy recovery suites in Portland.",
+        stops: [
+          stop("welcome", "lobby", "Main Welcome Atrium", "Spacious reception with direct transport bay and patient orientation desk.", ["Transport drop-off", "Orientation desk", "Family lounge"]),
+          stop("gym-hall", "corridor", "Mobility & Therapy Concourse", "Wide hallway with parallel training bars, distance markers, and nursing hub.", ["Distance markers", "Training handrails", "Nurse station"]),
+          stop("suite", "room", "Rehabilitation Suite", "Private suite with zero-threshold accessible shower, electric high-low therapy bed, and recliner.", ["Electric high-low bed", "Zero-threshold bath", "Recliner for guests"]),
+          stop("adl-suite", "room", "Activities of Daily Living Suite", "Simulated home environment where therapists work with patients on kitchen and bathroom transfers.", ["ADL kitchen setup", "Transfer practice", "Safety coaching"]),
+        ],
+      },
+    },
+    {
+      id: "fac-002", name: "Juniper Grove Assisted Living (Demo)",
+      description: "A smaller assisted living community with medication support and daily activities.",
+      capacity: 52, currentOccupancy: 47, rating: 4.4, reviewsCount: 43, hasAvailability: true, waitlistDays: 2,
+      careLevelsOffered: ["assisted_living", "independent_living", "memory_care"] as const,
+      specialties: ["Daily living assistance", "Medication support", "Memory care", "Family visiting"],
+      tourConfig: {
+        accentColor: "#2b8a3e", wallColor: "#faf8f5", floorColor: "#eae5dd", roomName: "Heritage Studio",
+        welcome: "Warm, supportive community living with personalized daily care in Portland.",
+        stops: [
+          stop("parlor", "lobby", "Fireside Living Room", "Community gathering area with coffee bar, piano corner, and visitor sign-in desk.", ["Fireside seating", "Visitor sign-in", "Coffee bar"]),
+          stop("arbor-hall", "corridor", "Arbor Way Residence Hall", "Residential-style corridor with acoustic dampening and memory shadowboxes outside each door.", ["Memory shadowboxes", "Continuous handrails", "Quiet carpet runner"]),
+          stop("studio", "room", "Heritage Studio", "Private studio apartment featuring a kitchenette, accessible shower, and courtyard garden view.", ["Kitchenette nook", "Accessible bathroom", "Courtyard view"]),
+        ],
+      },
+    },
+    {
+      id: "fac-003", name: "Cedar Bay Skilled Nursing (Demo)",
+      description: "24-hour nursing, IV support, wound care, and longer-term clinical stays.",
+      capacity: 108, currentOccupancy: 106, rating: 4.1, reviewsCount: 118, hasAvailability: true, waitlistDays: 5,
+      careLevelsOffered: ["skilled_nursing", "long_term_care", "rehabilitation"] as const,
+      specialties: ["Wound care", "24-hour nursing", "IV therapy", "Post-surgical monitoring"],
+      tourConfig: {
+        accentColor: "#0f766e", wallColor: "#f0fdfa", floorColor: "#e2ece9", roomName: "Clinical Care Room",
+        welcome: "Comprehensive 24-hour clinical nursing, IV therapy, and post-surgical care.",
+        stops: [
+          stop("triage", "lobby", "Admissions & Clinical Triage", "Dedicated intake wing designed for seamless hospital transfers and clinical intake.", ["Direct ambulance bay", "Admissions desk", "Family briefing room"]),
+          stop("care-wing", "corridor", "Central Care Wing", "Double-wide hallway centered on the primary nursing station with continuous telemetry monitoring.", ["Central nurse station", "Continuous rails", "Rapid call response"]),
+          stop("care-room", "room", "Clinical Care Room", "Private room with headwall oxygen, suction, adjustable hospital bed, and vital signs monitoring.", ["Headwall O₂ & suction", "Adjustable bed", "Private accessible bath"]),
+          stop("patio", "room", "Courtyard Solarium", "Enclosed sunlit solarium for patient relaxation and visits with loved ones.", ["Courtyard access", "Abundant daylight", "Family seating"]),
+        ],
+      },
+    },
+    {
+      id: "fac-004", name: "Harbor Light Home Health (Demo)",
+      description: "Home-based nursing, oxygen support, and coordinated rehabilitative visits.",
+      capacity: 36, currentOccupancy: 23, rating: 4.7, reviewsCount: 31, hasAvailability: true, waitlistDays: 0,
+      careLevelsOffered: ["home_health", "hospice"] as const,
+      specialties: ["In-home nursing", "Oxygen management", "Physical therapy", "Palliative support"],
+      tourConfig: {
+        accentColor: "#0284c7", wallColor: "#f0f9ff", floorColor: "#e0f2fe", roomName: "Care Training Suite",
+        welcome: "Home-based clinical coordination and patient family training center.",
+        stops: [
+          stop("intake", "lobby", "Clinical Dispatch & Intake", "Coordination center where field nurses, therapists, and social workers synchronize care plans.", ["24/7 care dispatch", "Caregiver consultation", "Intake desk"]),
+          stop("prep-hall", "corridor", "Equipment & Staging Concourse", "Staging corridor for home medical equipment, infusion supplies, and assistive devices.", ["Supply staging", "Equipment demo area", "Clinical lockers"]),
+          stop("sim-room", "room", "Home Health Training Suite", "Simulated residential bedroom and bathroom for patient and family caregiver training.", ["Home bed transfer", "Safety bar training", "Remote vitals station"]),
+        ],
+      },
+    },
+    {
+      id: "fac-005", name: "Maple Rise Memory Care (Demo)",
+      description: "Secure memory-care cottages with dementia-informed daily routines.",
+      capacity: 42, currentOccupancy: 41, rating: 4.8, reviewsCount: 54, hasAvailability: true, waitlistDays: 7,
+      careLevelsOffered: ["memory_care", "assisted_living", "long_term_care"] as const,
+      specialties: ["Dementia care", "Secure memory unit", "Behavioral support", "24-hour supervision"],
+      tourConfig: {
+        accentColor: "#d97706", wallColor: "#fffbeb", floorColor: "#fef3c7", roomName: "Memory Cottage Suite",
+        welcome: "Secure, purpose-built memory-support community with dementia-informed design.",
+        stops: [
+          stop("hearth", "lobby", "Cottage Great Room", "Secure circular entry hall featuring gentle circadian lighting and open living spaces.", ["Secure keyless entry", "Circadian lighting", "Family visiting alcove"]),
+          stop("promenade", "corridor", "Memory Lane Promenade", "Corridor with visual wayfinding cues, sensory activity boards, and custom door identifiers.", ["Visual cueing", "Sensory wall boards", "Continuous wooden handrails"]),
+          stop("cottage", "room", "Memory Cottage Suite", "Peaceful, clutter-free room with motion-activated path lights, low-profile bed, and accessible bath.", ["Motion path lights", "Low-profile safety bed", "Direct bathroom view"]),
+        ],
+      },
+    },
+  ];
   for (const [index, facility] of facilities.entries()) {
     const { id, careLevelsOffered, ...data } = facility;
     await prisma.facility.update({
@@ -84,13 +165,20 @@ export async function seedDemoPolish(prisma: PrismaClient) {
     careLevelsOffered: ["hospice" as const], specialties: ["Comfort care", "Symptom management", "Family support", "Palliative nursing"],
     rating: 4.9, reviewsCount: 24, hasAvailability: true, waitlistDays: 0,
     acceptsMedicare: true, acceptsMedicaid: true, organizationId: "org-003",
+    tourConfig: {
+      accentColor: "#7c3aed", wallColor: "#faf5ff", floorColor: "#f3e8ff", roomName: "Sanctuary Suite",
+      welcome: "A peaceful residential sanctuary providing comfort-focused palliative and end-of-life care.",
+      stops: [
+        stop("gathering", "lobby", "Family Gathering Room", "A serene reception with fireplace, kitchen, and quiet reflection room for families.", ["Family kitchen", "Fireplace lounge", "Private meditation alcove"]),
+        stop("garden-walk", "corridor", "Cloister Garden Walkway", "Quiet hallway with floor-to-ceiling windows looking out onto protected memorial gardens.", ["Garden views", "Acoustic dampening", "Rest alcoves"]),
+        stop("sanctuary", "room", "Sanctuary Suite", "Spacious private room with sleeper sofa for loved ones, French doors to private patio, and specialized comfort bed.", ["Private garden patio", "Family sleeper sofa", "Surround music & sound"]),
+      ],
+    },
   };
   await prisma.facility.upsert({ where: { id: hospice.id }, create: hospice, update: hospice });
   await seedFacilityDemoPhotos(prisma, ["fac-006"]);
 
   // Fictional Houston-area facilities with 3D virtual tour configs (see src/lib/facility-tour.ts).
-  const stop = (id: string, area: "lobby" | "corridor" | "room", label: string, description: string, highlights: string[]) =>
-    ({ id, area, label, description, highlights });
   const tourFacilities = [
     {
       id: "fac-007", name: "Mercy General Transitional Care (Demo)", type: "skilled_nursing_facility" as const,
@@ -337,5 +425,5 @@ export async function seedDemoPolish(prisma: PrismaClient) {
       await prisma.payment.upsert({ where: { id: payment.id }, create: payment, update: payment });
     }
   }
-  console.log("  Demo polish: 2 hospital orgs + 1 facility org, 9 facilities (3 with 3D tours), 10 patients, 8 placements (2 completed), 7 referrals, 3 test contracts, 2 demo payments.");
+  console.log("  Demo polish: 2 hospital orgs + 1 facility org, 9 facilities (with 3D tours), 10 patients, 8 placements (2 completed), 7 referrals, 3 test contracts, 2 demo payments.");
 }
