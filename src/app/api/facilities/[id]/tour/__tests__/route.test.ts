@@ -18,6 +18,7 @@ vi.mock("@/lib/server-organization", () => ({
 
 vi.mock("@/lib/data-access", () => ({
   getFacility: getFacilityMock,
+  getFacilityById: vi.fn(),
   updateFacilityTourConfig: updateTourMock,
 }));
 

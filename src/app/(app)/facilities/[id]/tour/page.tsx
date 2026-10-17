@@ -41,7 +41,7 @@ export default async function FacilityTourPage({ params }: Props) {
 
   // Hospital staff tour network facilities owned by other organizations (read-only).
   const own = await getFacility(id, org.organizationId, org.role);
-  const facility = own ?? (org.organizationType === "hospital" ? await getFacilityById(id) : null);
+  const facility = own ?? (await getFacilityById(id));
   if (!facility) notFound();
 
   const canEdit = !!own && roleHasPermission(org.role, "facilities:update");
@@ -52,7 +52,7 @@ export default async function FacilityTourPage({ params }: Props) {
       <div className="flex flex-col gap-8 pb-10">
         <PageHeader
           title={`${facility.name} — 3D Virtual Tour`}
-          description={`${facility.address.street}, ${facility.address.city}, ${facility.address.state}`}
+          description={[facility.address?.street, facility.address?.city, facility.address?.state].filter(Boolean).join(", ")}
           breadcrumbs={[
             { label: "Dashboard", href: "/dashboard" },
             { label: "Facilities", href: "/facilities" },
@@ -118,7 +118,7 @@ export default async function FacilityTourPage({ params }: Props) {
       {/* ── 1. Page Header with Breadcrumbs & Actions ── */}
       <PageHeader
         title={`${facility.name} — 3D Walkthrough`}
-        description={`${facility.address.street}, ${facility.address.city}, ${facility.address.state}`}
+        description={[facility.address?.street, facility.address?.city, facility.address?.state].filter(Boolean).join(", ")}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Facilities", href: "/facilities" },

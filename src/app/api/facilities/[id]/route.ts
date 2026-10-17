@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getFacility, updateFacility, deleteFacility } from "@/lib/data-access";
+import { getFacility, getFacilityById, updateFacility, deleteFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 
@@ -20,7 +20,9 @@ export async function GET(
     }
 
     const { id } = await params;
-    const facility = await getFacility(id, org.organizationId, org.role);
+    const facility =
+      (await getFacility(id, org.organizationId, org.role)) ??
+      (org.organizationType === "hospital" ? await getFacilityById(id) : null);
     if (!facility) {
       return NextResponse.json({ error: "Facility not found" }, { status: 404 });
     }

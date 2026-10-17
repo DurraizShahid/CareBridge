@@ -20,6 +20,7 @@ import {
   ExternalLink,
   Users,
   Award,
+  Rotate3d,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +79,7 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
       {/* ── 1. Page Header ── */}
       <PageHeader
         title={facility.name}
-        description={`${typeLabel} • ${facility.address.city}, ${facility.address.state}`}
+        description={`${typeLabel} • ${[facility.address?.city, facility.address?.state].filter(Boolean).join(", ")}`}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Facility Network", href: "/dashboard/facility-network" },
@@ -95,6 +96,16 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
             <ArrowLeft className="size-3.5 text-[#53665E]" />
             Back to Network
           </Button>
+          {facility.tourConfig && (
+            <Button
+              size="sm"
+              className="rounded-full bg-[#245C52] px-4 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5 shadow-xs"
+              render={<Link href={`/facilities/${facility.id}/tour`} />}
+            >
+              <Rotate3d className="size-3.5" />
+              Take 3D Tour
+            </Button>
+          )}
           <Button
             size="sm"
             className="rounded-full bg-[#245C52] px-5 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5"
@@ -142,6 +153,13 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
           <Star className="size-3.5 fill-[#C05621] text-[#C05621]" />
           {facility.rating} / 5.0 Rating
         </div>
+
+        {facility.tourConfig && (
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full font-medium bg-[#255DCE]/10 text-[#255DCE] border border-[#255DCE]/20">
+            <Rotate3d className="size-3.5 text-[#255DCE]" />
+            3D Walkthrough Configured
+          </div>
+        )}
       </div>
 
       {/* ── 3. KPI Stat Cards ── */}
@@ -190,6 +208,55 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left Column: Photos & Details */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Featured 3D Virtual Tour Showcase Banner */}
+          {facility.tourConfig ? (
+            <Card className="overflow-hidden rounded-2xl border border-[#DCE5DE] bg-gradient-to-br from-[#FAFBF8] to-white shadow-xs">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[#245C52]/10 px-2.5 py-0.5 text-xs font-semibold text-[#245C52]">
+                      <Rotate3d className="size-3.5" />
+                      Interactive 3D Walkthrough Ready
+                    </div>
+                    <h3 className="font-serif text-xl sm:text-2xl font-medium text-[#0D1B17]">
+                      {facility.tourConfig.title || facility.tourConfig.welcome || `Explore ${facility.name} in 3D`}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#53665E] max-w-xl leading-relaxed">
+                      Experience patient rooms, admission lobbies, and care hallways with interactive spatial navigation and architectural floor plans.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-2">
+                      {facility.tourConfig.stops?.slice(0, 4).map((s, idx) => (
+                        <span
+                          key={s.id || idx}
+                          className="inline-flex items-center gap-1 rounded-full bg-white border border-[#DCE5DE] px-2.5 py-0.5 text-[11px] font-medium text-[#203E39]"
+                        >
+                          <span className="size-1.5 rounded-full bg-[#245C52]" />
+                          {s.label || `Stop ${idx + 1}`}
+                        </span>
+                      ))}
+                      {facility.tourConfig.stops && facility.tourConfig.stops.length > 4 && (
+                        <span className="text-[11px] text-[#53665E] self-center">
+                          +{facility.tourConfig.stops.length - 4} more stops
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
+                    <Button
+                      size="sm"
+                      className="rounded-full bg-[#245C52] px-5 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5"
+                      render={<Link href={`/facilities/${facility.id}/tour`} />}
+                    >
+                      <Rotate3d className="size-3.5" />
+                      Start 3D Tour
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {/* Photo Gallery Card */}
           <Card className="overflow-hidden rounded-2xl border border-[#DCE5DE] bg-white">
             <CardContent className="p-0">
@@ -243,8 +310,13 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
                   <div className="flex items-start gap-2.5 text-xs sm:text-sm text-[#203E39]">
                     <MapPin className="size-4 shrink-0 text-[#245C52] mt-0.5" />
                     <span>
-                      {facility.address.street}, {facility.address.city},{" "}
-                      {facility.address.state} {facility.address.zipCode}
+                      {[
+                        facility.address?.street,
+                        facility.address?.city,
+                        [facility.address?.state, facility.address?.zipCode].filter(Boolean).join(" "),
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#203E39]">
@@ -415,7 +487,7 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
               </div>
 
               {/* Key Facility Contacts */}
-              {facility.contacts && facility.contacts.length > 0 && (
+              {Array.isArray(facility.contacts) && facility.contacts.length > 0 && (
                 <>
                   <Separator className="bg-[#DCE5DE]/70" />
                   <div>
@@ -475,10 +547,13 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
                             />
                           )}
                           {m.type === "gaussian_splat" && (
-                            <div className="flex h-full flex-col items-center justify-center p-2 text-center text-[#245C52]">
-                              <Box className="size-5 mb-1" />
+                            <Link
+                              href={`/facilities/${facility.id}/tour`}
+                              className="flex h-full flex-col items-center justify-center p-2 text-center text-[#245C52] hover:bg-[#EDF2EC] transition-colors"
+                            >
+                              <Rotate3d className="size-5 mb-1" />
                               <span className="text-[10px] font-semibold">3D Tour</span>
-                            </div>
+                            </Link>
                           )}
                           {m.type === "video" && (
                             <div className="flex h-full flex-col items-center justify-center p-2 text-center text-[#255DCE]">

@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getFacilities, createFacility } from "@/lib/data-access";
+import { getFacilities, searchFacilities, createFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
 import { roleHasPermission } from "@/lib/permissions";
 import type { FacilityType, CareLevel } from "@/types";
@@ -17,7 +17,10 @@ export async function GET() {
       return NextResponse.json({ error: "No organization found" }, { status: 400 });
     }
 
-    const facilities = await getFacilities(org.organizationId, org.role);
+    const facilities =
+      org.organizationType === "hospital"
+        ? await searchFacilities({})
+        : await getFacilities(org.organizationId, org.role);
     return NextResponse.json(facilities);
   } catch (error: unknown) {
     console.error("Error fetching facilities:", error);

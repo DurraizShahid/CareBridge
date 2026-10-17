@@ -18,6 +18,7 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
+  Rotate3d,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -706,6 +707,20 @@ function FacilityCard({ facility }: { facility: Facility }) {
                 At Capacity
               </Badge>
             )}
+
+            {facility.tourConfig && (
+              <div className="pointer-events-auto">
+                <Link
+                  href={`/facilities/${facility.id}/tour`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#245C52] hover:bg-[#19473F] text-white border border-white/30 text-[11px] font-semibold px-2.5 py-1 shadow-sm transition-transform active:scale-95"
+                  title="Open 3D Virtual Tour"
+                >
+                  <Rotate3d className="size-3.5" />
+                  3D Tour
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -727,7 +742,7 @@ function FacilityCard({ facility }: { facility: Facility }) {
               <p className="flex items-center gap-1">
                 <MapPin className="size-3 text-[#245C52] shrink-0" />
                 <span className="truncate">
-                  {facility.address.city}, {facility.address.state}
+                  {[facility.address?.city, facility.address?.state].filter(Boolean).join(", ")}
                 </span>
               </p>
             </div>
@@ -759,10 +774,22 @@ function FacilityCard({ facility }: { facility: Facility }) {
             <span className="text-[#53665E]">
               {facility.currentOccupancy}/{facility.capacity} beds occupied
             </span>
-            <span className="font-semibold text-[#245C52] group-hover:underline inline-flex items-center gap-1">
-              View Profile
-              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-            </span>
+            <div className="flex items-center gap-3">
+              {facility.tourConfig && (
+                <Link
+                  href={`/facilities/${facility.id}/tour`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-medium text-[#245C52] hover:underline inline-flex items-center gap-1"
+                >
+                  <Rotate3d className="size-3" />
+                  3D Tour
+                </Link>
+              )}
+              <span className="font-semibold text-[#245C52] group-hover:underline inline-flex items-center gap-1">
+                View Profile
+                <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>

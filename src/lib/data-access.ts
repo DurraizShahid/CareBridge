@@ -161,13 +161,20 @@ function normalizeSearchValue(value: string | null | undefined): string {
 }
 
 /** Prisma Json fields may be objects or double-encoded JSON strings from older seeds. */
-function parseJsonObject<T extends Record<string, unknown>>(value: unknown): T {
+export function parseJsonObject<T extends Record<string, unknown>>(value: unknown): T {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return value as T;
   }
   if (typeof value === "string") {
     try {
-      const parsed = JSON.parse(value) as unknown;
+      let parsed = JSON.parse(value) as unknown;
+      if (typeof parsed === "string") {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          // fall through
+        }
+      }
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         return parsed as T;
       }
@@ -176,6 +183,30 @@ function parseJsonObject<T extends Record<string, unknown>>(value: unknown): T {
     }
   }
   return {} as T;
+}
+
+export function parseJsonArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+  if (typeof value === "string") {
+    try {
+      let parsed = JSON.parse(value) as unknown;
+      if (typeof parsed === "string") {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          // fall through
+        }
+      }
+      if (Array.isArray(parsed)) {
+        return parsed as T[];
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return [];
 }
 
 function getPatientInsuranceTerms(insurance: unknown): string[] {
@@ -721,7 +752,7 @@ export async function getFacilities(
       phone: f.phone,
       email: f.email,
       website: f.website ?? undefined,
-      contacts: Array.isArray(f.contacts) ? (f.contacts as unknown as Contact[]) : [],
+      contacts: parseJsonArray<Contact>(f.contacts),
       licensure: f.licensure,
       accreditations: f.accreditations,
       capacity: f.capacity,
@@ -751,6 +782,7 @@ export async function getFacilities(
         createdAt: toISO(m.createdAt),
         updatedAt: toISO(m.updatedAt),
       })),
+      tourConfig: parseTourConfig(f.tourConfig) ?? undefined,
       createdAt: toISO(f.createdAt),
       updatedAt: toISO(f.updatedAt),
     }));
@@ -1990,7 +2022,7 @@ export async function getFacility(
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
-    contacts: f.contacts as any,
+    contacts: parseJsonArray<Contact>(f.contacts),
     licensure: f.licensure,
     accreditations: f.accreditations,
     capacity: f.capacity,
@@ -2088,7 +2120,7 @@ export async function searchFacilities(params: {
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
-    contacts: f.contacts as any,
+    contacts: parseJsonArray<Contact>(f.contacts),
     licensure: f.licensure,
     accreditations: f.accreditations,
     capacity: f.capacity,
@@ -2182,7 +2214,7 @@ export async function getFacilityById(id: string): Promise<Facility | null> {
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
-    contacts: f.contacts as any,
+    contacts: parseJsonArray<Contact>(f.contacts),
     licensure: f.licensure,
     accreditations: f.accreditations,
     capacity: f.capacity,
@@ -2266,7 +2298,7 @@ export async function createFacility(
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
-    contacts: f.contacts as any,
+    contacts: parseJsonArray<Contact>(f.contacts),
     licensure: f.licensure,
     accreditations: f.accreditations,
     capacity: f.capacity,
@@ -2349,7 +2381,7 @@ export async function updateFacility(
     phone: f.phone,
     email: f.email,
     website: f.website ?? undefined,
-    contacts: f.contacts as any,
+    contacts: parseJsonArray<Contact>(f.contacts),
     licensure: f.licensure,
     accreditations: f.accreditations,
     capacity: f.capacity,

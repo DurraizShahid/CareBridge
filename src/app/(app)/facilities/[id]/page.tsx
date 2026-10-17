@@ -125,6 +125,9 @@ export default async function FacilityDetailPage({ params }: Props) {
   const { id } = await params;
   const org = await getServerOrganization();
   if (!org) redirect("/onboarding");
+  if (org.organizationType === "hospital") {
+    redirect(`/dashboard/facility-network/${id}`);
+  }
   const organizationId = org.organizationId;
   const role = org.role;
 
@@ -499,8 +502,13 @@ export default async function FacilityDetailPage({ params }: Props) {
                   <div className="flex items-start gap-2.5 text-xs sm:text-sm text-[#203E39]">
                     <MapPin className="size-4 shrink-0 text-[#245C52] mt-0.5" />
                     <span>
-                      {facility.address.street}, {facility.address.city},{" "}
-                      {facility.address.state} {facility.address.zipCode}
+                      {[
+                        facility.address?.street,
+                        facility.address?.city,
+                        [facility.address?.state, facility.address?.zipCode].filter(Boolean).join(" "),
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#203E39]">
@@ -671,7 +679,7 @@ export default async function FacilityDetailPage({ params }: Props) {
               </div>
 
               {/* Key Facility Contacts */}
-              {facility.contacts && facility.contacts.length > 0 && (
+              {Array.isArray(facility.contacts) && facility.contacts.length > 0 && (
                 <>
                   <Separator className="bg-[#DCE5DE]/70" />
                   <div>
