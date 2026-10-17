@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTourConfig, validateTourConfig } from "@/lib/facility-tour";
+import { getDefaultTourConfig, parseTourConfig, validateTourConfig } from "@/lib/facility-tour";
 
 describe("parseTourConfig", () => {
   it("returns null for missing or stop-less configs", () => {
@@ -73,3 +73,20 @@ describe("validateTourConfig", () => {
     expect(result.config?.stops[0].area).toBe("room");
   });
 });
+
+describe("getDefaultTourConfig", () => {
+  it("returns a valid default tour configuration", () => {
+    const config = getDefaultTourConfig("Maplewood Manor");
+    expect(config.title).toBe("Welcome to Maplewood Manor");
+    expect(config.stops).toHaveLength(3);
+    expect(validateTourConfig(config).valid).toBe(true);
+  });
+
+  it("handles missing facility name gracefully", () => {
+    const config = getDefaultTourConfig();
+    expect(config.title).toBe("Welcome to Facility");
+    expect(config.stops.length).toBeGreaterThan(0);
+    expect(validateTourConfig(config).valid).toBe(true);
+  });
+});
+

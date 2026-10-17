@@ -124,6 +124,47 @@ export function parseTourConfig(value: unknown): TourConfig | null {
   };
 }
 
+export function getDefaultTourConfig(facilityName?: string): TourConfig {
+  const name = facilityName?.trim() || "Facility";
+  return {
+    accentColor: "#245C52",
+    wallColor: "#f4f7fb",
+    floorColor: "#e6ebf1",
+    title: `Welcome to ${name}`,
+    welcome: `Experience the care spaces, amenities, and patient rooms at ${name}.`,
+    roomName: "Patient Suite",
+    stops: [
+      {
+        id: "arrival",
+        area: "lobby",
+        label: "Arrival & Admissions",
+        description: "Welcome area where families check in and meet the clinical care team.",
+        highlights: ["Admissions Office", "Accessible Entryway"],
+        roomName: "Lobby & Reception",
+        accentColor: "#245C52",
+      },
+      {
+        id: "corridor",
+        area: "corridor",
+        label: "Main Care Hallway",
+        description: "Wide, well-lit corridor with continuous support handrails and direct nursing station visibility.",
+        highlights: ["Nurse Call Station", "Continuous Handrails"],
+        roomName: "Main Care Corridor",
+        accentColor: "#245C52",
+      },
+      {
+        id: "suite",
+        area: "room",
+        label: "Patient Suite",
+        description: "Private room with dedicated therapeutic care amenities, natural daylight, and en-suite facilities.",
+        highlights: ["Private Bathroom", "Electric Hospital Bed", "Natural Lighting"],
+        roomName: "Patient Suite",
+        accentColor: "#245C52",
+      },
+    ],
+  };
+}
+
 export function validateTourConfig(value: unknown): {
   valid: boolean;
   config?: TourConfig;

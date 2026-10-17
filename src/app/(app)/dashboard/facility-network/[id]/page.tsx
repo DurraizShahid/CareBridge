@@ -96,16 +96,15 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
             <ArrowLeft className="size-3.5 text-[#53665E]" />
             Back to Network
           </Button>
-          {facility.tourConfig && (
-            <Button
-              size="sm"
-              className="rounded-full bg-[#245C52] px-4 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5 shadow-xs"
-              render={<Link href={`/facilities/${facility.id}/tour`} />}
-            >
-              <Rotate3d className="size-3.5" />
-              Take 3D Tour
-            </Button>
-          )}
+          <Button
+            size="sm"
+            className="rounded-full bg-[#245C52] px-4 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5 shadow-xs"
+            render={<Link href={`/facilities/${facility.id}/tour`} />}
+          >
+            <Rotate3d className="size-3.5" />
+            Take 3D Tour
+          </Button>
+
           <Button
             size="sm"
             className="rounded-full bg-[#245C52] px-5 text-xs font-semibold text-white hover:bg-[#19473F] active:scale-[0.98] gap-1.5"
