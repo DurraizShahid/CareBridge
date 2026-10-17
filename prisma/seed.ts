@@ -6,15 +6,25 @@ import { seedDemoPolish } from "./seed-demo-polish";
 import { seedAmple } from "./seed-ample";
 
 // ── Adapter ──
-const connectionString = process.env.DATABASE_URL!;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+let prismaInstance: PrismaClient | null = null;
+
+function getPrisma(): PrismaClient {
+  if (!prismaInstance) {
+    const connectionString = process.env.DATABASE_URL!;
+    const adapter = new PrismaPg({ connectionString });
+    prismaInstance = new PrismaClient({ adapter });
+  }
+  return prismaInstance;
+}
+
+let prisma: PrismaClient;
 
 // ── Helpers ──
 // Convert the string IDs (like "usr-001") from mock data to match Prisma schema
 // JSON.stringify for complex objects that map to Json fields
 
-async function main() {
+export async function seed(client?: PrismaClient) {
+  prisma = client ?? getPrisma();
   console.log("🌱 Seeding CareBridge database...\n");
 
   // ── 1. Seed Organizations ──
@@ -1537,12 +1547,22 @@ async function main() {
   await seedAmple(prisma);
   console.log("\n✅ Seed completed successfully!");
 }
+export const main = seed;
 
-main()
-  .catch((e) => {
-    console.error("❌ Seed failed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// ── Standalone execution runner ───────────────────────────────────────────────
+if (
+  typeof process !== "undefined" &&
+  process.argv[1] &&
+  /[/\\]seed\.[cm]?[jt]s$/i.test(process.argv[1])
+) {
+  seed()
+    .catch((e) => {
+      console.error("❌ Seed failed:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      if (prismaInstance) {
+        await prismaInstance.$disconnect();
+      }
+    });
+}
