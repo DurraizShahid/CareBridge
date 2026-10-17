@@ -20,12 +20,13 @@ export const maxDuration = 60;
  * When seeding a fresh production database where no local user or organization
  * record exists yet, falls back to inspecting the authenticated Clerk user's role.
  */
-async function requireAdminRole(): Promise<void> {
+async function requireAdminRole(): Promise<string> {
   try {
-    const { org } = await requireOrgPermission("dashboard:admin");
+    const { org, userId } = await requireOrgPermission("dashboard:admin");
     if (org.role !== "superadmin" && org.role !== "administrator") {
       throw new HttpAuthError(403, "Forbidden");
     }
+    return userId;
   } catch (error) {
     if (error instanceof HttpAuthError && error.status === 401) {
       throw error;
@@ -44,6 +45,8 @@ async function requireAdminRole(): Promise<void> {
     if (role !== "superadmin" && role !== "administrator") {
       throw new HttpAuthError(403, "Forbidden");
     }
+
+    return user.id;
   }
 }
 
@@ -55,11 +58,17 @@ async function requireAdminRole(): Promise<void> {
  */
 export async function POST() {
   try {
-    await requireAdminRole();
+    const userId = await requireAdminRole();
 
     // Deterministic, idempotent seed suites
     await seed(prisma);
     await seedAmple(prisma);
+
+    // Update requesting admin user's organization to the primary seeded hospital
+    await prisma.user.update({
+      where: { id: userId },
+      data: { organizationId: "org-tx-001" },
+    });
 
     // Query record counts after seeding
     const [

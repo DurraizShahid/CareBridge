@@ -14,7 +14,7 @@ const {
   prismaMock: {
     organization: { count: vi.fn().mockResolvedValue(11) },
     hospital: { count: vi.fn().mockResolvedValue(8) },
-    user: { count: vi.fn().mockResolvedValue(27) },
+    user: { count: vi.fn().mockResolvedValue(27), update: vi.fn().mockResolvedValue({}) },
     facility: { count: vi.fn().mockResolvedValue(44) },
     facilityMedia: { count: vi.fn().mockResolvedValue(30) },
     patient: { count: vi.fn().mockResolvedValue(56) },
@@ -90,6 +90,7 @@ describe("POST /api/admin/seed", () => {
     prismaMock.organization.count.mockResolvedValue(11);
     prismaMock.hospital.count.mockResolvedValue(8);
     prismaMock.user.count.mockResolvedValue(27);
+    prismaMock.user.update.mockResolvedValue({});
     prismaMock.facility.count.mockResolvedValue(44);
     prismaMock.facilityMedia.count.mockResolvedValue(30);
     prismaMock.patient.count.mockResolvedValue(56);
@@ -144,6 +145,10 @@ describe("POST /api/admin/seed", () => {
 
     expect(seedMock).toHaveBeenCalledWith(prismaMock);
     expect(seedAmpleMock).toHaveBeenCalledWith(prismaMock);
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: "admin-user-1" },
+      data: { organizationId: "org-tx-001" },
+    });
 
     const body = await res.json();
     expect(body.success).toBe(true);
