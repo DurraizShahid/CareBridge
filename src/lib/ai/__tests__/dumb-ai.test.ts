@@ -23,6 +23,8 @@ import {
   rankFacilities,
   generateResponse,
   buildConversationState,
+  isDischargeInquiry,
+  DISCHARGE_GUIDANCE_RESPONSE,
   type RankedFacility,
 } from "../dumb-ai";
 import type { Facility } from "@/types";
@@ -96,6 +98,13 @@ describe("dumb-ai rule-based recommendation engine", () => {
       expect(res2.age).toBe(62);
       expect(res2.conditions).toContain("Diabetes");
       expect(res2.careLevel).toBe("rehabilitation");
+    });
+
+    it("flags discharge inquiries such as 'discharge a patient' and 'how do I discharge'", () => {
+      expect(parsePatientInput("discharge a patient").isDischargeInquiry).toBe(true);
+      expect(parsePatientInput("how do I discharge").isDischargeInquiry).toBe(true);
+      expect(parsePatientInput("what is the discharge process?").isDischargeInquiry).toBe(true);
+      expect(parsePatientInput("Can you discharge a patient?").isDischargeInquiry).toBe(true);
     });
   });
 
@@ -317,6 +326,33 @@ describe("dumb-ai rule-based recommendation engine", () => {
       expect(response).toContain("Cedar Bay Skilled Nursing");
       expect(response).toContain("3D tour link");
       expect(response).toContain("Pick a facility to see the tour, or tell me to refine");
+    });
+
+    it("returns discharge guidance when input is a discharge inquiry without claiming to execute it in chat", () => {
+      const parsed = parsePatientInput("How do I discharge a patient?");
+      const response = generateResponse(parsed, []);
+
+      expect(response).toContain("Go to the Patient's Profile");
+      expect(response).toContain("Discharge Patient");
+      expect(response).toContain("Confirm the Discharge");
+      expect(response).toContain("cannot be executed directly within chat");
+      expect(response).toBe(DISCHARGE_GUIDANCE_RESPONSE);
+    });
+  });
+
+  describe("isDischargeInquiry", () => {
+    it("detects various discharge workflow inquiries", () => {
+      expect(isDischargeInquiry("discharge a patient")).toBe(true);
+      expect(isDischargeInquiry("how do I discharge")).toBe(true);
+      expect(isDischargeInquiry("discharge process")).toBe(true);
+      expect(isDischargeInquiry("how to discharge")).toBe(true);
+      expect(isDischargeInquiry("steps to discharge")).toBe(true);
+      expect(isDischargeInquiry("can I discharge a patient")).toBe(true);
+    });
+
+    it("does not falsely trigger on general clinical statements with discharge", () => {
+      expect(isDischargeInquiry("estimated discharge date next month")).toBe(false);
+      expect(isDischargeInquiry("patient ready for discharge, needs rehab in Austin")).toBe(false);
     });
   });
 });

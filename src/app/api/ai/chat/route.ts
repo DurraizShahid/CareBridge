@@ -10,6 +10,7 @@ import {
   rankFacilities,
   generateResponse,
   buildConversationState,
+  isDischargeInquiry,
   type RankedFacility,
 } from "@/lib/ai/dumb-ai";
 
@@ -245,7 +246,7 @@ export async function POST(req: Request) {
             : conversationState.conditions;
 
           let rankedFacilities: RankedFacility[] = [];
-          if (activeCareLevel) {
+          if (activeCareLevel && !parsed.isDischargeInquiry && !isDischargeInquiry(lastText)) {
             rankedFacilities = await rankFacilities({
               careLevel: activeCareLevel,
               location: activeLocation,

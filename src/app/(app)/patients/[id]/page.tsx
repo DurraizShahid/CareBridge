@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeletePatientDialog } from "./delete-dialog";
+import { DischargeButton } from "@/components/patients/discharge-button";
 import type { Placement } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +102,13 @@ export default async function PatientDetailPage({ params }: Props) {
   const canEdit = roleHasPermission(org.role, "patients:update");
   const canDelete = roleHasPermission(org.role, "patients:delete");
   const canMatch = roleHasPermission(org.role, "placements:read");
+  const canDischarge =
+    roleHasPermission(org.role, "patients:update") &&
+    roleHasPermission(org.role, "placements:update");
+  const isDischargeable =
+    patient.status === "ready_for_discharge" ||
+    patient.status === "ready-for-discharge" ||
+    patient.status === "placed";
 
   const patientName = `${patient.firstName} ${patient.lastName}`;
   const statusInfo =
@@ -134,6 +142,12 @@ export default async function PatientDetailPage({ params }: Props) {
               <Sparkles className="size-3.5" />
               Match Facilities
             </Button>
+          )}
+          {canDischarge && isDischargeable && (
+            <DischargeButton
+              patientId={patient.id}
+              patientName={patientName}
+            />
           )}
           {canEdit && (
             <Button

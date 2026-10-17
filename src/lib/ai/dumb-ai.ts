@@ -11,6 +11,7 @@ export interface ParsedPatientInput {
   age?: number;
   conditions?: string[];
   raw: string;
+  isDischargeInquiry?: boolean;
 }
 
 export interface PatientInfo {
@@ -159,6 +160,29 @@ export function getCareLevelLabel(careLevel: string): string {
     .join(" ");
 }
 
+const DISCHARGE_INQUIRY_PATTERNS = [
+  /\bhow\s+(?:do|can)\s+(?:i|we|you)\s+discharge\b/i,
+  /\bhow\s+to\s+discharge\b/i,
+  /\bdischarge\s+(?:a\s+|the\s+)?patient\b/i,
+  /\bdischarge\s+(?:process|workflow|steps|procedure|protocol|guidance|guide)\b/i,
+  /\bsteps\s+to\s+discharge\b/i,
+  /\bwhere\s+(?:do|can)\s+(?:i|we)\s+discharge\b/i,
+  /\bcan\s+(?:you|i|we)\s+discharge\b/i,
+];
+
+export function isDischargeInquiry(text: string): boolean {
+  return DISCHARGE_INQUIRY_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+export const DISCHARGE_GUIDANCE_RESPONSE = `To discharge a patient in CareBridge, follow these steps:
+
+1. **Go to the Patient's Profile**: Navigate to **Patients** from the sidebar or dashboard and select the patient's record.
+2. **Click "Discharge Patient"**: On the patient detail page, click the **Discharge Patient** button in the header action bar (available when the patient's status is *Placed* or *Ready for Discharge*).
+3. **Confirm the Discharge**: Review the confirmation dialog details (which notes that confirming will close the active placement, free the facility bed, and mark the patient as discharged), then click **Confirm Discharge**.
+
+*Note: Discharges cannot be executed directly within chat. Please navigate to the patient profile to complete the discharge.*
+<!--suggestions-->["View Patients", "Check Placements", "Find Facility Match"]<!--/suggestions-->`;
+
 /**
  * 1. parsePatientInput(text: string)
  * Extract structured info from free text using keyword matching.
@@ -227,6 +251,7 @@ export function parsePatientInput(text: string): ParsedPatientInput {
     age,
     conditions: conditions.length > 0 ? conditions : undefined,
     raw: text,
+    isDischargeInquiry: isDischargeInquiry(text) || undefined,
   };
 }
 
@@ -387,6 +412,10 @@ export function generateResponse(
   facilities: RankedFacility[],
   conversationState?: ConversationState,
 ): string {
+  if (parsed.isDischargeInquiry || isDischargeInquiry(parsed.raw)) {
+    return DISCHARGE_GUIDANCE_RESPONSE;
+  }
+
   const activeCareLevel = parsed.careLevel ?? conversationState?.careLevel;
   const activeCareLevelLabel =
     parsed.careLevelLabel ??
