@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { execFile } from "child_process";
+import fs from "fs";
+import path from "path";
 import { promisify } from "util";
 import { resolveRole } from "@/lib/permissions";
 import {
@@ -56,7 +58,7 @@ async function requireAdminRole(): Promise<string> {
  * POST /api/admin/migrate
  *
  * Protected admin migration endpoint for applying pending Prisma migrations in production.
- * Executes `prisma migrate deploy` using `npx` with a 120s timeout.
+ * Executes `prisma migrate deploy` using the local Prisma CLI with a 120s timeout.
  * GET is safe because prisma migrate deploy is idempotent.
  */
 export async function POST() {
@@ -69,10 +71,37 @@ export async function POST() {
 
   console.log(`[Admin Migration] Attempt initiated by admin user: ${userId}`);
 
+  const prismaBuildPath = path.join(
+    process.cwd(),
+    "node_modules/prisma/build/index.js",
+  );
+  const prismaBinPath = path.join(process.cwd(), "node_modules/.bin/prisma");
+
+  let binary: string;
+  let args: string[];
+  let binaryPathUsed: string;
+  let fileExists: boolean;
+
+  if (fs.existsSync(prismaBuildPath)) {
+    binaryPathUsed = prismaBuildPath;
+    fileExists = true;
+    binary = "node";
+    args = [prismaBuildPath, "migrate", "deploy"];
+  } else {
+    binaryPathUsed = prismaBinPath;
+    fileExists = fs.existsSync(prismaBinPath);
+    binary = prismaBinPath;
+    args = ["migrate", "deploy"];
+  }
+
+  console.log(
+    `[Admin Migration] Binary path used: ${binaryPathUsed} (exists: ${fileExists})`,
+  );
+
   try {
     const { stdout, stderr } = await execFileAsync(
-      "npx",
-      ["prisma", "migrate", "deploy"],
+      binary,
+      args,
       {
         timeout: 120_000,
         shell: process.platform === "win32",
