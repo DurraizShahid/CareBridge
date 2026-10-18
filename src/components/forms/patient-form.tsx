@@ -151,6 +151,25 @@ export function PatientForm({ initialData, patientId, initialDocuments }: Props)
     setSaving(true);
     setError("");
 
+    if (
+      form.admissionDate &&
+      form.estimatedDischargeDate &&
+      form.estimatedDischargeDate < form.admissionDate
+    ) {
+      setError("Discharge date cannot be before admission date");
+      setSaving(false);
+      return;
+    }
+
+    if (
+      form.dateOfBirth &&
+      form.dateOfBirth > new Date().toISOString().split("T")[0]
+    ) {
+      setError("Birth date cannot be in the future");
+      setSaving(false);
+      return;
+    }
+
     try {
       const url = isEditing ? `/api/patients/${patientId}` : "/api/patients";
       const method = isEditing ? "PATCH" : "POST";
@@ -233,6 +252,7 @@ export function PatientForm({ initialData, patientId, initialDocuments }: Props)
               <Input
                 id="dateOfBirth"
                 type="date"
+                max={new Date().toISOString().split("T")[0]}
                 value={form.dateOfBirth}
                 onChange={(e) => {
                   const dob = e.target.value;
@@ -581,11 +601,19 @@ export function PatientForm({ initialData, patientId, initialDocuments }: Props)
               <Input
                 id="estimatedDischargeDate"
                 type="date"
+                min={form.admissionDate}
                 value={form.estimatedDischargeDate}
                 onChange={(e) =>
                   update("estimatedDischargeDate", e.target.value)
                 }
               />
+              {form.admissionDate &&
+                form.estimatedDischargeDate &&
+                form.estimatedDischargeDate < form.admissionDate && (
+                  <p className="text-xs text-red-600">
+                    Discharge date cannot be before admission date
+                  </p>
+                )}
             </div>
           </div>
         </CardContent>

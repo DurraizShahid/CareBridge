@@ -61,7 +61,9 @@ export function ContractView({ id }: { id: string }) {
   }
 
   useEffect(() => {
-    void reload().catch(() => setError("Contract document is unavailable."));
+    void reload().catch((e) =>
+      setError(e instanceof Error ? e.message : "Contract document is unavailable.")
+    );
   }, [id]);
 
   async function send() {
@@ -133,6 +135,8 @@ export function ContractView({ id }: { id: string }) {
         description={
           data
             ? `${data.hospitalName} &middot; ${data.facilityName}`
+            : error
+            ? "Contract document is unavailable."
             : "Reviewing bilateral agreement terms..."
         }
         breadcrumbs={[
@@ -164,16 +168,22 @@ export function ContractView({ id }: { id: string }) {
         </div>
       </PageHeader>
 
-      {error && (
+      {error && data && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
           {error}
         </div>
       )}
 
       {!data ? (
-        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-12 text-center text-sm text-[#53665E]">
-          Loading placement agreement...
-        </div>
+        error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#DCE5DE] bg-white p-12 text-center text-sm text-[#53665E]">
+            Loading placement agreement...
+          </div>
+        )
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           {/* Main Agreement Document */}

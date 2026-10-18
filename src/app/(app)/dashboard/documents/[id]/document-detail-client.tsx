@@ -156,6 +156,8 @@ export function DocumentDetailClient({
   const [accessLogs, setAccessLogs] = useState<DocumentAccessLog[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState<string | null>(null);
+  const [logsError, setLogsError] = useState<string | null>(null);
   const [logsPage, setLogsPage] = useState(1);
   const [logsTotal, setLogsTotal] = useState(0);
 
@@ -188,13 +190,18 @@ export function DocumentDetailClient({
 
   const fetchVersions = useCallback(async () => {
     setVersionsLoading(true);
+    setVersionsError(null);
     try {
       const res = await fetch(`/api/documents/${documentId}/versions`);
-      if (res.ok) {
-        setVersions(await res.json());
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to load version history");
       }
-    } catch {
-      toast.error("Failed to load version history");
+      setVersions(await res.json());
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load version history";
+      setVersionsError(msg);
+      toast.error(msg);
     } finally {
       setVersionsLoading(false);
     }
@@ -203,18 +210,23 @@ export function DocumentDetailClient({
   const fetchAccessLogs = useCallback(
     async (pageNum = 1) => {
       setLogsLoading(true);
+      setLogsError(null);
       try {
         const res = await fetch(
           `/api/documents/${documentId}/access-logs?page=${pageNum}&pageSize=10`,
         );
-        if (res.ok) {
-          const body = await res.json();
-          setAccessLogs(body.data ?? []);
-          setLogsTotal(body.pagination?.total ?? body.data?.length ?? 0);
-          setLogsPage(pageNum);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || "Failed to load access logs");
         }
-      } catch {
-        toast.error("Failed to load access logs");
+        const body = await res.json();
+        setAccessLogs(body.data ?? []);
+        setLogsTotal(body.pagination?.total ?? body.data?.length ?? 0);
+        setLogsPage(pageNum);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to load access logs";
+        setLogsError(msg);
+        toast.error(msg);
       } finally {
         setLogsLoading(false);
       }
@@ -609,6 +621,20 @@ export function DocumentDetailClient({
         <TabsContent value="versions" className="mt-5">
           {versionsLoading ? (
             <DetailSkeleton />
+          ) : versionsError ? (
+            <Card className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center shadow-sm">
+              <ShieldAlert className="size-8 mx-auto text-red-600 mb-2" />
+              <p className="text-sm font-semibold text-red-900">Failed to load versions</p>
+              <p className="text-xs text-red-700 mt-1">{versionsError}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchVersions()}
+                className="mt-4 rounded-full border-red-200 bg-white text-xs font-medium text-red-800 hover:bg-red-50"
+              >
+                Retry
+              </Button>
+            </Card>
           ) : versions.length === 0 ? (
             <Card className="rounded-2xl border border-[#DCE5DE] bg-white p-8 text-center shadow-sm">
               <FileText className="size-8 mx-auto text-[#53665E]/40 mb-2" />
@@ -655,6 +681,20 @@ export function DocumentDetailClient({
           <TabsContent value="access-log" className="mt-5">
             {logsLoading ? (
               <DetailSkeleton />
+            ) : logsError ? (
+              <Card className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center shadow-sm">
+                <ShieldAlert className="size-8 mx-auto text-red-600 mb-2" />
+                <p className="text-sm font-semibold text-red-900">Failed to load access logs</p>
+                <p className="text-xs text-red-700 mt-1">{logsError}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchAccessLogs(logsPage)}
+                  className="mt-4 rounded-full border-red-200 bg-white text-xs font-medium text-red-800 hover:bg-red-50"
+                >
+                  Retry
+                </Button>
+              </Card>
             ) : accessLogs.length === 0 ? (
               <Card className="rounded-2xl border border-[#DCE5DE] bg-white p-8 text-center shadow-sm">
                 <ShieldCheck className="size-8 mx-auto text-[#245C52]/50 mb-2" />

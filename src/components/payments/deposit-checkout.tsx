@@ -50,7 +50,7 @@ export function DepositCheckout({contractId}:{contractId:string}){
   if(!r.ok)throw new Error(body.error??"Unable to retrieve deposit status");
   setCurrent(body);
  }
- useEffect(()=>{void refresh().catch(()=>setError("Deposit status unavailable"))},[contractId]);
+ useEffect(()=>{void refresh().catch((e)=>setError(e instanceof Error?e.message:"Deposit status unavailable"))},[contractId]);
  async function start(){
   setBusy(true);setError("");
   try{
@@ -67,7 +67,8 @@ export function DepositCheckout({contractId}:{contractId:string}){
    await refresh();
   }catch(e){setError(e instanceof Error?e.message:"Simulation failed")}finally{setBusy(false)}
  }
- if(!current)return <section className="rounded-[28px] bg-white p-6 text-sm text-[#74859A] dark:bg-[#1D1D20]">Loading deposit…</section>;
+ if (error && !current) return <section role="alert" className="rounded-[28px] bg-white p-6 text-sm text-red-700 dark:bg-[#1D1D20]">{error}</section>;
+ if (!current) return <section className="rounded-[28px] bg-white p-6 text-sm text-[#74859A] dark:bg-[#1D1D20]">Loading deposit…</section>;
  const isDemo=current.mode==="demo";
  const status=current.payment?.status;
  const complete=status==="paid"||status==="demo_paid";

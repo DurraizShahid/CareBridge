@@ -188,6 +188,8 @@ export function ReferralDetail({ id }: { id: string }) {
         description={
           data
             ? `${data.sendingOrganization.name} → ${data.facility.name}`
+            : error
+            ? "Referral details could not be retrieved."
             : "Loading referral information..."
         }
         breadcrumbs={[
@@ -209,16 +211,22 @@ export function ReferralDetail({ id }: { id: string }) {
         )}
       </PageHeader>
 
-      {error && (
+      {error && data && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
           {error}
         </div>
       )}
 
       {!data ? (
-        <div className="rounded-2xl border border-[#DCE5DE] bg-white p-12 text-center text-sm text-[#53665E]">
-          Loading referral details...
-        </div>
+        error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#DCE5DE] bg-white p-12 text-center text-sm text-[#53665E]">
+            Loading referral details...
+          </div>
+        )
       ) : (
         <div className="space-y-6">
           {/* Action Toolbar */}

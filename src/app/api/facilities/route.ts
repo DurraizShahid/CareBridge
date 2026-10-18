@@ -79,6 +79,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json(facility, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof AuthorizationError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     console.error("Error creating facility:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
