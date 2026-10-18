@@ -107,7 +107,7 @@ export function PlacementsByMonthCard({
           </span>
         </div>
 
-        <div className="min-w-0 shrink-0">
+        <div className="h-80 w-full min-w-0 shrink-0">
           {chartData.length === 0 ? (
             <Empty className="h-80" role="status">
               <EmptyDescription>No placement data yet</EmptyDescription>
