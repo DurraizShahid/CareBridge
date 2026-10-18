@@ -187,7 +187,7 @@ export default async function PlacementDetailPage({ params }: Props) {
         description={`Placement Case #${placement.id.slice(
           0,
           8
-        )} &middot; ${CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}`}
+        )} · ${CARE_LEVEL_LABELS[placement.careLevel] ?? placement.careLevel}`}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Placements", href: "/placements" },
@@ -418,11 +418,11 @@ export default async function PlacementDetailPage({ params }: Props) {
                 </dd>
               </div>
             )}
-            {placement.estimatedCost && (
+            {placement.estimatedCost != null && (
               <div className="flex items-start justify-between gap-3">
                 <dt className="font-semibold text-[#53665E]">Estimated Monthly Rate:</dt>
                 <dd className="font-medium text-[#0D1B17]">
-                  {placement.estimatedCost}
+                  ${placement.estimatedCost.toLocaleString("en-US")}
                 </dd>
               </div>
             )}

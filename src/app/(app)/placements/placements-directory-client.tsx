@@ -506,7 +506,7 @@ export function PlacementsDirectoryClient({
               : "Unknown Patient";
             const facilityId = plc.facilityId ?? plc.selectedFacilityId;
             const facility = facilityId ? facilityMap.get(facilityId) : null;
-            const facilityName = facility?.name ?? "TBD";
+            const facilityName = facility?.name ?? "Not assigned";
 
             const statusInfo =
               STATUS_CONFIG[plc.status] ??

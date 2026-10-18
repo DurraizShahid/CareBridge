@@ -528,52 +528,54 @@ export function AppointmentsCard({ events = [] }: AppointmentsCardProps) {
 
           {/* Date Strip */}
           <div className="flex items-center gap-2">
-            <div
-              ref={dateStripRef}
-              id="schedule-date-strip"
-              role="tablist"
-              aria-label="Facility calendar dates"
-              aria-describedby="schedule-date-hint"
-              className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-3 pt-1"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
-              onKeyDown={handleKeyDown}
-            >
-              <style>{`
-                #schedule-date-strip::-webkit-scrollbar,
-                #appointments-card-body::-webkit-scrollbar { display: none; }
-                @keyframes slide-in-bottom { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-                @keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent); } 50% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--primary) 8%, transparent); } }
-                @keyframes card-enter { from { transform: translateY(12px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-                @keyframes dot-pulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.5); opacity: 0.6; } }
-              `}</style>
-              {dates.map((date) => {
-                const isSelected = isSameDay(date, selectedDay);
-                const isTodayDate = isToday(date);
-                return (
-                  <button
-                    key={date.toISOString()}
-                    ref={isSelected ? selectedDateBtnRef : undefined}
-                    role="tab"
-                    aria-selected={isSelected}
-                    onClick={() => handleDateSelect(date)}
-                    className={cn(
-                      "shrink-0 flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 group/date",
-                      isSelected ? "bg-primary scale-[1.08]" : "hover:bg-muted hover:scale-110",
-                    )}
-                    style={{ minWidth: "52px" }}
-                  >
-                    <span className={cn("text-[13px] font-medium leading-none", isSelected ? "text-primary-foreground" : "text-muted-foreground")}>
-                      {format(date, "EEE")}
-                    </span>
-                    <span className={cn("text-2xl leading-tight font-medium", isSelected ? "text-primary-foreground" : "text-foreground/70")}>
-                      {format(date, "d")}
-                    </span>
-                    {isTodayDate && !isSelected && (
-                      <span className="size-1.5 rounded-full bg-primary transition-transform duration-200 group-hover/date:scale-150" style={{ animation: "dot-pulse 2s ease-in-out infinite" }} />
-                    )}
-                  </button>
-                );
-              })}
+            <div className="relative min-w-0 flex-1 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-8 after:bg-linear-to-l after:from-card after:to-transparent">
+              <div
+                ref={dateStripRef}
+                id="schedule-date-strip"
+                role="tablist"
+                aria-label="Facility calendar dates"
+                aria-describedby="schedule-date-hint"
+                className="flex gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-3 pt-1"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                onKeyDown={handleKeyDown}
+              >
+                <style>{`
+                  #schedule-date-strip::-webkit-scrollbar,
+                  #appointments-card-body::-webkit-scrollbar { display: none; }
+                  @keyframes slide-in-bottom { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                  @keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent); } 50% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--primary) 8%, transparent); } }
+                  @keyframes card-enter { from { transform: translateY(12px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+                  @keyframes dot-pulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.5); opacity: 0.6; } }
+                `}</style>
+                {dates.map((date) => {
+                  const isSelected = isSameDay(date, selectedDay);
+                  const isTodayDate = isToday(date);
+                  return (
+                    <button
+                      key={date.toISOString()}
+                      ref={isSelected ? selectedDateBtnRef : undefined}
+                      role="tab"
+                      aria-selected={isSelected}
+                      onClick={() => handleDateSelect(date)}
+                      className={cn(
+                        "shrink-0 flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 group/date",
+                        isSelected ? "bg-primary scale-[1.08]" : "hover:bg-muted hover:scale-110",
+                      )}
+                      style={{ minWidth: "52px" }}
+                    >
+                      <span className={cn("text-[13px] font-medium leading-none", isSelected ? "text-primary-foreground" : "text-muted-foreground")}>
+                        {format(date, "EEE")}
+                      </span>
+                      <span className={cn("text-2xl leading-tight font-medium", isSelected ? "text-primary-foreground" : "text-foreground/70")}>
+                        {format(date, "d")}
+                      </span>
+                      {isTodayDate && !isSelected && (
+                        <span className="size-1.5 rounded-full bg-primary transition-transform duration-200 group-hover/date:scale-150" style={{ animation: "dot-pulse 2s ease-in-out infinite" }} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             {!isToday(selectedDay) && (
               <button

@@ -484,7 +484,7 @@ export function PatientsDirectoryClient({
                       </td>
 
                       {/* MRN */}
-                      <td className="py-4 px-4 font-mono text-xs text-[#53665E]">
+                      <td className="py-4 px-4 font-mono text-xs text-[#53665E] whitespace-nowrap">
                         <Link href={`/patients/${patient.id}`}>
                           {patient.mrn}
                         </Link>
@@ -511,7 +511,7 @@ export function PatientsDirectoryClient({
 
                       {/* Care Level */}
                       <td className="py-4 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FAFBF8] text-[#203E39] border border-[#DCE5DE]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FAFBF8] text-[#203E39] border border-[#DCE5DE] whitespace-nowrap">
                           {CARE_LEVEL_LABELS[patient.careLevelRequired] ??
                             patient.careLevelRequired.replace(/[-_]/g, " ")}
                         </span>
@@ -521,7 +521,7 @@ export function PatientsDirectoryClient({
                       <td className="py-4 px-4">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap",
                             statusInfo.badgeClass
                           )}
                         >
