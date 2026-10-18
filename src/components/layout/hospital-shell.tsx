@@ -1,10 +1,7 @@
 "use client";
 
-import { HospitalDock } from "./hospital-dock";
 import { DashboardHeader } from "./dashboard-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ThemeProvider } from "@/hooks/use-theme";
-import { OrganizationProvider } from "@/hooks/use-organization";
 import { ChatSidebarProvider } from "@/hooks/use-chat-sidebar";
 import { usePathname } from "next/navigation";
 
@@ -18,28 +15,21 @@ function HospitalShellInner({ children }: { children: React.ReactNode }) {
 
   // AI Chat page gets its own full-screen layout without header/scrollarea
   if (isChatRoute) {
-    return <>{children}<HospitalDock /></>;
+    return <>{children}</>;
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
-      <DashboardHeader
-        sidebarLocked={false}
-        onToggleSidebarLock={() => {}}
-        hideSidebarControls
-        showNewChat={false}
-        onNewChat={undefined}
-      />
+    <div className="flex h-full min-h-0 flex-col bg-background">
+      <DashboardHeader />
       <ScrollArea className="flex-1 min-h-0">
         {isFullWidth ? (
           children
         ) : (
-          <div className="mx-auto w-full max-w-7xl px-6 py-9 pb-24 lg:px-10">
+          <div className="mx-auto w-full max-w-7xl px-4 py-9 sm:px-6 lg:px-10">
             {children}
           </div>
         )}
       </ScrollArea>
-      <HospitalDock />
     </div>
   );
 }
@@ -48,18 +38,10 @@ export function HospitalShell({
   children,
 }: {
   children: React.ReactNode;
-  sidebarLocked?: boolean;
-  onToggle?: () => void;
 }) {
   return (
-    <ThemeProvider>
-      <OrganizationProvider>
-        <ChatSidebarProvider>
-          <HospitalShellInner>
-            {children}
-          </HospitalShellInner>
-        </ChatSidebarProvider>
-      </OrganizationProvider>
-    </ThemeProvider>
+    <ChatSidebarProvider>
+      <HospitalShellInner>{children}</HospitalShellInner>
+    </ChatSidebarProvider>
   );
 }

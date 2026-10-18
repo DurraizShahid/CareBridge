@@ -21,8 +21,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasOrg, setHasOrg] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarLocked, setSidebarLocked] = useState(false);
   const [loaderComplete, setLoaderComplete] = useState(false);
 
   useEffect(() => {
@@ -66,30 +64,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  if (isHospitalRole) {
-    return (
-      <HospitalShell
-        sidebarLocked={sidebarLocked}
-        onToggle={() => setSidebarLocked((l) => !l)}
-      >
-        {children}
-      </HospitalShell>
-    );
-  }
-
   return (
     <ThemeProvider>
       <OrganizationProvider>
         <TooltipProvider delay={0}>
-          <SidebarProvider open={sidebarLocked || sidebarOpen} onOpenChange={setSidebarOpen}>
-            <AppSidebar locked={sidebarLocked} />
-            <SidebarInset className={`flex flex-1 flex-col ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
-              <DashboardHeader sidebarLocked={sidebarLocked} onToggleSidebarLock={() => setSidebarLocked((l) => !l)} />
-              <ScrollArea className="flex-1 min-h-0">
-                <div className="dashboard-canvas px-3 py-3 md:px-6 md:py-5" style={{ animation: "content-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards" }}>
-                  {children}
-                </div>
-              </ScrollArea>
+          <SidebarProvider className="h-dvh min-h-0 overflow-hidden" style={{ "--sidebar-width": "15rem" } as React.CSSProperties}>
+            <AppSidebar />
+            <SidebarInset className={`min-w-0 overflow-hidden ${userRole === 'superadmin' ? 'tracking-wider' : 'dashboard-gradient'}`}>
+              {isHospitalRole ? (
+                <HospitalShell>{children}</HospitalShell>
+              ) : (
+                <>
+                  <DashboardHeader />
+                  <ScrollArea className="flex-1 min-h-0">
+                    <div className="dashboard-canvas px-3 py-3 md:px-6 md:py-5" style={{ animation: "content-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards" }}>
+                      {children}
+                    </div>
+                  </ScrollArea>
+                </>
+              )}
             </SidebarInset>
           </SidebarProvider>
         </TooltipProvider>

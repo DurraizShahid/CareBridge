@@ -15,6 +15,7 @@ import { ChatHistorySidebar } from "@/components/ai/chat-history-sidebar";
 import { ChatPlacementFlow } from "@/components/ai/chat-placement-flow";
 import { BrandMark } from "@/components/brand-logo";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
 import { cn } from "@/lib/utils";
 
@@ -382,12 +383,13 @@ export function ChatWorkspace() {
       </a>
 
       <header className="flex h-16 shrink-0 items-center gap-2 px-3 sm:px-5">
+        <SidebarTrigger className="size-10 shrink-0" aria-label="Toggle navigation" />
         <button type="button" onClick={() => setHistoryOpen(true)} className={iconButton} aria-label="Open chat history" aria-expanded={historyOpen} aria-controls="chat-history">
           <History className="size-[18px]" aria-hidden="true" />
         </button>
-        <Link href="/chat" onClick={handleNewChat} className="flex items-center gap-2 rounded-full pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--chat-accent)]">
+        <Link href="/chat" aria-label="CareBridge Assistant" onClick={handleNewChat} className="flex items-center gap-2 rounded-full pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--chat-accent)]">
           <span aria-hidden="true"><BrandMark tone="blue" className="size-7" /></span>
-          <span className="font-heading text-[17px] font-medium tracking-[-0.01em]">CareBridge</span>
+          <span className="hidden font-heading text-[17px] font-medium tracking-[-0.01em] min-[360px]:inline">CareBridge</span>
         </Link>
         <nav className="ml-auto flex items-center gap-1" aria-label="Workspace">
           {hasStarted && (
@@ -399,7 +401,8 @@ export function ChatWorkspace() {
           )}
           <Link href="/dashboard" className={cn(iconButton, "w-auto gap-2 px-3 text-sm font-medium")}>
             <LayoutDashboard className="size-4" aria-hidden="true" />
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
+            <span className="sr-only sm:hidden">Dashboard</span>
           </Link>
           <div className="ml-1 flex items-center">
             <UserButton appearance={{ elements: { userButtonAvatarBox: "size-9" } }}>
@@ -434,9 +437,9 @@ export function ChatWorkspace() {
         />
       </aside>
 
-      <main className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         {!hasStarted ? (
-          <div className="flex flex-1 flex-col justify-center overflow-y-auto px-4 pb-10 pr-20 sm:px-6 md:pr-6">
+          <div className="flex flex-1 flex-col justify-center overflow-y-auto px-4 pb-10 sm:px-6">
             <div className="cb-rise mx-auto w-full max-w-[720px]">
               <h1 className="font-heading text-[clamp(2rem,5vw,3.25rem)] font-medium leading-[1.02] tracking-[-0.03em] [text-wrap:balance]">
                 {greeting()}{user?.firstName ? `, ${user.firstName}` : ""}.
@@ -465,7 +468,7 @@ export function ChatWorkspace() {
           </div>
         ) : (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pr-20 sm:px-6 md:pr-6" role="log" aria-label="Conversation" aria-busy={isStreaming}>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 sm:px-6" role="log" aria-label="Conversation" aria-busy={isStreaming}>
               <div className="mx-auto w-full max-w-[760px] space-y-8 pb-6 pt-4">
                 {messages.map((msg, i) => (
                   <div key={i} className="group/message">
@@ -585,7 +588,7 @@ export function ChatWorkspace() {
                 <div ref={endRef} />
               </div>
             </div>
-            <div className="shrink-0 px-4 pb-4 pr-20 pt-2 sm:px-6 sm:pb-6 md:pr-6">
+            <div className="shrink-0 px-4 pb-4 pt-2 sm:px-6 sm:pb-6">
               <div className="mx-auto w-full max-w-[760px]">
                 {composer}
                 <p className="mt-2 text-center text-[13px] text-[var(--chat-dim)]">
@@ -595,7 +598,7 @@ export function ChatWorkspace() {
             </div>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

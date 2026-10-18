@@ -10,9 +10,14 @@ import {
   HouseSimple,
   FileText,
   ChartBar,
+  ChatCircle,
+  Hospital,
+  ShieldCheck,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
+import { HOSPITAL_ROLES } from "@/lib/permissions";
+import type { Permission } from "@/types/permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -34,6 +40,7 @@ interface NavItem {
   badge?: string;
   adminOnly?: boolean;
   superadminOnly?: boolean;
+  permission?: Permission;
 }
 
 const mainNavItems: NavItem[] = [
@@ -50,7 +57,15 @@ const managementNavItems: NavItem[] = [
   { href: "/dashboard/facility-network", label: "Network", icon: ChartBar },
 ];
 
-const bottomNavItems: NavItem[] = [
+const hospitalNavItems: NavItem[] = [
+  { href: "/chat", label: "Assistant", icon: ChatCircle },
+  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
+  { href: "/patients", label: "Patients", icon: Users },
+  { href: "/placements", label: "Placements", icon: HouseSimple },
+  { href: "/referrals", label: "Referrals", icon: FileText },
+  { href: "/admin/permissions", label: "Management", icon: ShieldCheck, permission: "users:manage-roles" },
+  { href: "/dashboard/users", label: "Users", icon: Users, permission: "users:read-org" },
+  { href: "/dashboard/hospitals", label: "Hospitals", icon: Hospital, permission: "hospitals:manage" },
 ];
 
 function NavButton({
@@ -60,16 +75,21 @@ function NavButton({
   item: NavItem;
   isActive: boolean;
 }) {
+  const { setOpenMobile } = useSidebar();
+
   return (
     <SidebarMenuButton
       render={<Link href={item.href} />}
       isActive={isActive}
+      aria-label={item.label}
+      aria-current={isActive ? "page" : undefined}
+      onClick={() => setOpenMobile(false)}
       tooltip={item.label}
       className={cn(
         "group relative flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors duration-200",
         isActive
-          ? "bg-sidebar-accent text-primary shadow-none hover:bg-sidebar-accent/80 font-medium"
-          : "bg-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-primary",
+          ? "bg-sidebar-accent text-sidebar-accent-foreground data-active:text-sidebar-accent-foreground shadow-none hover:bg-sidebar-accent/80 font-medium"
+          : "bg-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5",
         "group-data-[collapsible=icon]:size-10!"
       )}
@@ -81,7 +101,7 @@ function NavButton({
           className={cn(
             "size-5 transition-colors duration-200",
             isActive
-              ? "text-primary"
+              ? "text-sidebar-accent-foreground"
               : "text-sidebar-foreground/55 group-hover:text-sidebar-accent-foreground"
           )}
         />
@@ -90,7 +110,7 @@ function NavButton({
       <span
         className={cn(
           "flex-1 truncate transition-colors duration-200 group-data-[collapsible=icon]:hidden",
-          isActive ? "font-medium text-primary" : "font-normal"
+          isActive ? "font-medium text-sidebar-accent-foreground" : "font-normal"
         )}
       >
         {item.label}
@@ -112,15 +132,20 @@ function NavButton({
   );
 }
 
-export function AppSidebar({ locked }: { locked: boolean }) {
+export function AppSidebar() {
   const pathname = usePathname();
-  const { setOpen } = useSidebar();
-  const { role } = usePermissions();
+  const { setOpenMobile } = useSidebar();
+  const { role, can } = usePermissions();
 
   const isFacilityAccount = role === "facility-coordinator";
   const isSuperadmin = role === "superadmin";
+  const isHospitalAccount = !!role && HOSPITAL_ROLES.includes(role);
+  const navigationItems = isHospitalAccount
+    ? hospitalNavItems.filter((item) => !item.permission || can(item.permission))
+    : mainNavItems;
 
   const filteredManagementNav = managementNavItems.filter((item) => {
+    if (isHospitalAccount) return false;
     if (item.href === "/dashboard/facility-network" && !isSuperadmin) return false;
     if (item.href === "/users" && isFacilityAccount) return false;
     if (item.superadminOnly && !isSuperadmin) return false;
@@ -135,21 +160,18 @@ export function AppSidebar({ locked }: { locked: boolean }) {
 
   return (
     <Sidebar
-      variant="floating"
+      variant="sidebar"
       collapsible="icon"
-      className="group/sidebar border-0 bg-white dark:bg-[#151A24]"
-      onMouseEnter={() => {
-        if (!locked) setOpen(true);
-      }}
-      onMouseLeave={() => {
-        if (!locked) setOpen(false);
-      }}
+      className="border-r border-sidebar-border"
     >
       <SidebarHeader className="px-2 pt-4 pb-2">
+        <SidebarTrigger className="self-end md:hidden" aria-label="Close navigation" />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               render={<Link href="/dashboard" />}
+              aria-label="CareBridge home"
+              onClick={() => setOpenMobile(false)}
               size="lg"
               className="p-2 hover:bg-transparent data-[state=open]:bg-transparent"
             >
@@ -161,14 +183,14 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-1 py-1">
-        <SidebarGroup>
+      <SidebarContent role="navigation" aria-label="Main navigation" className="px-1 py-1">
+        <SidebarGroup className="group-data-[collapsible=icon]:px-1">
           <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/45 group-data-[collapsible=icon]:hidden">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-0.5">
-              {mainNavItems.map((item) => (
+              {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <NavButton item={item} isActive={isActive(item.href)} />
                 </SidebarMenuItem>
@@ -180,7 +202,7 @@ export function AppSidebar({ locked }: { locked: boolean }) {
         {filteredManagementNav.length > 0 && (
           <>
             <div className="mx-3 my-2 h-px bg-sidebar-border" />
-            <SidebarGroup>
+            <SidebarGroup className="group-data-[collapsible=icon]:px-1">
               <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/45 group-data-[collapsible=icon]:hidden">
                 Management
               </SidebarGroupLabel>

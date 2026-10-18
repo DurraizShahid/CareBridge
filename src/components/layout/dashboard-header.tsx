@@ -17,8 +17,6 @@ import { LayoutDashboard, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
-  sidebarLocked: boolean;
-  onToggleSidebarLock: () => void;
   hideSidebarControls?: boolean;
   showNewChat?: boolean;
   onNewChat?: () => void;
@@ -50,14 +48,12 @@ function getPageTitle(pathname: string): string {
 }
 
 export function DashboardHeader({
-  sidebarLocked,
-  onToggleSidebarLock,
   hideSidebarControls,
   showNewChat,
   onNewChat,
   chatSidebarOpen,
   onToggleChatSidebar,
-}: DashboardHeaderProps) {
+}: DashboardHeaderProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
@@ -83,22 +79,7 @@ export function DashboardHeader({
         )}
 
         {!hideSidebarControls && (
-          <SidebarTrigger className="size-8 shrink-0 text-foreground/70 hover:bg-muted hover:text-foreground md:hidden" />
-        )}
-        {!hideSidebarControls && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleSidebarLock}
-            aria-label={sidebarLocked ? "Auto-collapse sidebar" : "Keep sidebar expanded"}
-            className="hidden size-8 shrink-0 text-foreground/70 hover:bg-muted hover:text-foreground md:inline-flex"
-          >
-            {sidebarLocked ? (
-              <RiMenuFoldLine className="size-4" />
-            ) : (
-              <RiMenuUnfoldLine className="size-4" />
-            )}
-          </Button>
+          <SidebarTrigger className="size-10 shrink-0 text-foreground/70 hover:bg-muted hover:text-foreground" aria-label="Toggle navigation" />
         )}
 
         <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
