@@ -2070,7 +2070,7 @@ export async function searchFacilities(params: {
   hasAvailability?: boolean;
   facilityTypes?: FacilityType[];
   specialties?: string[];
-}): Promise<Facility[]> {
+}): Promise<{ facilities: Facility[]; total: number }> {
   const where: Record<string, unknown> = {};
 
   if (params.facilityIds !== undefined) {
@@ -2109,14 +2109,17 @@ export async function searchFacilities(params: {
     where.specialties = { hasSome: params.specialties };
   }
 
-  const facilities = await prisma.facility.findMany({
-    where,
-    orderBy: [{ rating: "desc" }, { name: "asc" }],
-    include: { media: { orderBy: { displayOrder: "asc" } } },
-    take: 50,
-  });
+  const [facilities, countResult] = await Promise.all([
+    prisma.facility.findMany({
+      where,
+      orderBy: [{ rating: "desc" }, { name: "asc" }],
+      include: { media: { orderBy: { displayOrder: "asc" } } },
+      take: 50,
+    }),
+    prisma.facility.count ? prisma.facility.count({ where }) : Promise.resolve(0),
+  ]);
 
-  return facilities.map((f) => ({
+  const mapped = facilities.map((f) => ({
     id: f.id,
     name: f.name,
     description: f.description ?? undefined,
@@ -2159,6 +2162,10 @@ export async function searchFacilities(params: {
     createdAt: toISO(f.createdAt),
     updatedAt: toISO(f.updatedAt),
   }));
+
+  const total = typeof countResult === "number" && countResult > 0 ? countResult : mapped.length;
+
+  return { facilities: mapped, total };
 }
 
 /**
@@ -2174,11 +2181,12 @@ export async function recommendFacilities(needs: {
   specialties?: string[];
   limit?: number;
 }): Promise<Facility[]> {
-  const candidates = await searchFacilities({
+  const searchResult = await searchFacilities({
     careLevelsOffered: [needs.careLevel],
     hasAvailability: true,
     ...(needs.specialties?.length ? { specialties: needs.specialties } : {}),
   });
+  const candidates = Array.isArray(searchResult) ? searchResult : searchResult.facilities;
   const patient = {
     careLevelRequired: needs.careLevel,
     insurance: needs.insurance ? [{ type: needs.insurance }] : undefined,

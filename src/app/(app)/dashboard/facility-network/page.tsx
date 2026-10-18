@@ -37,10 +37,12 @@ export default async function FacilityNetworkPage() {
     }
   }
 
-  const initialFacilities = await searchFacilities({
+  const initialResult = await searchFacilities({
     location: recommendationsOnly ? undefined : defaultLocation || undefined,
     facilityIds: recommendationsOnly ? [...await getRecommendedFacilityIds(org.organizationId)] : undefined,
   });
+  const initialFacilities = Array.isArray(initialResult) ? initialResult : initialResult.facilities;
+  const initialTotal = Array.isArray(initialResult) ? initialResult.length : initialResult.total;
 
   const userName = signedInUser.firstName
     ? signedInUser.firstName.charAt(0).toUpperCase() + signedInUser.firstName.slice(1)
@@ -53,6 +55,7 @@ export default async function FacilityNetworkPage() {
       role={org.role}
       userName={userName}
       initialFacilities={initialFacilities}
+      initialTotal={initialTotal}
     />
   );
 }

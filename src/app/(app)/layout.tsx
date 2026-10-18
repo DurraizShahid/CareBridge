@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { OrganizationProvider } from "@/hooks/use-organization";
 import { useEffect, useState, useCallback } from 'react';
 import { CareBridgeLoader } from "@/components/carebridge-loader";
+import { installGlobal401Handler, handle401, apiFetch } from "@/lib/api-client";
 
 const HOSPITAL_ROLES = ["social-worker", "discharge-planner", "administrator"];
 
@@ -24,10 +25,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [loaderComplete, setLoaderComplete] = useState(false);
 
   useEffect(() => {
+    installGlobal401Handler();
     const checkUser = async () => {
       try {
-        const res = await fetch('/api/me');
+        const res = await apiFetch('/api/me');
         if (!res.ok) {
+          if (res.status === 401) {
+            handle401();
+            return;
+          }
           console.error('GET /api/me failed:', res.status, await res.text());
           redirect('/onboarding');
           return;

@@ -3,7 +3,7 @@
 import { getServerOrganization } from "@/lib/server-organization";
 import { getRecommendedFacilityIds, isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { searchFacilities, getFacilityById } from "@/lib/data-access";
-import type { CareLevel, FacilityType } from "@/types";
+import type { CareLevel, FacilityType, Facility } from "@/types";
 
 export interface SearchFacilitiesParams {
   location?: string;
@@ -15,7 +15,7 @@ export interface SearchFacilitiesParams {
 }
 
 export interface SearchResult {
-  facilities: Awaited<ReturnType<typeof searchFacilities>>;
+  facilities: Facility[];
   total: number;
 }
 
@@ -24,12 +24,14 @@ export async function searchFacilitiesAction(
 ): Promise<SearchResult> {
   const org = await getServerOrganization();
   if (!org) throw new Error("Authentication required");
-  const facilities = await searchFacilities({
+  const result = await searchFacilities({
     ...params,
     facilityIds: org.organizationType === "hospital" && !org.isSuperadmin
       ? [...await getRecommendedFacilityIds(org.organizationId)] : undefined,
   });
-  return { facilities, total: facilities.length };
+  const facilities = Array.isArray(result) ? result : result.facilities;
+  const total = Array.isArray(result) ? result.length : result.total;
+  return { facilities, total };
 }
 
 export async function getFacilityDetailAction(id: string) {
