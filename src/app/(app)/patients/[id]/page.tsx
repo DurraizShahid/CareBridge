@@ -106,7 +106,6 @@ export default async function PatientDetailPage({ params }: Props) {
     roleHasPermission(org.role, "patients:update") &&
     roleHasPermission(org.role, "placements:update");
   const isDischargeable =
-    patient.status === "ready_for_discharge" ||
     patient.status === "ready-for-discharge" ||
     patient.status === "placed";
 
