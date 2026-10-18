@@ -382,15 +382,17 @@ export async function rankFacilities(patientInfo: PatientInfo): Promise<RankedFa
     }
   }
 
-  let candidates = await searchFacilities({
+  const searchResult = await searchFacilities({
     careLevelsOffered: careLevelKebab ? [careLevelKebab] : undefined,
     hasAvailability: true,
   });
+  let candidates = Array.isArray(searchResult) ? searchResult : searchResult.facilities;
 
   if (candidates.length === 0) {
-    candidates = await searchFacilities({
+    const fallbackResult = await searchFacilities({
       hasAvailability: true,
     });
+    candidates = Array.isArray(fallbackResult) ? fallbackResult : fallbackResult.facilities;
   }
 
   const facilitiesToScore =

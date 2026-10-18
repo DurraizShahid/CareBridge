@@ -17,6 +17,7 @@ import { BrandMark } from "@/components/brand-logo";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { PlacementDraft } from "@/lib/ai/tool-handlers";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ChatMessage {
@@ -224,16 +225,25 @@ export function ChatWorkspace() {
   const handleChatSelect = async (chatId: string) => {
     abortRef.current?.abort();
     setHistoryOpen(false);
-    setCurrentChatId(chatId);
     setIsStreaming(false);
     setSelected(null);
     try {
       const res = await fetch(`/api/chats/${chatId}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        toast.error("Failed to load chat");
+        return;
+      }
       const chat = await res.json();
-      setMessages(chat.messages.map((m: { role: string; content: string }) => ({ role: m.role as ChatMessage["role"], content: m.content })));
+      setCurrentChatId(chatId);
+      setMessages(
+        chat.messages.map((m: { role: string; content: string }) => ({
+          role: m.role as ChatMessage["role"],
+          content: m.content,
+        })),
+      );
     } catch (e) {
       console.error("Error loading chat:", e);
+      toast.error("Failed to load chat");
     }
   };
 

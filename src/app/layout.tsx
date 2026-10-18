@@ -6,6 +6,7 @@ import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { SmoothScroll } from "@/components/smooth-scroll";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = localFont({
   src: [{ path: "../../public/fonts/helvetica/Inter-Variable.woff2", weight: "100 900", style: "normal" }],
@@ -50,7 +51,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return <html lang="en" className={cn("h-full", "antialiased", inter.variable, lato.variable, "font-sans")} suppressHydrationWarning>
     <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
       <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
-      <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up"><SmoothScroll>{children}</SmoothScroll></ClerkProvider>
+      <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+        <SmoothScroll>{children}</SmoothScroll>
+        <Toaster />
+      </ClerkProvider>
     </body>
   </html>;
 }

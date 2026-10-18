@@ -92,6 +92,7 @@ interface FacilityNetworkClientProps {
   role: string;
   userName?: string;
   initialFacilities?: Facility[];
+  initialTotal?: number;
 }
 
 export function FacilityNetworkClient({
@@ -99,11 +100,12 @@ export function FacilityNetworkClient({
   role,
   userName,
   initialFacilities = [],
+  initialTotal,
   recommendationsOnly = false,
 }: FacilityNetworkClientProps) {
   const [location, setLocation] = useState(defaultLocation);
   const [facilities, setFacilities] = useState<Facility[]>(initialFacilities);
-  const [total, setTotal] = useState(initialFacilities.length);
+  const [total, setTotal] = useState(initialTotal ?? initialFacilities.length);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(initialFacilities.length > 0);
   const [filtersOpen, setFiltersOpen] = useState(false);
