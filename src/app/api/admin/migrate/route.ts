@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { execFile } from "child_process";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { promisify } from "util";
+import { prisma } from "@/lib/prisma";
 import { resolveRole } from "@/lib/permissions";
 import {
   authErrorResponse,
@@ -14,7 +14,7 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-const execFileAsync = promisify(execFile);
+const MIGRATION_NAME = "20261018000000_add_chat_facility_recommendation";
 
 /**
  * Verifies that the current request is from an administrator.
@@ -58,8 +58,8 @@ async function requireAdminRole(): Promise<string> {
  * POST /api/admin/migrate
  *
  * Protected admin migration endpoint for applying pending Prisma migrations in production.
- * Executes `prisma migrate deploy` using the local Prisma CLI with a 120s timeout.
- * GET is safe because prisma migrate deploy is idempotent.
+ * Applies the migration directly using the Prisma client and records it in _prisma_migrations.
+ * GET is safe because migration application is idempotent (skips if already recorded).
  */
 export async function POST() {
   let userId: string;
@@ -71,72 +71,73 @@ export async function POST() {
 
   console.log(`[Admin Migration] Attempt initiated by admin user: ${userId}`);
 
-  const prismaBuildPath = path.join(
+  const migrationFilePath = path.join(
     process.cwd(),
-    "node_modules/prisma/build/index.js",
-  );
-  const prismaBinPath = path.join(process.cwd(), "node_modules/.bin/prisma");
-
-  let binary: string;
-  let args: string[];
-  let binaryPathUsed: string;
-  let fileExists: boolean;
-
-  if (fs.existsSync(prismaBuildPath)) {
-    binaryPathUsed = prismaBuildPath;
-    fileExists = true;
-    binary = "node";
-    args = [prismaBuildPath, "migrate", "deploy"];
-  } else {
-    binaryPathUsed = prismaBinPath;
-    fileExists = fs.existsSync(prismaBinPath);
-    binary = prismaBinPath;
-    args = ["migrate", "deploy"];
-  }
-
-  console.log(
-    `[Admin Migration] Binary path used: ${binaryPathUsed} (exists: ${fileExists})`,
+    "prisma/migrations/20261018000000_add_chat_facility_recommendation/migration.sql",
   );
 
   try {
-    const { stdout, stderr } = await execFileAsync(
-      binary,
-      args,
-      {
-        timeout: 120_000,
-        shell: process.platform === "win32",
-      },
+    const migrationSql = fs.readFileSync(migrationFilePath, "utf8");
+    const checksum = crypto
+      .createHash("sha256")
+      .update(migrationSql)
+      .digest("hex");
+
+    const existing = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
+      `SELECT id FROM _prisma_migrations WHERE migration_name = $1 LIMIT 1`,
+      MIGRATION_NAME,
     );
 
-    console.log(`[Admin Migration] Succeeded for user ${userId}. Output:\n${stdout}`);
+    if (existing.length > 0) {
+      console.log(
+        `[Admin Migration] Migration ${MIGRATION_NAME} is already applied.`,
+      );
+      return NextResponse.json({
+        success: true,
+        message: `Migration ${MIGRATION_NAME} is already applied.`,
+        details: {
+          migrationName: MIGRATION_NAME,
+          alreadyApplied: true,
+        },
+      });
+    }
+
+    console.log(
+      `[Admin Migration] Executing migration SQL for ${MIGRATION_NAME}...`,
+    );
+    await prisma.$executeRawUnsafe(migrationSql);
+
+    console.log(
+      `[Admin Migration] Recording ${MIGRATION_NAME} in _prisma_migrations...`,
+    );
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO _prisma_migrations (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) VALUES (gen_random_uuid()::text, $1, NOW(), $2, NULL, NULL, NOW(), 1)`,
+      checksum,
+      MIGRATION_NAME,
+    );
+
+    console.log(
+      `[Admin Migration] Migration ${MIGRATION_NAME} applied successfully for user ${userId}.`,
+    );
 
     return NextResponse.json({
       success: true,
-      stdout: String(stdout),
-      stderr: String(stderr),
+      message: `Migration ${MIGRATION_NAME} applied successfully.`,
+      details: {
+        migrationName: MIGRATION_NAME,
+        checksum,
+        applied: true,
+      },
     });
-  } catch (execError: unknown) {
-    const err = execError as {
-      stdout?: string | Buffer;
-      stderr?: string | Buffer;
-      message?: string;
-    };
-    const stdout =
-      typeof err?.stdout === "string"
-        ? err.stdout
-        : err?.stdout?.toString("utf8") ?? "";
-    const stderr =
-      typeof err?.stderr === "string"
-        ? err.stderr
-        : err?.stderr?.toString("utf8") ?? (err?.message ?? String(execError));
-
-    console.error(`[Admin Migration] Failed for user ${userId}:`, stderr);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[Admin Migration] Failed for user ${userId}:`, error);
 
     return NextResponse.json(
       {
         success: false,
-        stdout,
-        stderr,
+        message: "Migration failed.",
+        details: message,
       },
       { status: 500 },
     );
