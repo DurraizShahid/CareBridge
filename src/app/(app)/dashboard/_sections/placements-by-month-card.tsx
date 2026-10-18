@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Empty, EmptyDescription } from "@/components/ui/empty";
 import {
   LineChart,
   Line,
@@ -10,6 +11,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  useYAxisScale,
 } from "recharts";
 
 const CREATED_COLOR = "var(--chart-1)";
@@ -28,10 +30,11 @@ interface TooltipEntry {
 interface CustomTooltipProps {
   active?: boolean;
   payload?: TooltipEntry[];
-  nearestSeries: "created" | "completed";
+  coordinate?: { y?: number };
 }
 
-function CustomTooltip({ active, payload, nearestSeries }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, coordinate }: CustomTooltipProps) {
+  const yScale = useYAxisScale();
   if (!active || !payload?.length) return null;
 
   const createdData = payload.find((p) => p.name === "created");
@@ -39,7 +42,11 @@ function CustomTooltip({ active, payload, nearestSeries }: CustomTooltipProps) {
 
   if (!createdData && !completedData) return null;
 
-  const isCreated = nearestSeries === "created";
+  const cursorY = coordinate?.y ?? 0;
+  const createdY = yScale?.(Number(createdData?.value)) ?? 0;
+  const completedY = yScale?.(Number(completedData?.value)) ?? 0;
+  const isCreated = !!createdData && (!completedData
+    || Math.abs(cursorY - createdY) <= Math.abs(cursorY - completedY));
   const data = isCreated ? createdData : completedData;
   const label = isCreated ? "Created" : "Completed";
 
@@ -57,7 +64,6 @@ export function PlacementsByMonthCard({
   className,
   data = [],
 }: PlacementsByMonthCardProps) {
-  const [nearestSeries, setNearestSeries] = useState<"created" | "completed">("created");
   const chartData = data;
   const year = new Date().getFullYear();
 
@@ -68,34 +74,6 @@ export function PlacementsByMonthCard({
     );
     return Math.ceil(max / 5) * 5 || 5;
   }, [chartData]);
-
-  const handleMouseMove = useCallback((state: {
-    activePayload?: Array<{ name?: string | number; value?: number }>;
-    activeCoordinate?: { x: number; y: number };
-    chartWidth?: number;
-  }) => {
-    if (!state?.activePayload?.length || !state?.activeCoordinate) return;
-
-    const cursorY = state.activeCoordinate.y;
-    const payload = state.activePayload;
-
-    const createdData = payload.find((p) => p.name === "created");
-    const completedData = payload.find((p) => p.name === "completed");
-
-    if (createdData?.value === undefined || completedData?.value === undefined) return;
-
-    const chartHeight = state?.chartWidth || 200;
-    const domainMin = 0;
-    const domainMax = yMax;
-
-    const createdY = ((domainMax - createdData.value) / (domainMax - domainMin)) * chartHeight;
-    const completedY = ((domainMax - completedData.value) / (domainMax - domainMin)) * chartHeight;
-
-    const createdDist = Math.abs(cursorY - createdY);
-    const completedDist = Math.abs(cursorY - completedY);
-
-    setNearestSeries(createdDist <= completedDist ? "created" : "completed");
-  }, [yMax]);
 
   return (
     <Card className={cn("h-full overflow-hidden", className)}>
@@ -129,53 +107,58 @@ export function PlacementsByMonthCard({
           </span>
         </div>
 
-        <div className="flex-1 min-h-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-              onMouseMove={handleMouseMove}
-            >
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                dy={8}
-              />
-              <YAxis
-                domain={[0, yMax]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                dx={-10}
-                allowDecimals={false}
-              />
-              <Tooltip
-                content={<CustomTooltip nearestSeries={nearestSeries} />}
-                cursor={{ stroke: "var(--border)", strokeDasharray: "4 4" }}
-              />
-              <Line
-                name="created"
-                type="monotone"
-                dataKey="created"
-                stroke={CREATED_COLOR}
-                strokeWidth={2.5}
-                dot={false}
-                activeDot={{ r: 5, fill: CREATED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
-              />
-              <Line
-                name="completed"
-                type="monotone"
-                dataKey="completed"
-                stroke={COMPLETED_COLOR}
-                strokeWidth={2.5}
-                strokeDasharray="6 4"
-                dot={false}
-                activeDot={{ r: 5, fill: COMPLETED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="min-w-0 shrink-0">
+          {chartData.length === 0 ? (
+            <Empty className="h-80" role="status">
+              <EmptyDescription>No placement data yet</EmptyDescription>
+            </Empty>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart
+                data={chartData}
+                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                  dy={8}
+                />
+                <YAxis
+                  domain={[0, yMax]}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                  dx={-10}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: "var(--border)", strokeDasharray: "4 4" }}
+                />
+                <Line
+                  name="created"
+                  type="monotone"
+                  dataKey="created"
+                  stroke={CREATED_COLOR}
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 5, fill: CREATED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
+                />
+                <Line
+                  name="completed"
+                  type="monotone"
+                  dataKey="completed"
+                  stroke={COMPLETED_COLOR}
+                  strokeWidth={2.5}
+                  strokeDasharray="6 4"
+                  dot={false}
+                  activeDot={{ r: 5, fill: COMPLETED_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>

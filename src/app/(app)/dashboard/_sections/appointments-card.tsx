@@ -456,8 +456,17 @@ export function AppointmentsCard({ events = [] }: AppointmentsCardProps) {
   }, [selectedDayAppointments, selectedDay]);
 
   useEffect(() => {
-    if (selectedDateBtnRef.current) {
-      selectedDateBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const strip = dateStripRef.current;
+    const selected = selectedDateBtnRef.current;
+    if (strip && selected) {
+      const stripBounds = strip.getBoundingClientRect();
+      const selectedBounds = selected.getBoundingClientRect();
+      // Center the date without scrolling dashboard ancestors past the hero.
+      strip.scrollTo({
+        left: strip.scrollLeft + selectedBounds.left - stripBounds.left
+          - (stripBounds.width - selectedBounds.width) / 2,
+        behavior: "smooth",
+      });
     }
   }, [selectedDay]);
 
@@ -524,6 +533,7 @@ export function AppointmentsCard({ events = [] }: AppointmentsCardProps) {
               id="schedule-date-strip"
               role="tablist"
               aria-label="Facility calendar dates"
+              aria-describedby="schedule-date-hint"
               className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-3 pt-1"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
               onKeyDown={handleKeyDown}
@@ -574,6 +584,9 @@ export function AppointmentsCard({ events = [] }: AppointmentsCardProps) {
               </button>
             )}
           </div>
+          <p id="schedule-date-hint" className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+            Scroll for more dates <ArrowRight aria-hidden="true" className="size-3" />
+          </p>
         </div>
 
         {/* Schedule Body */}
