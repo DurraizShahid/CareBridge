@@ -36,6 +36,8 @@ import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { getFacilityById } from "@/lib/data-access";
+import { getServerOrganization } from "@/lib/server-organization";
+import { isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +60,11 @@ export default async function FacilityNetworkDetailPage({ params }: Props) {
 
   const signedInUser = await currentUser();
   if (!signedInUser) redirect("/sign-in");
+
+  const org = await getServerOrganization();
+  if (!org) redirect("/onboarding");
+  if (org.organizationType === "hospital" && !org.isSuperadmin &&
+      !await isFacilityRecommendedForOrg(org.organizationId, id)) notFound();
 
   const facility = await getFacilityById(id);
   if (!facility) notFound();

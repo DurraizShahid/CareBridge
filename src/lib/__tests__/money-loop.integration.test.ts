@@ -44,6 +44,7 @@ async function check<T=any>(response:Response,status=200):Promise<T>{
 const switchTo=(value:"hospital"|"facility"|"none")=>{authState.type=value};
 async function makeReferral(facilityId:string,mrn:string){
  switchTo("hospital");
+ await prisma.chatFacilityRecommendation.create({data:{organizationId:"verify-hospital-org",facilityId}});
  const ref=await check<{id:string;status:string}>(await postReferral(body("/api/referrals",{
   patientName:"Synthetic Verification Patient",patientMrn:mrn,
   patientDateOfBirth:"1960-01-02",careLevel:"skilled_nursing",

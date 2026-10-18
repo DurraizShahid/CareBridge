@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerOrganization } from "@/lib/server-organization";
+import { getRecommendedFacilityIds } from "@/lib/recommended-facilities";
 import { searchFacilities } from "@/lib/data-access";
 import { FacilityNetworkClient } from "./facility-network-client";
 
@@ -13,7 +14,7 @@ export default async function FacilityNetworkPage() {
 
   const org = await getServerOrganization();
   if (!org?.organizationId) redirect("/onboarding");
-  if (org.role === "facility-coordinator") redirect("/dashboard");
+  const recommendationsOnly = org.organizationType === "hospital" && !org.isSuperadmin;
 
   let defaultLocation = "";
 
@@ -37,7 +38,8 @@ export default async function FacilityNetworkPage() {
   }
 
   const initialFacilities = await searchFacilities({
-    location: defaultLocation || undefined,
+    location: recommendationsOnly ? undefined : defaultLocation || undefined,
+    facilityIds: recommendationsOnly ? [...await getRecommendedFacilityIds(org.organizationId)] : undefined,
   });
 
   const userName = signedInUser.firstName
@@ -46,7 +48,8 @@ export default async function FacilityNetworkPage() {
 
   return (
     <FacilityNetworkClient
-      defaultLocation={defaultLocation}
+      defaultLocation={recommendationsOnly ? "" : defaultLocation}
+      recommendationsOnly={recommendationsOnly}
       role={org.role}
       userName={userName}
       initialFacilities={initialFacilities}

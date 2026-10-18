@@ -8,6 +8,7 @@ const { mockAuth, mockGetServerOrganization, mockPrisma, mockRankFacilities } = 
   mockPrisma: {
     chat: { findFirst: vi.fn() },
     chatMessage: { create: vi.fn().mockResolvedValue({ id: "msg-1" }) },
+    chatFacilityRecommendation: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
   },
   mockRankFacilities: vi.fn(),
 }));
@@ -38,7 +39,7 @@ describe("POST /api/ai/chat route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ userId: "user-123" });
-    mockGetServerOrganization.mockResolvedValue({ organizationId: "org-123", role: "social-worker" });
+    mockGetServerOrganization.mockResolvedValue({ organizationId: "org-123", organizationType: "hospital", role: "social-worker" });
   });
 
   it("returns 401 when unauthenticated", async () => {
@@ -86,8 +87,8 @@ describe("POST /api/ai/chat route", () => {
     expect(raw).toContain("event: done");
   });
 
-  it("emits facilities event and persists message when care level and location are present", async () => {
-    mockPrisma.chat.findFirst.mockResolvedValue({ id: "chat-456" });
+  it.each(["owned", "missing", "foreign"])("persists recommendations with an %s chat", async (chat) => {
+    mockPrisma.chat.findFirst.mockResolvedValue(chat === "owned" ? { id: "chat-456" } : null);
     mockRankFacilities.mockResolvedValue([
       {
         id: "fac-1",
@@ -123,7 +124,7 @@ describe("POST /api/ai/chat route", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chatId: "chat-456",
+        chatId: chat === "missing" ? undefined : "chat-456",
         messages: [{ role: "user", content: "78-year-old with Medicare needing skilled nursing in Austin" }],
       }),
     });
@@ -139,12 +140,21 @@ describe("POST /api/ai/chat route", () => {
     expect(streamText).toContain("event: usage");
     expect(streamText).toContain("event: done");
 
-    expect(mockPrisma.chatMessage.create).toHaveBeenCalledWith({
+    expect(mockPrisma.chatFacilityRecommendation.createMany).toHaveBeenCalledWith({
+      data: [{ organizationId: "org-123", facilityId: "fac-1", chatId: chat === "owned" ? "chat-456" : null }],
+    });
+    if (chat !== "missing") {
+      expect(mockPrisma.chat.findFirst).toHaveBeenCalledWith({
+        where: { id: "chat-456", userId: "user-123", organizationId: "org-123" }, select: { id: true },
+      });
+    }
+    if (chat === "owned") expect(mockPrisma.chatMessage.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         chatId: "chat-456",
         role: "assistant",
         content: expect.stringContaining("Willow Harbor Rehabilitation"),
       }),
     });
+    else expect(mockPrisma.chatMessage.create).not.toHaveBeenCalled();
   });
 });

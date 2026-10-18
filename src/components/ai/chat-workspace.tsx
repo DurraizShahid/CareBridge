@@ -269,13 +269,6 @@ export function ChatWorkspace() {
 
     try {
       const history = [...messagesRef.current.map((m) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
-      const responsePromise = fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
-        signal: controller.signal,
-      });
-
       const created = await chatPromise;
       if (created) {
         chatId = created.id;
@@ -283,7 +276,12 @@ export function ChatWorkspace() {
         setRefreshTrigger((n) => n + 1);
       }
 
-      const response = await responsePromise;
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, chatId }),
+        signal: controller.signal,
+      });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
         throw new Error(body?.error || `Request failed (${response.status})`);
@@ -315,7 +313,6 @@ export function ChatWorkspace() {
         });
       }
 
-      if (chatId && full) saveMessage(chatId, "assistant", parseSuggestions(full).cleanContent);
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
         const msg = /429|too many/i.test(err.message) ? err.message : "The assistant could not answer. Check your connection and try again.";

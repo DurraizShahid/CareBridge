@@ -2063,6 +2063,7 @@ export async function getFacility(
  * Hospital-side users search for facilities from any organization.
  */
 export async function searchFacilities(params: {
+  facilityIds?: string[];
   location?: string;
   insuranceAccepted?: string[];
   careLevelsOffered?: CareLevel[];
@@ -2071,6 +2072,10 @@ export async function searchFacilities(params: {
   specialties?: string[];
 }): Promise<Facility[]> {
   const where: Record<string, unknown> = {};
+
+  if (params.facilityIds !== undefined) {
+    where.id = { in: params.facilityIds };
+  }
 
   if (params.location) {
     const loc = params.location.toLowerCase();

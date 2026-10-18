@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prismaMock, orgMock } = vi.hoisted(() => ({
+const { prismaMock, orgMock, recommendedMock } = vi.hoisted(() => ({
+  recommendedMock: vi.fn(),
   prismaMock: {
     organization: { findUnique: vi.fn() },
     facility: { findFirst: vi.fn(), findMany: vi.fn(), fields: { capacity: "capacity" } },
@@ -14,6 +15,7 @@ const { prismaMock, orgMock } = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/server-organization", () => ({ getServerOrganization: orgMock }));
+vi.mock("@/lib/recommended-facilities", () => ({ isFacilityRecommendedForOrg: recommendedMock }));
 
 import { createReferral, getReferral, listReferrals, listReferralCandidates, parseReferralBody,
   referralContext, transitionReferral, ensureCareMatch } from "../referrals";
@@ -26,6 +28,7 @@ const valid = {
 describe("money-loop referrals: authorization and transitions", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    recommendedMock.mockResolvedValue(true);
     prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock));
     orgMock.mockResolvedValue({ organizationId: "hospital-1", userId: "user-1", role: "social-worker" });
     prismaMock.organization.findUnique.mockResolvedValue({ type: "hospital" });
@@ -53,6 +56,13 @@ describe("money-loop referrals: authorization and transitions", () => {
     await expect(createReferral(valid)).rejects.toMatchObject({ statusCode: 403 });
     expect(prismaMock.referral.create).not.toHaveBeenCalled();
   });
+  it("rejects a new draft that would manufacture access to an arbitrary facility", async () => {
+    recommendedMock.mockResolvedValue(false);
+    await expect(createReferral(valid)).rejects.toMatchObject({ statusCode: 403 });
+    expect(prismaMock.facility.findFirst).not.toHaveBeenCalled();
+    expect(prismaMock.referral.create).not.toHaveBeenCalled();
+  });
+
   it("creates only with server-side hospital identity and eligible receiving facility", async () => {
     prismaMock.facility.findFirst.mockResolvedValue({
       careLevelsOffered: ["skilled_nursing"], specialties: ["Wound Care"],
@@ -129,9 +139,11 @@ describe("money-loop referrals: authorization and transitions", () => {
     await listReferralCandidates("skilled_nursing", ["Wound Care", "IV therapy"], {
       take: 25,
       cursor: "fac-10",
+      facilityIds: ["recommended"],
     });
     expect(prismaMock.facility.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({
+        id: { in: ["recommended"] },
         organization: { type: "facility" },
         hasAvailability: true,
         careLevelsOffered: { has: "skilled_nursing" },

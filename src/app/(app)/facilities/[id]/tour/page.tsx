@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { FacilityTour } from "@/components/facility-tour/facility-tour";
 import { getFacility, getFacilityById } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { roleHasPermission } from "@/lib/permissions";
 import { getDefaultTourConfig } from "@/lib/facility-tour";
 
@@ -25,6 +26,8 @@ export default async function FacilityTourPage({ params }: Props) {
   const { id } = await params;
   const org = await getServerOrganization();
   if (!org) redirect("/onboarding");
+  if (org.organizationType === "hospital" && !org.isSuperadmin &&
+      !await isFacilityRecommendedForOrg(org.organizationId, id)) notFound();
 
   // Hospital staff tour network facilities owned by other organizations (read-only).
   const own = await getFacility(id, org.organizationId, org.role);

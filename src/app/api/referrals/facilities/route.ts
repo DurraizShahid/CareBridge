@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { listReferralCandidates, careLevels, referralFailure } from "@/lib/referrals";
+import { getServerOrganization } from "@/lib/server-organization";
+import { getRecommendedFacilityIds } from "@/lib/recommended-facilities";
 export async function GET(req: Request) {
   try {
+    const org = await getServerOrganization();
+    if (!org) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const url = new URL(req.url);
     const level = url.searchParams.get("careLevel") ?? "";
     if (!careLevels.includes(level as typeof careLevels[number]))
@@ -16,6 +20,8 @@ export async function GET(req: Request) {
       await listReferralCandidates(level as typeof careLevels[number], services, {
         take: take && !Number.isNaN(take) ? take : undefined,
         cursor,
+        facilityIds: org.organizationType === "hospital" && !org.isSuperadmin
+          ? [...await getRecommendedFacilityIds(org.organizationId)] : undefined,
       }),
       { headers: { "Cache-Control": "no-store" } },
     );

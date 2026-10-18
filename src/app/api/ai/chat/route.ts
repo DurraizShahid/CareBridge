@@ -262,6 +262,12 @@ export async function POST(req: Request) {
           // If enough info exists and facilities were matched, emit structured facilities event
           if (activeCareLevel && activeLocation && rankedFacilities.length > 0) {
             const topFacilities = rankedFacilities.slice(0, 3);
+            // Commit access before the cards reach the client and can be opened.
+            if (org?.organizationType === "hospital") {
+              await prisma.chatFacilityRecommendation.createMany({
+                data: topFacilities.map(({ id }) => ({ organizationId: currentOrgId, facilityId: id, chatId })),
+              });
+            }
             controller.enqueue(sseEvent("facilities", safeStringify(topFacilities.map(slimFacility))));
           }
 

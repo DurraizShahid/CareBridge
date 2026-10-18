@@ -274,6 +274,19 @@ ESLint is configured with `next/core-web-vitals` and TypeScript rules.
 
 ## Troubleshooting
 
+### Hospital facility recommendations
+
+Hospital discovery lists and searches include only facilities emitted by the AI chat.
+Individual profiles and tours also allow facilities linked by the hospital's existing
+referrals (including contracts) or assigned/selected placements. Facility organizations
+and superadmins retain their existing access. New referrals cannot create access to
+an unrecommended facility.
+
+Apply `20261018000000_add_chat_facility_recommendation` with `npx prisma migrate deploy`
+before deploying this gate, then regenerate the Prisma client. Recommendation records
+are organization-scoped; a missing or unowned chat ID is stored as null. Existing chat
+history is not backfilled, and deleting a chat does not revoke facility access.
+
 ### Prisma Client Errors
 
 If you see "PrismaClient is not defined" or import errors:

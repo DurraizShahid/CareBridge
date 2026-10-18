@@ -15,6 +15,7 @@ export default async function FacilitiesPage() {
   const org = await getServerOrganization();
   const user = await currentUser();
   if (!org) redirect("/onboarding");
+  if (org.organizationType === "hospital" && !org.isSuperadmin) redirect("/dashboard/facility-network");
   const organizationId = org.organizationId;
   const role = org.role;
   const userName = user?.firstName

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getFacilities, searchFacilities, createFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { getRecommendedFacilityIds } from "@/lib/recommended-facilities";
 import { roleHasPermission } from "@/lib/permissions";
 import type { FacilityType, CareLevel } from "@/types";
 
@@ -19,7 +20,9 @@ export async function GET() {
 
     const facilities =
       org.organizationType === "hospital"
-        ? await searchFacilities({})
+        ? await searchFacilities({
+            facilityIds: org.isSuperadmin ? undefined : [...await getRecommendedFacilityIds(org.organizationId)],
+          })
         : await getFacilities(org.organizationId, org.role);
     return NextResponse.json(facilities);
   } catch (error: unknown) {

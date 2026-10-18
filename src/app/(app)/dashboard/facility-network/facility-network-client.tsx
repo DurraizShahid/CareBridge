@@ -86,6 +86,7 @@ const COMMON_INSURANCE = [
 ];
 
 interface FacilityNetworkClientProps {
+  recommendationsOnly?: boolean;
   defaultLocation: string;
   role: string;
   userName?: string;
@@ -97,6 +98,7 @@ export function FacilityNetworkClient({
   role,
   userName,
   initialFacilities = [],
+  recommendationsOnly = false,
 }: FacilityNetworkClientProps) {
   const [location, setLocation] = useState(defaultLocation);
   const [facilities, setFacilities] = useState<Facility[]>(initialFacilities);
@@ -175,8 +177,10 @@ export function FacilityNetworkClient({
     <div className="flex flex-col gap-8 pb-10">
       {/* ── 1. Page Header ── */}
       <PageHeader
-        title="Facility Network"
-        description="Discover, verify, and inspect regional care facilities, bed availability, and specialty clinical services."
+        title={recommendationsOnly ? "Recommended Facilities" : "Facility Network"}
+        description={recommendationsOnly
+          ? "Review facilities recommended to your hospital by the AI assistant."
+          : "Discover, verify, and inspect regional care facilities, bed availability, and specialty clinical services."}
         userName={userName}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
@@ -184,7 +188,7 @@ export function FacilityNetworkClient({
         ]}
       >
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
+          {!recommendationsOnly && <Button
             variant="outline"
             size="sm"
             className="rounded-full bg-white px-4 text-xs font-semibold text-[#203E39] border-[#DCE5DE] hover:bg-[#EDF2EC] active:scale-[0.98]"
@@ -192,7 +196,10 @@ export function FacilityNetworkClient({
           >
             <Building2 className="size-3.5 text-[#53665E]" />
             All Facilities
-          </Button>
+          </Button>}
+          {recommendationsOnly && <Button render={<Link href="/chat" />}>
+            Ask AI Assistant
+          </Button>}
           {searched && facilities.length > 0 && (
             <Button
               variant="outline"
@@ -220,7 +227,7 @@ export function FacilityNetworkClient({
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-medium bg-[#EDF2EC] text-[#203E39] border border-[#DCE5DE]">
           <ShieldCheck className="size-3.5 text-[#245C52]" />
-          Regional Network Directory
+          {recommendationsOnly ? "AI Recommendations" : "Regional Network Directory"}
         </div>
         {location && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-medium bg-[#DCE8DA]/70 text-[#203E39] border border-[#C7D3CA]">
@@ -271,6 +278,7 @@ export function FacilityNetworkClient({
       )}
 
       {/* ── 4. Search and Filter Bar ── */}
+      {!recommendationsOnly && (
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center bg-white rounded-2xl border border-[#DCE5DE] p-3 sm:p-4 shadow-xs">
         <div className="relative flex-1">
           <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#53665E]" />
@@ -478,6 +486,7 @@ export function FacilityNetworkClient({
         </div>
       </div>
 
+      )}
       {/* ── 5. Active Filters Chips ── */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2">
@@ -576,7 +585,19 @@ export function FacilityNetworkClient({
       <div>
         {loading && <FacilityCardsSkeleton count={6} />}
 
-        {!loading && searched && facilities.length === 0 && (
+        {recommendationsOnly && facilities.length === 0 && (
+          <Empty className="py-16 border border-dashed border-[#DCE5DE] bg-white/60">
+            <EmptyHeader>
+              <EmptyTitle>No facility recommendations yet</EmptyTitle>
+              <EmptyDescription>
+                Ask the AI assistant for facility recommendations based on your patient&apos;s care needs and location.
+              </EmptyDescription>
+            </EmptyHeader>
+            <Button render={<Link href="/chat" />}>Ask AI Assistant</Button>
+          </Empty>
+        )}
+
+        {!recommendationsOnly && !loading && searched && facilities.length === 0 && (
           <Empty className="py-16 border border-dashed border-[#DCE5DE] bg-white/60">
             <EmptyMedia
               variant="icon"
@@ -609,7 +630,7 @@ export function FacilityNetworkClient({
           </Empty>
         )}
 
-        {!loading && !searched && facilities.length === 0 && (
+        {!recommendationsOnly && !loading && !searched && facilities.length === 0 && (
           <Empty className="py-16 border border-dashed border-[#DCE5DE] bg-white/60">
             <EmptyMedia
               variant="icon"

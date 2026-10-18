@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 const { authMock, orgMock, getFacilityMock, updateTourMock, permMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   orgMock: vi.fn(),

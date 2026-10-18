@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuthenticatedUser } from "@/lib/server-auth";
+import { getServerOrganization } from "@/lib/server-organization";
+import { getRecommendedFacilityIds, isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { searchFacilities, getFacilityById } from "@/lib/data-access";
 import type { CareLevel, FacilityType } from "@/types";
 
@@ -21,12 +22,22 @@ export interface SearchResult {
 export async function searchFacilitiesAction(
   params: SearchFacilitiesParams,
 ): Promise<SearchResult> {
-  await requireAuthenticatedUser();
-  const facilities = await searchFacilities(params);
+  const org = await getServerOrganization();
+  if (!org) throw new Error("Authentication required");
+  const facilities = await searchFacilities({
+    ...params,
+    facilityIds: org.organizationType === "hospital" && !org.isSuperadmin
+      ? [...await getRecommendedFacilityIds(org.organizationId)] : undefined,
+  });
   return { facilities, total: facilities.length };
 }
 
 export async function getFacilityDetailAction(id: string) {
-  await requireAuthenticatedUser();
+  const org = await getServerOrganization();
+  if (!org) throw new Error("Authentication required");
+  if (org.organizationType === "hospital" && !org.isSuperadmin &&
+      !await isFacilityRecommendedForOrg(org.organizationId, id)) {
+    throw new Error("Facility has not been recommended");
+  }
   return getFacilityById(id);
 }

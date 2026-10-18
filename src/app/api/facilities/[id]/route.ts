@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getFacility, getFacilityById, updateFacility, deleteFacility } from "@/lib/data-access";
 import { getServerOrganization } from "@/lib/server-organization";
+import { isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { roleHasPermission } from "@/lib/permissions";
 
 export async function GET(
@@ -20,6 +21,10 @@ export async function GET(
     }
 
     const { id } = await params;
+    if (org.organizationType === "hospital" && !org.isSuperadmin &&
+        !await isFacilityRecommendedForOrg(org.organizationId, id)) {
+      return NextResponse.json({ error: "Facility has not been recommended" }, { status: 403 });
+    }
     const facility =
       (await getFacility(id, org.organizationId, org.role)) ??
       (org.organizationType === "hospital" ? await getFacilityById(id) : null);

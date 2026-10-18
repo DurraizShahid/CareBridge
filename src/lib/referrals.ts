@@ -2,6 +2,7 @@ import { renderContract, documentSha256 } from "@/lib/esign/document";
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getServerOrganization } from "@/lib/server-organization";
+import { isFacilityRecommendedForOrg } from "@/lib/recommended-facilities";
 import { calculateFacilityScore } from "@/lib/data-access";
 import type { CareLevel, ReferralStatus } from "@/generated/prisma/client";
 
@@ -28,7 +29,7 @@ export async function referralContext() {
     throw new ReferralError(403, "Hospital staff access required");
   if (dbOrg.type === "facility" && !FACILITY_ROLES.has(org.role))
     throw new ReferralError(403, "Facility staff access required");
-  return { organizationId: org.organizationId, userId: org.userId, type: dbOrg.type };
+  return { organizationId: org.organizationId, userId: org.userId, type: dbOrg.type, isSuperadmin: org.isSuperadmin };
 }
 
 export const careLevels = [
@@ -74,6 +75,7 @@ export function ensureCareMatch(facility: {
 }
 
 export interface ReferralCandidatesOptions {
+  facilityIds?: string[];
   take?: number;
   cursor?: string;
   patient?: { careLevelRequired?: string; insurance?: unknown };
@@ -99,6 +101,7 @@ export async function listReferralCandidates(
 
   const facilities = await prisma.facility.findMany({
     where: {
+      ...(opts.facilityIds !== undefined ? { id: { in: opts.facilityIds } } : {}),
       organization: { type: "facility" },
       hasAvailability: true,
       currentOccupancy: { lt: prisma.facility.fields.capacity },
@@ -257,6 +260,9 @@ export async function createReferral(body: unknown) {
   const ctx = await referralContext();
   if (ctx.type !== "hospital") throw new ReferralError(403, "Hospital access required");
   const b = parseReferralBody(body);
+  // A new draft must not manufacture the relationship that unlocks a profile.
+  if (!ctx.isSuperadmin && !await isFacilityRecommendedForOrg(ctx.organizationId, b.facilityId))
+    throw new ReferralError(403, "Facility has not been recommended");
   const facility = await prisma.facility.findFirst({
     where: { id: b.facilityId, organization: { type: "facility" } },
     select: { careLevelsOffered: true, specialties: true, hasAvailability: true,
