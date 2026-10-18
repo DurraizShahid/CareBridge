@@ -92,27 +92,57 @@ const KNOWN_CITIES = [
   "Fort Worth",
   "El Paso",
   "Arlington",
-  "Plano",
   "Corpus Christi",
+  "Plano",
   "Lubbock",
-  "Irving",
   "Laredo",
+  "Irving",
   "Garland",
   "Frisco",
   "McKinney",
   "Grand Prairie",
-  "Sugar Land",
-  "The Woodlands",
-  "Round Rock",
-  "Pearland",
-  "College Station",
+  "Amarillo",
+  "Brownsville",
+  "Killeen",
+  "Pasadena",
+  "Mesquite",
+  "McAllen",
+  "Carrollton",
+  "Midland",
   "Waco",
   "Denton",
   "Abilene",
-  "Midland",
   "Odessa",
   "Beaumont",
+  "Round Rock",
+  "The Woodlands",
+  "Richardson",
+  "Pearland",
+  "College Station",
+  "Sugar Land",
+  "Lewisville",
+  "League City",
   "Tyler",
+  "Allen",
+  "Bedford",
+  "San Angelo",
+  "Edinburg",
+  "Conroe",
+  "Bryan",
+  "Mission",
+  "New Braunfels",
+  "Longview",
+  "Pharr",
+  "Flower Mound",
+  "Baytown",
+  "Temple",
+  "Missouri City",
+  "North Richland Hills",
+  "Harlingen",
+  "Victoria",
+  "Mansfield",
+  "Cedar Park",
+  "Rowlett",
   "Portland",
   "Beaverton",
   "Gresham",
@@ -281,8 +311,10 @@ function buildMatchReasons(facility: Facility, patientInfo: PatientInfo, openBed
   // Open beds breakdown
   if (openBeds > 0) {
     reasons.push(`${openBeds} open ${openBeds === 1 ? "bed" : "beds"}`);
+  } else if (facility.waitlistDays !== undefined && facility.waitlistDays !== null && facility.waitlistDays > 0) {
+    reasons.push(`waitlist (~${facility.waitlistDays} days)`);
   } else {
-    reasons.push("immediate waitlist intake");
+    reasons.push("waitlist intake");
   }
 
   // Insurance breakdown
@@ -297,9 +329,9 @@ function buildMatchReasons(facility: Facility, patientInfo: PatientInfo, openBed
   // Distance / Location breakdown
   const facilityCity = facility.address?.city;
   if (patientInfo.location && facilityCity && facilityCity.toLowerCase() === patientInfo.location.toLowerCase()) {
-    reasons.push(`5 miles away in ${facilityCity}`);
+    reasons.push(`Located in ${facilityCity}`);
   } else if (facilityCity) {
-    reasons.push(`12 miles away in ${facilityCity}`);
+    reasons.push(`Serving the ${facilityCity} area`);
   }
 
   // Rating breakdown

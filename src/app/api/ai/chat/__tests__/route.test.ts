@@ -115,7 +115,7 @@ describe("POST /api/ai/chat route", () => {
         updatedAt: new Date().toISOString(),
         score: 85,
         openBeds: 14,
-        matchReasons: ["14 open beds with immediate intake", "accepts Medicare", "5 miles away in Austin", "4.6 star rating"],
+        matchReasons: ["14 open beds with immediate intake", "accepts Medicare", "Located in Austin", "4.6 star rating"],
         hasTour: true,
       },
     ]);

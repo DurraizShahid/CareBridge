@@ -100,6 +100,20 @@ describe("dumb-ai rule-based recommendation engine", () => {
       expect(res2.careLevel).toBe("rehabilitation");
     });
 
+    it("recognizes expanded Texas cities where facilities exist", () => {
+      expect(parsePatientInput("Needs skilled nursing in Fort Worth").location).toBe("Fort Worth");
+      expect(parsePatientInput("Looking for rehab in El Paso").location).toBe("El Paso");
+      expect(parsePatientInput("Memory care near Arlington").location).toBe("Arlington");
+      expect(parsePatientInput("Assisted living in Plano").location).toBe("Plano");
+      expect(parsePatientInput("Hospice in Corpus Christi").location).toBe("Corpus Christi");
+      expect(parsePatientInput("Patient in Lubbock needing SNF").location).toBe("Lubbock");
+      expect(parsePatientInput("Rehab facility in Irving").location).toBe("Irving");
+      expect(parsePatientInput("Care in Garland").location).toBe("Garland");
+      expect(parsePatientInput("Options in Frisco").location).toBe("Frisco");
+      expect(parsePatientInput("Looking for SNF in McKinney").location).toBe("McKinney");
+      expect(parsePatientInput("Placement in Bedford").location).toBe("Bedford");
+    });
+
     it("flags discharge inquiries such as 'discharge a patient' and 'how do I discharge'", () => {
       expect(parsePatientInput("discharge a patient").isDischargeInquiry).toBe(true);
       expect(parsePatientInput("how do I discharge").isDischargeInquiry).toBe(true);
@@ -198,8 +212,24 @@ describe("dumb-ai rule-based recommendation engine", () => {
       expect(ranked[0].score).toBe(85);
       expect(ranked[0].openBeds).toBe(14);
       expect(ranked[0].hasTour).toBe(true);
+      expect(ranked[0].matchReasons).toContain("Located in Austin");
       expect(ranked[1].id).toBe("fac-2");
       expect(ranked[1].score).toBe(65);
+    });
+
+    it("uses honest location phrasing 'Serving the {city} area' when outside matching city", async () => {
+      mockListReferralCandidates.mockResolvedValue([
+        { id: "fac-1", name: "Willow Harbor Rehabilitation", availableBeds: 14, specialties: [], score: 85 },
+      ]);
+      mockSearchFacilities.mockResolvedValue([mockFacilities[0]]);
+      mockCalculateFacilityScore.mockImplementation(() => 85);
+
+      const ranked = await rankFacilities({
+        careLevel: "skilled-nursing",
+        location: "Dallas",
+      });
+
+      expect(ranked[0].matchReasons).toContain("Serving the Austin area");
     });
 
     it("falls back gracefully if listReferralCandidates fails", async () => {
@@ -277,7 +307,7 @@ describe("dumb-ai rule-based recommendation engine", () => {
           matchReasons: [
             "14 open beds with immediate intake",
             "accepts Medicare",
-            "5 miles away in Austin",
+            "Located in Austin",
             "4.6 star rating",
           ],
           hasTour: true,
@@ -310,7 +340,7 @@ describe("dumb-ai rule-based recommendation engine", () => {
           matchReasons: [
             "2 open beds",
             "accepts Medicare",
-            "5 miles away in Austin",
+            "Located in Austin",
             "4.1 star rating",
           ],
           hasTour: true,
@@ -322,6 +352,7 @@ describe("dumb-ai rule-based recommendation engine", () => {
       expect(response).toContain("Willow Harbor Rehabilitation");
       expect(response).toContain("14 open beds with immediate intake");
       expect(response).toContain("accepts Medicare");
+      expect(response).toContain("Located in Austin");
       expect(response).toContain("4.6 star rating");
       expect(response).toContain("Cedar Bay Skilled Nursing");
       expect(response).toContain("3D tour link");
