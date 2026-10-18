@@ -382,23 +382,31 @@ export async function rankFacilities(patientInfo: PatientInfo): Promise<RankedFa
     }
   }
 
-  const searchResult = await searchFacilities({
+  const rawSearchResult = await searchFacilities({
     careLevelsOffered: careLevelKebab ? [careLevelKebab] : undefined,
     hasAvailability: true,
   });
-  let candidates = Array.isArray(searchResult) ? searchResult : searchResult.facilities;
+  const searchResult = Array.isArray(rawSearchResult)
+    ? { facilities: rawSearchResult, total: rawSearchResult.length }
+    : rawSearchResult;
+  const { facilities } = searchResult;
+  let candidates: Facility[] = facilities;
 
-  if (candidates.length === 0) {
-    const fallbackResult = await searchFacilities({
+  if (facilities.length === 0) {
+    const rawFallbackResult = await searchFacilities({
       hasAvailability: true,
     });
-    candidates = Array.isArray(fallbackResult) ? fallbackResult : fallbackResult.facilities;
+    const fallbackResult = Array.isArray(rawFallbackResult)
+      ? { facilities: rawFallbackResult, total: rawFallbackResult.length }
+      : rawFallbackResult;
+    const { facilities: fallbackFacilities } = fallbackResult;
+    candidates = fallbackFacilities;
   }
 
   const facilitiesToScore =
     referralCandidateIds && referralCandidateIds.length > 0
-      ? candidates.filter((f) => referralCandidateIds!.includes(f.id))
-      : candidates;
+      ? (facilities.length > 0 ? facilities : candidates).filter((f: Facility) => referralCandidateIds!.includes(f.id))
+      : (facilities.length > 0 ? facilities : candidates);
 
   const targetFacilities = facilitiesToScore.length > 0 ? facilitiesToScore : candidates;
 
@@ -411,7 +419,7 @@ export async function rankFacilities(patientInfo: PatientInfo): Promise<RankedFa
   const preferredLocation = patientInfo.location ? { city: patientInfo.location } : undefined;
 
   const scored: RankedFacility[] = targetFacilities
-    .map((f) => {
+    .map((f: Facility) => {
       const score = calculateFacilityScore(
         {
           ...f,
@@ -431,8 +439,8 @@ export async function rankFacilities(patientInfo: PatientInfo): Promise<RankedFa
         hasTour: true,
       };
     })
-    .filter((r) => r.score >= 0)
-    .sort((a, b) => b.score - a.score);
+    .filter((r: RankedFacility) => r.score >= 0)
+    .sort((a: RankedFacility, b: RankedFacility) => b.score - a.score);
 
   return scored;
 }

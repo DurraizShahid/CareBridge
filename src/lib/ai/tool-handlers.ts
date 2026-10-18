@@ -248,8 +248,11 @@ export const toolHandlers: Record<
         params.specialties = args.specialties;
       }
 
-      const searchRes = await searchAllFacilities(params);
-      let facilities = Array.isArray(searchRes) ? searchRes : searchRes.facilities;
+      const rawSearchRes = await searchAllFacilities(params);
+      const searchRes = Array.isArray(rawSearchRes)
+        ? { facilities: rawSearchRes, total: rawSearchRes.length }
+        : rawSearchRes;
+      let { facilities } = searchRes;
 
       if (facilities.length > 10) {
         facilities = facilities.slice(0, 10);
