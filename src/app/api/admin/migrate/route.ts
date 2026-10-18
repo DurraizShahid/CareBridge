@@ -52,10 +52,12 @@ async function requireAdminRole(): Promise<string> {
 }
 
 /**
+ * GET /api/admin/migrate
  * POST /api/admin/migrate
  *
  * Protected admin migration endpoint for applying pending Prisma migrations in production.
  * Executes `prisma migrate deploy` using `npx` with a 120s timeout.
+ * GET is safe because prisma migrate deploy is idempotent.
  */
 export async function POST() {
   let userId: string;
@@ -111,3 +113,5 @@ export async function POST() {
     );
   }
 }
+
+export const GET = POST;
