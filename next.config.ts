@@ -2,11 +2,11 @@ import type { NextConfig } from "next";
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://accounts.google.com https://apis.google.com",
+  "script-src 'self' 'unsafe-inline' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://accounts.google.com https://apis.google.com https://js.stripe.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.storage.railway.app https://images.unsplash.com https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://lh3.googleusercontent.com",
-  "connect-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://*.storage.railway.app https://accounts.google.com",
-  "frame-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://accounts.google.com",
+  "img-src 'self' data: blob: https://*.storage.railway.app https://images.unsplash.com https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://lh3.googleusercontent.com https://*.tile.openstreetmap.org https://unpkg.com https://*.stripe.com",
+  "connect-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://*.storage.railway.app https://accounts.google.com https://*.stripe.com",
+  "frame-src 'self' https://clerk.carebridge-plum.vercel.app https://*.clerk.accounts.dev https://accounts.google.com https://js.stripe.com https://*.stripe.com",
   "font-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

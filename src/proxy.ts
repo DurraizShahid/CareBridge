@@ -142,6 +142,7 @@ export default clerkMiddleware(
           "https://*.clerk.accounts.dev",
           "https://accounts.google.com",
           "https://apis.google.com",
+          "https://js.stripe.com",
         ],
         // Clerk strictly requires 'unsafe-inline' for style-src because Clerk UI components inject dynamic inline CSS at runtime without nonces.
         "style-src": ["'self'", "'unsafe-inline'"],
@@ -154,6 +155,9 @@ export default clerkMiddleware(
           "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
           "https://lh3.googleusercontent.com",
+          "https://*.tile.openstreetmap.org",
+          "https://unpkg.com",
+          "https://*.stripe.com",
         ],
         "connect-src": [
           "'self'",
@@ -162,12 +166,15 @@ export default clerkMiddleware(
           "wss://*.clerk.accounts.dev",
           "https://*.storage.railway.app",
           "https://accounts.google.com",
+          "https://*.stripe.com",
         ],
         "frame-src": [
           "'self'",
           "https://clerk.carebridge-plum.vercel.app",
           "https://*.clerk.accounts.dev",
           "https://accounts.google.com",
+          "https://js.stripe.com",
+          "https://*.stripe.com",
         ],
         "font-src": ["'self'"],
         "object-src": ["'none'"],

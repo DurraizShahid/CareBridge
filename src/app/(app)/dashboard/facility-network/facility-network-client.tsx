@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Search,
@@ -685,6 +686,7 @@ export function FacilityNetworkClient({
 }
 
 function FacilityCard({ facility }: { facility: Facility }) {
+  const router = useRouter();
   const typeLabel =
     FACILITY_TYPE_OPTIONS.find((o) => o.value === facility.type)?.label ??
     facility.type;
@@ -730,15 +732,19 @@ function FacilityCard({ facility }: { facility: Facility }) {
             )}
 
             <div className="pointer-events-auto">
-              <Link
-                href={`/facilities/${facility.id}/tour`}
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1 rounded-full bg-[#245C52] hover:bg-[#19473F] text-white border border-white/30 text-[11px] font-semibold px-2.5 py-1 shadow-sm transition-transform active:scale-95"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/facilities/${facility.id}/tour`);
+                }}
+                className="inline-flex items-center gap-1 rounded-full bg-[#245C52] hover:bg-[#19473F] text-white border border-white/30 text-[11px] font-semibold px-2.5 py-1 shadow-sm transition-transform active:scale-95 cursor-pointer"
                 title="Open 3D Virtual Tour"
               >
                 <Rotate3d className="size-3.5" />
                 3D Tour
-              </Link>
+              </button>
             </div>
 
           </div>
@@ -795,14 +801,18 @@ function FacilityCard({ facility }: { facility: Facility }) {
               {facility.currentOccupancy}/{facility.capacity} beds occupied
             </span>
             <div className="flex items-center gap-3">
-              <Link
-                href={`/facilities/${facility.id}/tour`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-medium text-[#245C52] hover:underline inline-flex items-center gap-1"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/facilities/${facility.id}/tour`);
+                }}
+                className="font-medium text-[#245C52] hover:underline inline-flex items-center gap-1 cursor-pointer"
               >
                 <Rotate3d className="size-3" />
                 3D Tour
-              </Link>
+              </button>
               <span className="font-semibold text-[#245C52] group-hover:underline inline-flex items-center gap-1">
                 View Profile
                 <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />

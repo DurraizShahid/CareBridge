@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getFacilities, searchFacilities, createFacility } from "@/lib/data-access";
-import { getServerOrganization } from "@/lib/server-organization";
+import { AuthorizationError, getServerOrganization } from "@/lib/server-organization";
 import { getRecommendedFacilityIds } from "@/lib/recommended-facilities";
 import { roleHasPermission } from "@/lib/permissions";
 import type { FacilityType, CareLevel } from "@/types";
@@ -26,6 +26,9 @@ export async function GET() {
         : await getFacilities(org.organizationId, org.role);
     return NextResponse.json(facilities);
   } catch (error: unknown) {
+    if (error instanceof AuthorizationError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     console.error("Error fetching facilities:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
