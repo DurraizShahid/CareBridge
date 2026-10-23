@@ -51,6 +51,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return <html lang="en" className={cn("h-full", "antialiased", inter.variable, lato.variable, "font-sans")} suppressHydrationWarning>
     <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
       <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+      <div role="status" className="sticky top-0 z-[60] flex h-9 shrink-0 items-center justify-center border-b border-amber-300 bg-amber-100 px-4 text-center text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        Server might degrade or shut down due to unpaid invoice. Please contact administrator.
+      </div>
       <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
         <SmoothScroll>{children}</SmoothScroll>
         <Toaster />
